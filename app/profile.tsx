@@ -1,0 +1,474 @@
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, Switch, Modal, KeyboardAvoidingView } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { SymbolView } from 'expo-symbols';
+import { useRouter } from 'expo-router';
+import { Picker } from '@react-native-picker/picker';
+import { useProfile, Sex, ActivityLevel, WeightGoal, DietaryPreference } from './context/ProfileContext';
+import { COLORS, globalStyles } from '../styles';
+
+const isIOS = Platform.OS === 'ios';
+
+const SettingsGroup = ({ title, children }: { title: string, children: React.ReactNode }) => (
+  <View style={styles.groupContainer}>
+    {title ? <Text style={styles.groupTitle}>{title.toUpperCase()}</Text> : null}
+    <View style={[styles.groupBlock, isIOS ? styles.groupBlockIOS : styles.groupBlockAndroid]}>
+      {children}
+    </View>
+  </View>
+);
+
+const SettingsRow = ({ 
+  icon, 
+  sfSymbol,
+  iconBg, 
+  title, 
+  children, 
+  isLast, 
+  onPress 
+}: any) => (
+  <View>
+    <TouchableOpacity 
+      style={[styles.settingsRow, !isIOS && styles.settingsRowAndroid]} 
+      activeOpacity={onPress ? 0.6 : 1} 
+      onPress={onPress}
+      disabled={!onPress}
+    >
+      <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
+        {isIOS && sfSymbol ? (
+          <SymbolView name={sfSymbol} size={18} tintColor="#FFF" fallback={<Ionicons name={icon} size={18} color="#FFF" />} />
+        ) : (
+          <Ionicons name={icon} size={18} color="#FFF" />
+        )}
+      </View>
+      <Text style={styles.rowTitle}>{title}</Text>
+      <View style={styles.rowRight}>
+        {children}
+      </View>
+    </TouchableOpacity>
+    {!isLast && <View style={styles.separator} />}
+  </View>
+);
+
+export default function ProfileScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { profile, updateProfile, targetCalories } = useProfile();
+
+  const [inputModalVisible, setInputModalVisible] = useState(false);
+  const [pickerModalVisible, setPickerModalVisible] = useState(false);
+  
+  // State for the modals
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalKey, setModalKey] = useState<any>('');
+  const [modalValue, setModalValue] = useState('');
+  const [modalUnit, setModalUnit] = useState('');
+  const [modalOptions, setModalOptions] = useState<{label: string, value: string}[]>([]);
+
+  const openInputModal = (key: 'age' | 'weight' | 'height', title: string, unit: string) => {
+    setModalKey(key);
+    setModalTitle(title);
+    setModalUnit(unit);
+    setModalValue(String(profile[key]));
+    setInputModalVisible(true);
+  };
+
+  const openPickerModal = (key: 'sex' | 'activityLevel' | 'weightGoal', title: string, options: string[]) => {
+    setModalKey(key);
+    setModalTitle(title);
+    setModalValue(String(profile[key]));
+    setModalOptions(options.map(o => ({ label: o, value: o })));
+    setPickerModalVisible(true);
+  };
+
+  const handleSaveInput = () => {
+    const num = parseFloat(modalValue.replace(',', '.'));
+    if (!isNaN(num) && num > 0) {
+      updateProfile({ [modalKey]: num });
+    }
+    setInputModalVisible(false);
+  };
+
+  const handleSavePicker = () => {
+    updateProfile({ [modalKey]: modalValue });
+    setPickerModalVisible(false);
+  };
+
+  const toggleDiet = (diet: DietaryPreference) => {
+    let current = [...profile.dietaryPreference];
+    if (diet === 'Balanced') {
+      current = ['Balanced'];
+    } else {
+      current = current.filter(d => d !== 'Balanced');
+      if (current.includes(diet)) {
+        current = current.filter(d => d !== diet);
+      } else {
+        current.push(diet);
+      }
+      if (current.length === 0) {
+        current = ['Balanced'];
+      }
+    }
+    updateProfile({ dietaryPreference: current });
+  };
+
+  return (
+    <View style={styles.safeArea}>
+      
+      {/* Sticky Header */}
+      <BlurView 
+        intensity={80} 
+        tint="light" 
+        style={[styles.headerBlur, { paddingTop: Platform.OS === 'ios' ? 20 : insets.top + 10 }]}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'} size={28} color={COLORS.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Profile</Text>
+          <View style={{ width: 40 }} />
+        </View>
+      </BlurView>
+
+      <ScrollView 
+        contentContainerStyle={[styles.scrollContent, { paddingTop: Platform.OS === 'ios' ? 70 : insets.top + 70 }]} 
+        showsVerticalScrollIndicator={false}
+      >
+        
+        {/* Calorie Target */}
+        <SettingsGroup title="Nutrition Target">
+          <SettingsRow icon="flash" sfSymbol="bolt.fill" iconBg="#FF9500" title="Daily Calories" isLast={true}>
+            <Text style={styles.rowValue}>{targetCalories.toLocaleString('de-DE')} kcal</Text>
+          </SettingsRow>
+        </SettingsGroup>
+
+        {/* Personal Info */}
+        <SettingsGroup title="Personal Info">
+          <SettingsRow icon="person" sfSymbol="person.fill" iconBg="#007AFF" title="Biological Sex" onPress={() => openPickerModal('sex', 'Biological Sex', ['Male', 'Female'])}>
+            <Text style={styles.rowValue}>{profile.sex}</Text>
+            <Ionicons name="chevron-forward" size={16} color="#C6C6C8" style={{ marginLeft: 6 }} />
+          </SettingsRow>
+          
+          <SettingsRow icon="calendar" sfSymbol="calendar" iconBg="#FF2D55" title="Age" onPress={() => openInputModal('age', 'Age', 'yrs')}>
+            <Text style={styles.rowValue}>{profile.age} <Text style={styles.rowUnit}>yrs</Text></Text>
+          </SettingsRow>
+
+          <SettingsRow icon="barbell" sfSymbol="dumbbell.fill" iconBg="#5856D6" title="Weight" onPress={() => openInputModal('weight', 'Weight', 'kg')}>
+            <Text style={styles.rowValue}>{profile.weight} <Text style={styles.rowUnit}>kg</Text></Text>
+          </SettingsRow>
+
+          <SettingsRow icon="body" sfSymbol="figure.stand" iconBg="#AF52DE" title="Height" isLast={true} onPress={() => openInputModal('height', 'Height', 'cm')}>
+            <Text style={styles.rowValue}>{profile.height} <Text style={styles.rowUnit}>cm</Text></Text>
+          </SettingsRow>
+        </SettingsGroup>
+
+        {/* Goals */}
+        <SettingsGroup title="Goals">
+          <SettingsRow icon="bicycle" sfSymbol="figure.run" iconBg="#FF9500" title="Activity Level" onPress={() => openPickerModal('activityLevel', 'Activity Level', ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active', 'Extra Active'])}>
+            <Text style={styles.rowValue}>{profile.activityLevel}</Text>
+            <Ionicons name="chevron-forward" size={16} color="#C6C6C8" style={{ marginLeft: 6 }} />
+          </SettingsRow>
+          
+          <SettingsRow icon="trending-down" sfSymbol="arrow.down.right.circle.fill" iconBg="#34C759" title="Weight Goal" isLast={true} onPress={() => openPickerModal('weightGoal', 'Weight Goal', ['-0.5 kg', '-0.25 kg', 'stay', '+0.25 kg', '+0.5 kg'])}>
+            <Text style={styles.rowValue}>{profile.weightGoal}</Text>
+            <Ionicons name="chevron-forward" size={16} color="#C6C6C8" style={{ marginLeft: 6 }} />
+          </SettingsRow>
+        </SettingsGroup>
+
+        {/* Dietary Preferences */}
+        <SettingsGroup title="Dietary Preferences">
+          {(['Balanced', 'High Protein', 'Low Carb', 'Vegetarian', 'Vegan'] as DietaryPreference[]).map((diet, index, arr) => (
+            <SettingsRow 
+              key={diet}
+              icon="restaurant" 
+              sfSymbol="fork.knife"
+              iconBg={profile.dietaryPreference.includes(diet) ? "#34C759" : "#8E8E93"} 
+              title={diet} 
+              isLast={index === arr.length - 1}
+              onPress={() => toggleDiet(diet)}
+            >
+              {profile.dietaryPreference.includes(diet) && (
+                <Ionicons name="checkmark" size={20} color="#007AFF" />
+              )}
+            </SettingsRow>
+          ))}
+        </SettingsGroup>
+
+      </ScrollView>
+
+      {/* Input Modal */}
+      <Modal visible={inputModalVisible} transparent animationType="fade">
+        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Enter {modalTitle}</Text>
+            <View style={styles.modalInputWrapper}>
+              <TextInput
+                style={styles.modalInput}
+                keyboardType="numeric"
+                value={modalValue}
+                onChangeText={setModalValue}
+                autoFocus
+              />
+              <Text style={styles.modalUnit}>{modalUnit}</Text>
+            </View>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={[styles.modalBtn, styles.modalBtnCancel]} onPress={() => setInputModalVisible(false)}>
+                <Text style={styles.modalBtnTextCancel}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalBtn, styles.modalBtnSave]} onPress={handleSaveInput}>
+                <Text style={styles.modalBtnTextSave}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Picker Modal (iOS style bottom sheet) */}
+      <Modal visible={pickerModalVisible} transparent animationType="fade">
+        <View style={styles.bottomSheetOverlay}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => setPickerModalVisible(false)} />
+          <View style={[styles.bottomSheet, { paddingBottom: insets.bottom > 0 ? insets.bottom : 20 }]}>
+            <View style={styles.bottomSheetHeader}>
+              <TouchableOpacity onPress={() => setPickerModalVisible(false)}>
+                <Text style={styles.bottomSheetCancel}>Cancel</Text>
+              </TouchableOpacity>
+              <Text style={styles.bottomSheetTitle}>{modalTitle}</Text>
+              <TouchableOpacity onPress={handleSavePicker}>
+                <Text style={styles.bottomSheetSave}>Done</Text>
+              </TouchableOpacity>
+            </View>
+            <Picker
+              selectedValue={modalValue}
+              onValueChange={(val) => setModalValue(val)}
+              style={styles.picker}
+            >
+              {modalOptions.map(opt => (
+                <Picker.Item key={opt.value} label={opt.label} value={opt.value} />
+              ))}
+            </Picker>
+          </View>
+        </View>
+      </Modal>
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.background, // iOS grouped background replaced with global theme
+  },
+  headerBlur: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+  },
+  backButton: {
+    marginRight: 16,
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  scrollContent: {
+    paddingBottom: 100,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBox: {
+    width: '85%',
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modalInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 50,
+    marginBottom: 24,
+  },
+  modalInput: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  modalUnit: {
+    fontSize: 16,
+    color: COLORS.textMuted,
+    fontWeight: '600',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  modalBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBtnCancel: {
+    backgroundColor: COLORS.inputBackground,
+  },
+  modalBtnSave: {
+    backgroundColor: COLORS.primaryGreen,
+  },
+  modalBtnTextCancel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  modalBtnTextSave: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.white,
+  },
+  bottomSheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  bottomSheet: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 16,
+  },
+  bottomSheetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: COLORS.border,
+  },
+  bottomSheetTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+  },
+  bottomSheetCancel: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+  },
+  bottomSheetSave: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primaryGreen,
+  },
+  picker: {
+    width: '100%',
+    height: 200,
+  },
+  groupContainer: {
+    marginTop: 28,
+  },
+  groupTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#8E8E93',
+    marginLeft: 32,
+    marginBottom: 8,
+  },
+  groupBlock: {
+    backgroundColor: COLORS.cardBackground,
+  },
+  groupBlockIOS: {
+    marginHorizontal: 16,
+    borderRadius: 10,
+  },
+  groupBlockAndroid: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: '#E0E0E0',
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    minHeight: 44,
+  },
+  settingsRowAndroid: {
+    paddingVertical: 14,
+  },
+  iconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rowTitle: {
+    fontSize: 16,
+    color: '#000000',
+    marginLeft: 16,
+    flex: 1,
+  },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rowValue: {
+    fontSize: 16,
+    color: '#8E8E93',
+  },
+  rowInput: {
+    fontSize: 16,
+    color: '#8E8E93',
+    textAlign: 'right',
+    minWidth: 40,
+    padding: 0,
+    margin: 0,
+  },
+  rowUnit: {
+    fontSize: 16,
+    color: '#8E8E93',
+    marginLeft: 4,
+  },
+  separator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#C6C6C8',
+    marginLeft: 60, // Align with text
+  },
+});
