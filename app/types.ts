@@ -35,6 +35,7 @@ export interface FoodNutrients {
 export interface FoodItem {
   id: string;
   name: string;
+  name_de: string;
   category: string;
   swiss_category: string;
   health_score: number;

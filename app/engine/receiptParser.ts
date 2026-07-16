@@ -6,8 +6,17 @@ export interface ParsedReceiptItem {
   confidence: number;
 }
 
-const normalize = (text: string) => text.toLowerCase().replace(/[^\w\s]/g, '').trim();
+const normalize = (text: string) => text.toLowerCase().replace(/[^\w\säöüß]/gi, '').trim();
 
+const asciiFold = (text: string) => {
+  return text.toLowerCase()
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss')
+    .replace(/[^\w\s]/g, '')
+    .trim();
+};
 function levenshtein(a: string, b: string): number {
   const an = a ? a.length : 0;
   const bn = b ? b.length : 0;
@@ -40,59 +49,94 @@ function levenshtein(a: string, b: string): number {
 
 function stripNoise(text: string): string {
   let cleaned = text.toLowerCase();
-  // Remove weights/volumes e.g., 500g, 1.5kg, 200ml, 1l
-  cleaned = cleaned.replace(/\b\d+(\.\d+)?\s*(g|kg|ml|l|oz|lb)\b/g, ' ');
-  // Remove quantities e.g., 1x, 2 x
-  cleaned = cleaned.replace(/\b\d+\s*x\b/g, ' ');
-  // Remove prices at the end
-  cleaned = cleaned.replace(/\b\d+[\.,]\d{2}\b/g, ' ');
-  // Remove common abbreviations
-  cleaned = cleaned.replace(/\b(stk|pack|btl)\b/g, ' ');
+  
+  // Remove German decimal prices: "1,99 B", quantities "2 x 0,89"
+  cleaned = cleaned.replace(/\b\d+,\d{2}\b/g, ' ');
+  // English prices
+  cleaned = cleaned.replace(/\b\d+\.\d{2}\b/g, ' ');
+  // Weights/volumes e.g., 500g, 1.5kg, 500,00g, 250g
+  cleaned = cleaned.replace(/\b\d+([.,]\d+)?\s*(g|kg|ml|l|oz|lb)\b/gi, ' ');
+  // Quantities e.g., 1x, 2 x, 2ST
+  cleaned = cleaned.replace(/\b\d+\s*(x|st|stk)\b/gi, ' ');
+  // German unit abbreviations
+  cleaned = cleaned.replace(/\b(stk|st|pck|pkg|bd|pack|btl)\b/gi, ' ');
+  // Receipt qualifiers
+  cleaned = cleaned.replace(/\b(tk|h-milch|frischmilch|ger|gem|vlog|ogt|zb|sort)\b/gi, ' ');
+  // Tax letters (A, B) at end of line
+  cleaned = cleaned.replace(/\s\b[a-c]\b$/i, ' ');
+  
   return cleaned;
 }
 
 function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[]): { food: FoodItem, confidence: number } | null {
   const cleanedOcr = stripNoise(ocrText);
-  const ocrTokens = normalize(cleanedOcr).split(/\s+/).filter(t => t.length > 2);
-  if (ocrTokens.length === 0) return null;
+  const ocrTokensRaw = normalize(cleanedOcr).split(/\s+/).filter(t => t.length > 2);
+  const ocrTokensAscii = asciiFold(cleanedOcr).split(/\s+/).filter(t => t.length > 2);
+  
+  if (ocrTokensRaw.length === 0 && ocrTokensAscii.length === 0) return null;
 
   let bestMatch: FoodItem | null = null;
   let maxScore = 0;
 
   for (const food of allFoods) {
-    const foodNameStr = normalize(food.name);
-    const nameTokens = foodNameStr.split(/\s+/);
-    let overlapScore = 0;
+    // Check DE name first, fallback to EN name
+    const namesToTest = [];
+    if (food.name_de) {
+      namesToTest.push({
+        rawStr: normalize(food.name_de),
+        asciiStr: asciiFold(food.name_de),
+        tokensRaw: normalize(food.name_de).split(/\s+/),
+        tokensAscii: asciiFold(food.name_de).split(/\s+/)
+      });
+    }
+    namesToTest.push({
+      rawStr: normalize(food.name),
+      asciiStr: asciiFold(food.name),
+      tokensRaw: normalize(food.name).split(/\s+/),
+      tokensAscii: asciiFold(food.name).split(/\s+/)
+    });
 
-    for (const oToken of ocrTokens) {
-      let bestTokenScore = 0;
-      for (const nToken of nameTokens) {
-        if (nToken === oToken) {
-          bestTokenScore = Math.max(bestTokenScore, 1);
-        } else {
-          const dist = levenshtein(oToken, nToken);
-          const maxLen = Math.max(oToken.length, nToken.length);
-          const sim = 1 - (dist / maxLen);
-          if (sim > 0.75) {
-            bestTokenScore = Math.max(bestTokenScore, sim);
-          } else if (nToken.includes(oToken) || oToken.includes(nToken)) {
-            bestTokenScore = Math.max(bestTokenScore, 0.6);
+    for (const nameData of namesToTest) {
+      // Test both raw tokens and ascii tokens against food names
+      const tokenSets = [
+        { ocr: ocrTokensRaw, food: nameData.tokensRaw, fullOcrStr: normalize(cleanedOcr), fullFoodStr: nameData.rawStr },
+        { ocr: ocrTokensAscii, food: nameData.tokensAscii, fullOcrStr: asciiFold(cleanedOcr), fullFoodStr: nameData.asciiStr }
+      ];
+
+      for (const tSet of tokenSets) {
+        if (tSet.ocr.length === 0) continue;
+        
+        let overlapScore = 0;
+        for (const oToken of tSet.ocr) {
+          let bestTokenScore = 0;
+          for (const nToken of tSet.food) {
+            if (nToken === oToken) {
+              bestTokenScore = Math.max(bestTokenScore, 1);
+            } else {
+              const dist = levenshtein(oToken, nToken);
+              const maxLen = Math.max(oToken.length, nToken.length);
+              const sim = 1 - (dist / maxLen);
+              if (sim > 0.75) {
+                bestTokenScore = Math.max(bestTokenScore, sim);
+              }
+            }
           }
+          overlapScore += bestTokenScore;
+        }
+
+        let confidence = overlapScore / tSet.ocr.length;
+
+        // Full string similarity
+        const fullDist = levenshtein(tSet.fullOcrStr, tSet.fullFoodStr);
+        const fullSim = 1 - (fullDist / Math.max(tSet.fullOcrStr.length, tSet.fullFoodStr.length));
+        
+        if (fullSim > confidence) confidence = fullSim;
+
+        if (confidence > maxScore) {
+          maxScore = confidence;
+          bestMatch = food;
         }
       }
-      overlapScore += bestTokenScore;
-    }
-
-    let confidence = overlapScore / ocrTokens.length;
-
-    const fullDist = levenshtein(normalize(cleanedOcr), foodNameStr);
-    const fullSim = 1 - (fullDist / Math.max(normalize(cleanedOcr).length, foodNameStr.length));
-    
-    if (fullSim > confidence) confidence = fullSim;
-
-    if (confidence > maxScore) {
-      maxScore = confidence;
-      bestMatch = food;
     }
   }
 
@@ -110,7 +154,7 @@ export function parseReceipt(ocrLines: string[], allFoods: FoodItem[]): ParsedRe
   for (const line of ocrLines) {
     if (line.length < 4) continue;
     if (/^\d+[\.,]\d{2}$/.test(line.trim())) continue;
-    if (/date|time|total|tax|cash|change/i.test(line)) continue;
+    if (/date|time|total|tax|cash|change|datum|uhrzeit|summe|mwst|bar|ec-karte|rückgeld|pfand|gratis/i.test(line)) continue;
 
     const match = matchFoodToOcrText(line, allFoods);
     
