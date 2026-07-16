@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,14 +11,25 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, globalStyles } from '../../styles';
 import { GlassHeader, HEADER_CONTENT_HEIGHT } from '../../components/GlassHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { StorageService, ScanRecord } from '../services/storage';
 
 export default function BillsTab() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const scrollY = useRef(new Animated.Value(0)).current;
+  const [scans, setScans] = useState<ScanRecord[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      StorageService.getScans().then(setScans);
+    }, [])
+  );
 
   const headerHeight = insets.top + HEADER_CONTENT_HEIGHT;
+
+  const totalPoints = scans.reduce((acc, scan) => acc + scan.averageScore, 0);
+  const avgWeeklyPoints = scans.length > 0 ? Math.round(totalPoints / scans.length) : 0;
 
   return (
     <View style={globalStyles.safeArea}>
@@ -46,58 +57,76 @@ export default function BillsTab() {
         )}
         scrollEventThrottle={16}
       >
-        {/* Subtitle */}
         <Text style={[globalStyles.subtitle, { marginBottom: 24, marginTop: 4 }]}>Track your receipts and health points</Text>
 
-        {/* Progress Card */}
         <View style={globalStyles.card}>
           <View style={styles.progressContainer}>
-            {/* 0% Progress Circle */}
             <View style={styles.progressCircle}>
-              <Text style={styles.progressValue}>0%</Text>
+              <Text style={styles.progressValue}>{avgWeeklyPoints}%</Text>
             </View>
-            <Text style={styles.progressLabel}>This week's health points</Text>
+            <Text style={styles.progressLabel}>Average scan health score</Text>
           </View>
         </View>
 
-        {/* Big CTA Scan Receipt Button */}
         <TouchableOpacity 
           style={styles.bigScanBtn} 
           activeOpacity={0.8}
           onPress={() => router.push('/scan-receipt')}
         >
           <Ionicons name="camera" size={20} color={COLORS.white} />
-          <Text style={styles.bigScanBtnText}>Scan Receipt</Text>
+          <Text style={styles.bigScanBtnText}>Scan New Receipt</Text>
         </TouchableOpacity>
 
-        {/* Section: Recent Bills */}
         <Text style={styles.sectionLabel}>RECENT BILLS</Text>
 
-        {/* Empty History Card */}
-        <View style={globalStyles.card}>
-          <View style={styles.emptyContainer}>
-            {/* Green receipt icon background */}
-            <View style={styles.receiptIconWrapper}>
-              <Ionicons name="receipt-outline" size={24} color={COLORS.primaryGreen} />
-            </View>
-
-            <Text style={styles.emptyTitle}>No history yet</Text>
-
-            <Text style={styles.emptySubtitle}>
-              Scan your first grocery receipt to get a health rating.
-            </Text>
+        {scans.length > 0 ? (
+          <View style={styles.historyContainer}>
+            {scans.map((scan) => (
+              <View key={scan.id} style={styles.scanCard}>
+                <View style={globalStyles.rowBetween}>
+                  <View style={globalStyles.row}>
+                    <View style={styles.receiptIconSmall}>
+                      <Ionicons name="receipt" size={16} color={COLORS.primaryGreen} />
+                    </View>
+                    <View style={{ marginLeft: 12 }}>
+                      <Text style={styles.scanDate}>
+                        {new Date(scan.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </Text>
+                      <Text style={styles.scanItemsCount}>{scan.items.length} items matched</Text>
+                    </View>
+                  </View>
+                  <View style={styles.scorePill}>
+                    <Text style={styles.scorePillText}>{scan.averageScore} / 100</Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+            
+            <TouchableOpacity onPress={() => {
+              StorageService.clearScans().then(() => setScans([]));
+            }}>
+              <Text style={{ textAlign: 'center', color: COLORS.textMuted, marginTop: 16 }}>Clear History</Text>
+            </TouchableOpacity>
           </View>
-        </View>
+        ) : (
+          <View style={globalStyles.card}>
+            <View style={styles.emptyContainer}>
+              <View style={styles.receiptIconWrapper}>
+                <Ionicons name="receipt-outline" size={24} color={COLORS.primaryGreen} />
+              </View>
+              <Text style={styles.emptyTitle}>No history yet</Text>
+              <Text style={styles.emptySubtitle}>
+                Scan your first grocery receipt to get a health rating.
+              </Text>
+            </View>
+          </View>
+        )}
       </Animated.ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingVertical: 12,
-    marginBottom: 16,
-  },
   progressContainer: {
     alignItems: 'center',
     paddingVertical: 10,
@@ -107,7 +136,7 @@ const styles = StyleSheet.create({
     height: 140,
     borderRadius: 70,
     borderWidth: 14,
-    borderColor: '#ECEFF1',
+    borderColor: COLORS.lightGreenBg,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -148,6 +177,46 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     marginBottom: 12,
     letterSpacing: 0.8,
+  },
+  historyContainer: {
+    paddingBottom: 24,
+  },
+  scanCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  receiptIconSmall: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.lightGreenBg,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanDate: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+  },
+  scanItemsCount: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  scorePill: {
+    backgroundColor: COLORS.lightGreenBg,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  scorePillText: {
+    color: COLORS.primaryGreen,
+    fontWeight: '700',
+    fontSize: 13,
   },
   emptyContainer: {
     alignItems: 'center',

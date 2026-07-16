@@ -296,8 +296,8 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
                     fromFood={swap.from} 
                     toFood={swap.to} 
                     improvement={swap.improvement}
-                    onPressFrom={() => router.push(`/food/${swap.from.id}`)}
-                    onPressTo={() => router.push(`/food/${swap.to.id}`)}
+                    onPressFrom={() => { onBack(); router.push(`/food/${swap.from.id}`); }}
+                    onPressTo={() => { onBack(); router.push(`/food/${swap.to.id}`); }}
                   />
                 </View>
               ))
@@ -306,7 +306,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
               searchResults.slice(0, limit).map((food) => {
                 const scoreColor = getScoreColor(food.score);
                 return (
-                  <TouchableOpacity key={food.id} style={styles.foodCard} activeOpacity={0.7} onPress={() => router.push(`/food/${food.id}`)}>
+                  <TouchableOpacity key={food.id} style={styles.foodCard} activeOpacity={0.7} onPress={() => { onBack(); router.push(`/food/${food.id}`); }}>
                     {/* Left side: Icon inside square box */}
                     <View style={styles.foodIconBox}>
                       <Ionicons name={food.iconName} size={22} color={COLORS.primaryGreen} />

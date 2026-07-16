@@ -4,54 +4,72 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { COLORS, globalStyles } from '../styles';
-import { parseReceipt } from './engine/receiptParser';
+import { parseReceipt, ParsedReceiptItem } from './engine/receiptParser';
 import { useFoods } from './useFoods';
 import { useProfile } from './context/ProfileContext';
+import { findBestSwaps } from './engine/swapAlgorithm';
+import { StorageService } from './services/storage';
+import { SwapComparisonCard } from '../components/SwapComparisonCard';
 
 export default function ScanReceiptScreen() {
   const router = useRouter();
-  const { allFoods } = useFoods();
+  const { allFoods, foods } = useFoods();
   const { profile } = useProfile();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [results, setResults] = useState<ParsedReceiptItem[] | null>(null);
+  const [swaps, setSwaps] = useState<any[]>([]);
 
-  // Mock OCR process since Expo Go doesn't support native ML Kit offline
-  const simulateOCRAndSwaps = async (imageUri?: string) => {
+  const processImage = async (imageUri: string) => {
     setIsProcessing(true);
+    setResults(null);
+    setSwaps([]);
     
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Mock extracted lines from a receipt
-    const mockOcrText = [
-      "1x Oat whole grain, raw",
-      "Milk whole pasteurized",
-      "Apple fresh",
-      "Chocolate milk sweetened"
-    ];
-
-    const parsedItems = parseReceipt(mockOcrText, allFoods);
-    
-    let resultsText = `Found ${parsedItems.length} items:\n\n`;
-
-    parsedItems.forEach(item => {
-      resultsText += `• ${item.matchedFood?.name}\n`;
+    try {
+      const recognitionResult = await TextRecognition.recognize(imageUri);
+      const lines = recognitionResult.blocks.flatMap(b => b.lines.map(l => l.text));
       
-      // Execute Smart Swaps Engine
-      if (item.matchedFood) {
-        const swapId = findSmartSwap(item.matchedFood, allFoods, profile);
-        if (swapId) {
-          const swapFood = allFoods.find(f => f.id === swapId);
-          resultsText += `   💡 Swap idea: ${swapFood?.name}\n`;
+      const parsedItems = parseReceipt(lines, allFoods);
+      setResults(parsedItems);
+
+      const generatedSwaps = [];
+      const safeFoods = foods.length > 0 ? foods : allFoods;
+      
+      let totalScore = 0;
+      let matchedCount = 0;
+
+      for (const item of parsedItems) {
+        if (item.matchedFood && item.confidence > 0.3) {
+          totalScore += item.matchedFood.health_score;
+          matchedCount++;
+
+          const bestSwaps = findBestSwaps(item.matchedFood, safeFoods, 1, profile.dietaryPreference);
+          if (bestSwaps.length > 0) {
+            generatedSwaps.push({
+              from: item.matchedFood,
+              to: bestSwaps[0].candidate,
+              improvement: bestSwaps[0].candidate.health_score - item.matchedFood.health_score
+            });
+          }
         }
       }
-    });
 
-    setIsProcessing(false);
-    
-    Alert.alert('Receipt Processed!', resultsText, [
-      { text: 'OK' }
-    ]);
+      setSwaps(generatedSwaps);
+
+      await StorageService.saveScan({
+        id: Math.random().toString(36).substring(7),
+        date: new Date().toISOString(),
+        items: parsedItems.filter(p => p.matchedFood !== null),
+        averageScore: matchedCount > 0 ? Math.round(totalScore / matchedCount) : 0
+      });
+
+    } catch (e) {
+      console.error(e);
+      Alert.alert('OCR Error', 'Failed to process receipt. Make sure you are running a custom dev client.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleTakePhoto = async () => {
@@ -62,31 +80,111 @@ export default function ScanReceiptScreen() {
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: 'images',
+      mediaTypes: ['images'],
       allowsEditing: true,
       quality: 0.8,
     });
 
-    if (!result.canceled) {
-      simulateOCRAndSwaps(result.assets[0].uri);
+    if (!result.canceled && result.assets && result.assets[0].uri) {
+      processImage(result.assets[0].uri);
     }
   };
 
   const handleChooseLibrary = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images',
+      mediaTypes: ['images'],
       allowsEditing: true,
       quality: 0.8,
     });
 
-    if (!result.canceled) {
-      simulateOCRAndSwaps(result.assets[0].uri);
+    if (!result.canceled && result.assets && result.assets[0].uri) {
+      processImage(result.assets[0].uri);
     }
   };
 
-  const handleDemoReceipt = () => {
-    simulateOCRAndSwaps();
-  };
+  if (results) {
+    const highConfidence = results.filter(r => r.matchedFood && r.confidence > 0.6);
+    const lowConfidence = results.filter(r => r.matchedFood && r.confidence <= 0.6 && r.confidence > 0.3);
+    const unmatched = results.filter(r => !r.matchedFood || r.confidence <= 0.3);
+
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => setResults(null)}>
+            <Ionicons name="close" size={28} color={COLORS.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Scan Results</Text>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <Text style={styles.subtitle}>
+            We found {highConfidence.length + lowConfidence.length} food items on your receipt.
+          </Text>
+
+          {swaps.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Smart Swaps for Next Time</Text>
+              {swaps.map((swap, idx) => (
+                <View key={idx} style={{ marginBottom: 16 }}>
+                  <SwapComparisonCard 
+                    fromFood={swap.from} 
+                    toFood={swap.to} 
+                    improvement={swap.improvement}
+                    onPressFrom={() => router.push(`/food/${swap.from.id}`)}
+                    onPressTo={() => router.push(`/food/${swap.to.id}`)}
+                  />
+                </View>
+              ))}
+            </View>
+          )}
+
+          {highConfidence.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Identified Foods</Text>
+              {highConfidence.map((item, idx) => (
+                <View key={idx} style={styles.matchedRow}>
+                  <Ionicons name="checkmark-circle" size={20} color={COLORS.primaryGreen} />
+                  <Text style={styles.matchedText}>{item.matchedFood?.name}</Text>
+                  <Text style={styles.scoreText}>{item.matchedFood?.health_score}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {lowConfidence.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Possible Matches (Low Confidence)</Text>
+              {lowConfidence.map((item, idx) => (
+                <View key={idx} style={styles.matchedRow}>
+                  <Ionicons name="help-circle" size={20} color="#F5A623" />
+                  <View style={{ flex: 1, marginLeft: 8 }}>
+                    <Text style={styles.matchedText}>{item.matchedFood?.name}</Text>
+                    <Text style={styles.rawText}>Scanned as: "{item.rawText}"</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {unmatched.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Unidentified Items</Text>
+              {unmatched.map((item, idx) => (
+                <View key={idx} style={styles.matchedRow}>
+                  <Ionicons name="close-circle" size={20} color={COLORS.borderDark} />
+                  <Text style={[styles.matchedText, { color: COLORS.textMuted }]}>{item.rawText}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+          
+          <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn, { marginTop: 24 }]} onPress={() => router.push('/bills')}>
+            <Text style={styles.primaryBtnText}>View in Recent Bills</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -112,8 +210,14 @@ export default function ScanReceiptScreen() {
             onPress={handleTakePhoto}
             disabled={isProcessing}
           >
-            <Ionicons name="camera-outline" size={22} color={COLORS.white} style={styles.btnIcon} />
-            <Text style={styles.primaryBtnText}>Take Photo</Text>
+            {isProcessing ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
+              <>
+                <Ionicons name="camera-outline" size={22} color={COLORS.white} style={styles.btnIcon} />
+                <Text style={styles.primaryBtnText}>Take Photo</Text>
+              </>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -124,22 +228,6 @@ export default function ScanReceiptScreen() {
           >
             <Ionicons name="image-outline" size={22} color={COLORS.textPrimary} style={styles.btnIcon} />
             <Text style={styles.secondaryBtnText}>Choose from Library</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.actionBtn, styles.tertiaryBtn]} 
-            activeOpacity={0.8}
-            onPress={handleDemoReceipt}
-            disabled={isProcessing}
-          >
-            {isProcessing ? (
-               <ActivityIndicator color={COLORS.primaryGreen} size="small" />
-            ) : (
-              <>
-                <Ionicons name="sparkles-outline" size={22} color={COLORS.primaryGreen} style={styles.btnIcon} />
-                <Text style={styles.tertiaryBtnText}>Try with Demo Receipt</Text>
-              </>
-            )}
           </TouchableOpacity>
         </View>
 
@@ -157,14 +245,14 @@ export default function ScanReceiptScreen() {
           <View style={styles.stepIconBox}>
             <Ionicons name="search-outline" size={24} color={COLORS.primaryGreen} />
           </View>
-          <Text style={styles.stepText}>We identify the groceries you bought</Text>
+          <Text style={styles.stepText}>We identify the groceries you bought using on-device AI</Text>
         </View>
 
         <View style={styles.stepRow}>
           <View style={styles.stepIconBox}>
             <Ionicons name="sparkles-outline" size={24} color={COLORS.primaryGreen} />
           </View>
-          <Text style={styles.stepText}>Get a health score for your purchase</Text>
+          <Text style={styles.stepText}>Get smart swaps based on your diet</Text>
         </View>
 
       </ScrollView>
@@ -185,6 +273,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    paddingHorizontal: 24,
   },
   backButton: {
     width: 48,
@@ -255,19 +344,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  tertiaryBtn: {
-    backgroundColor: '#E8F5E9',
-  },
-  tertiaryBtnText: {
-    color: '#2E7D32',
-    fontSize: 16,
-    fontWeight: '600',
+  section: {
+    marginBottom: 32,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#1A1A1A',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   stepRow: {
     flexDirection: 'row',
@@ -289,4 +373,31 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     fontWeight: '500',
   },
+  matchedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  matchedText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginLeft: 8,
+  },
+  scoreText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: COLORS.primaryGreen,
+  },
+  rawText: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 4,
+  }
 });

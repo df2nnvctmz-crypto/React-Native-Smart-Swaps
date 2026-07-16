@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useMemo } from 'react';
+import React, { createContext, useState, useContext, useMemo, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type Sex = 'Male' | 'Female';
 export type ActivityLevel = 'Sedentary' | 'Lightly Active' | 'Moderately Active' | 'Very Active' | 'Extra Active';
@@ -49,11 +50,27 @@ const defaultProfile: ProfileState = {
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
+const PROFILE_KEY = '@smart_swaps_profile';
+
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [profile, setProfile] = useState<ProfileState>(defaultProfile);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem(PROFILE_KEY).then(data => {
+      if (data) {
+        try { setProfile(JSON.parse(data)); } catch (e) {}
+      }
+      setIsLoaded(true);
+    }).catch(() => setIsLoaded(true));
+  }, []);
 
   const updateProfile = (updates: Partial<ProfileState>) => {
-    setProfile(prev => ({ ...prev, ...updates }));
+    setProfile(prev => {
+      const next = { ...prev, ...updates };
+      AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(next)).catch(console.error);
+      return next;
+    });
   };
 
   const { targetCalories, targetMacros, targetMacroPercentages } = useMemo(() => {
@@ -127,6 +144,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
     };
   }, [profile]);
+
+  if (!isLoaded) return null;
 
   return (
     <ProfileContext.Provider value={{ profile, updateProfile, targetCalories, targetMacros, targetMacroPercentages }}>

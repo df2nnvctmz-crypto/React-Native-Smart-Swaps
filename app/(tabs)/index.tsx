@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -59,18 +59,26 @@ export default function TodayTab() {
   };
   const { foods, getIconForCategory } = useFoods();
 
-  // Simple random shuffle for the moment, strictly for healthy foods
-  const healthyFoods = foods.filter(f => f.health_score >= 60);
-  const shuffledFoods = [...healthyFoods].sort(() => 0.5 - Math.random());
-  const spotlightItem = shuffledFoods[0] || foods[0]; // fallback
-  const recommendedItems = shuffledFoods.slice(1, 5);
-  // Combine items: put spotlight in the middle of recommended items so you can swipe both left and right
-  const centerIndex = Math.floor(recommendedItems.length / 2);
-  const carouselItems = spotlightItem 
-    ? [...recommendedItems.slice(0, centerIndex), spotlightItem, ...recommendedItems.slice(centerIndex)] 
-    : recommendedItems;
-  
-  const initialScrollIndex = spotlightItem ? centerIndex : 0;
+  const { spotlightItem, carouselItems, initialScrollIndex } = useMemo(() => {
+    // Simple random shuffle for the moment, strictly for healthy foods
+    const healthyFoods = foods.filter(f => f.health_score >= 60);
+    const shuffledFoods = [...healthyFoods].sort(() => 0.5 - Math.random());
+    const spotlight = shuffledFoods[0] || foods[0]; // fallback
+    const recommendedItems = shuffledFoods.slice(1, 5);
+    
+    // Combine items: put spotlight in the middle of recommended items so you can swipe both left and right
+    const centerIndex = Math.floor(recommendedItems.length / 2);
+    const items = spotlight 
+      ? [...recommendedItems.slice(0, centerIndex), spotlight, ...recommendedItems.slice(centerIndex)] 
+      : recommendedItems;
+      
+    return {
+      spotlightItem: spotlight,
+      carouselItems: items,
+      initialScrollIndex: spotlight ? centerIndex : 0
+    };
+  }, [foods]);
+
   const insets = useSafeAreaInsets();
   const scrollY = useRef(new Animated.Value(0)).current;
 
