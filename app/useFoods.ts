@@ -2,8 +2,21 @@ import { useMemo } from 'react';
 import { useProfile } from './context/ProfileContext';
 import { FoodItem } from './types';
 import { Ionicons } from '@expo/vector-icons';
+import { normalize, asciiFold } from './engine/receiptParser';
 
 const foodsData = require('../foods.json') as FoodItem[];
+
+export interface FoodTokensCache {
+  rawStr: string;
+  asciiStr: string;
+  tokensRaw: string[];
+  tokensAscii: string[];
+}
+
+export interface FoodIndexData {
+  index: Map<string, Set<FoodItem>>;
+  cache: Map<string, { de?: FoodTokensCache, en: FoodTokensCache }>;
+}
 
 export const getIconForCategory = (category: string): keyof typeof Ionicons.glyphMap => {
   const cat = category.toLowerCase();
@@ -40,9 +53,54 @@ export function useFoods() {
     return filtered;
   }, [profile?.dietaryPreference]);
 
+  const foodIndexData = useMemo(() => {
+    const index = new Map<string, Set<FoodItem>>();
+    const cache = new Map<string, { de?: FoodTokensCache, en: FoodTokensCache }>();
+
+    for (const food of foodsData) {
+      const foodCache: { de?: FoodTokensCache, en: FoodTokensCache } = {
+        en: {
+          rawStr: normalize(food.name),
+          asciiStr: asciiFold(food.name),
+          tokensRaw: normalize(food.name).split(/\s+/).filter(t => t.length > 2),
+          tokensAscii: asciiFold(food.name).split(/\s+/).filter(t => t.length > 2)
+        }
+      };
+
+      if (food.name_de) {
+        foodCache.de = {
+          rawStr: normalize(food.name_de),
+          asciiStr: asciiFold(food.name_de),
+          tokensRaw: normalize(food.name_de).split(/\s+/).filter(t => t.length > 2),
+          tokensAscii: asciiFold(food.name_de).split(/\s+/).filter(t => t.length > 2)
+        };
+      }
+
+      cache.set(food.id, foodCache);
+
+      const allTokens = new Set<string>();
+      if (foodCache.de) {
+        foodCache.de.tokensRaw.forEach(t => allTokens.add(t));
+        foodCache.de.tokensAscii.forEach(t => allTokens.add(t));
+      }
+      foodCache.en.tokensRaw.forEach(t => allTokens.add(t));
+      foodCache.en.tokensAscii.forEach(t => allTokens.add(t));
+
+      allTokens.forEach(token => {
+        if (!index.has(token)) {
+          index.set(token, new Set());
+        }
+        index.get(token)!.add(food);
+      });
+    }
+
+    return { index, cache };
+  }, []); // Only runs once at startup
+
   return {
     foods,
     allFoods: foodsData,
+    foodIndexData,
     getIconForCategory
   };
 }

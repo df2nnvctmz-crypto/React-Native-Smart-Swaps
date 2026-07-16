@@ -1,4 +1,5 @@
 import { FoodItem } from '../types';
+import type { FoodIndexData } from '../useFoods';
 
 export interface ParsedReceiptItem {
   rawText: string;
@@ -6,15 +7,17 @@ export interface ParsedReceiptItem {
   confidence: number;
 }
 
-const normalize = (text: string) => text.toLowerCase().replace(/[^\w\säöüß]/gi, '').trim();
+export const normalize = (text: string) => text.toLowerCase().replace(/[\.\-\/]/g, ' ').replace(/[^\w\säöüß]/gi, ' ').replace(/\s+/g, ' ').trim();
 
-const asciiFold = (text: string) => {
+export const asciiFold = (text: string) => {
   return text.toLowerCase()
     .replace(/ä/g, 'ae')
     .replace(/ö/g, 'oe')
     .replace(/ü/g, 'ue')
     .replace(/ß/g, 'ss')
-    .replace(/[^\w\s]/g, '')
+    .replace(/[\.\-\/]/g, ' ')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 };
 function levenshtein(a: string, b: string): number {
@@ -50,6 +53,13 @@ function levenshtein(a: string, b: string): number {
 function stripNoise(text: string): string {
   let cleaned = text.toLowerCase();
   
+  // Split fused letters and numbers (e.g. "2ST530g" -> "2 ST 530 g")
+  // We do this carefully: insert space between letter and digit
+  cleaned = cleaned.replace(/([a-zäöüß])(\d)/gi, '$1 $2').replace(/(\d)([a-zäöüß])/gi, '$1 $2');
+  
+  // Split common compound descriptors to allow core noun weighting to work properly
+  cleaned = cleaned.replace(/(protein|bio|vegan|veggie|mini|schoko)/gi, '$1 ');
+  
   // Remove German decimal prices: "1,99 B", quantities "2 x 0,89"
   cleaned = cleaned.replace(/\b\d+,\d{2}\b/g, ' ');
   // English prices
@@ -68,7 +78,7 @@ function stripNoise(text: string): string {
   return cleaned;
 }
 
-function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[]): { food: FoodItem, confidence: number } | null {
+function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: FoodIndexData): { food: FoodItem, confidence: number } | null {
   const cleanedOcr = stripNoise(ocrText);
   const ocrTokensRaw = normalize(cleanedOcr).split(/\s+/).filter(t => t.length > 2);
   const ocrTokensAscii = asciiFold(cleanedOcr).split(/\s+/).filter(t => t.length > 2);
@@ -77,24 +87,55 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[]): { food: Food
 
   let bestMatch: FoodItem | null = null;
   let maxScore = 0;
+  
+  // Step 1: Use index to drastically reduce candidate pool
+  let candidateSet = new Set<FoodItem>();
+  
+  if (indexData) {
+    const searchTokens = [...ocrTokensRaw, ...ocrTokensAscii];
+    for (const token of searchTokens) {
+      if (token.length < 3) continue;
+      
+      // Allow partial matches on the index keys to catch abbreviated OCR like 'mozz' -> 'mozzarella'
+      for (const [key, foodsWithToken] of indexData.index.entries()) {
+        if (key.includes(token) || token.includes(key)) {
+          foodsWithToken.forEach(f => candidateSet.add(f));
+        }
+      }
+    }
+  }
 
-  for (const food of allFoods) {
-    // Check DE name first, fallback to EN name
-    const namesToTest = [];
-    if (food.name_de) {
+  // If index found nothing (due to typos), fallback to all foods
+  const candidatesToScore = candidateSet.size > 0 ? Array.from(candidateSet) : allFoods;
+  
+  if (indexData) {
+    console.log(`OCR: ${ocrText} -> Candidates: ${candidatesToScore.length}`);
+  }
+
+  for (const food of candidatesToScore) {
+    let namesToTest: {rawStr: string, asciiStr: string, tokensRaw: string[], tokensAscii: string[]}[] = [];
+    
+    if (indexData?.cache?.has(food.id)) {
+      const cached = indexData.cache.get(food.id)!;
+      if (cached.de) namesToTest.push(cached.de);
+      namesToTest.push(cached.en);
+    } else {
+      // Fallback if no cache
+      if (food.name_de) {
+        namesToTest.push({
+          rawStr: normalize(food.name_de),
+          asciiStr: asciiFold(food.name_de),
+          tokensRaw: normalize(food.name_de).split(/\s+/).filter(t => t.length > 2),
+          tokensAscii: asciiFold(food.name_de).split(/\s+/).filter(t => t.length > 2)
+        });
+      }
       namesToTest.push({
-        rawStr: normalize(food.name_de),
-        asciiStr: asciiFold(food.name_de),
-        tokensRaw: normalize(food.name_de).split(/\s+/),
-        tokensAscii: asciiFold(food.name_de).split(/\s+/)
+        rawStr: normalize(food.name),
+        asciiStr: asciiFold(food.name),
+        tokensRaw: normalize(food.name).split(/\s+/).filter(t => t.length > 2),
+        tokensAscii: asciiFold(food.name).split(/\s+/).filter(t => t.length > 2)
       });
     }
-    namesToTest.push({
-      rawStr: normalize(food.name),
-      asciiStr: asciiFold(food.name),
-      tokensRaw: normalize(food.name).split(/\s+/),
-      tokensAscii: asciiFold(food.name).split(/\s+/)
-    });
 
     for (const nameData of namesToTest) {
       // Test both raw tokens and ascii tokens against food names
@@ -107,6 +148,7 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[]): { food: Food
         if (tSet.ocr.length === 0) continue;
         
         let overlapScore = 0;
+        let totalWeight = 0;
         for (const oToken of tSet.ocr) {
           let bestTokenScore = 0;
           for (const nToken of tSet.food) {
@@ -115,16 +157,36 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[]): { food: Food
             } else {
               const dist = levenshtein(oToken, nToken);
               const maxLen = Math.max(oToken.length, nToken.length);
+              const minLen = Math.min(oToken.length, nToken.length);
               const sim = 1 - (dist / maxLen);
-              if (sim > 0.75) {
+              if (sim > 0.7) {
                 bestTokenScore = Math.max(bestTokenScore, sim);
+              } else if (minLen >= 4 && (nToken.startsWith(oToken) || oToken.startsWith(nToken))) {
+                bestTokenScore = Math.max(bestTokenScore, 0.85);
+              } else if (minLen >= 5 && (nToken.includes(oToken) || oToken.includes(nToken))) {
+                bestTokenScore = Math.max(bestTokenScore, 0.75);
+              } else if (minLen >= 4) {
+                 for (let i=0; i<=oToken.length - 4; i++) {
+                   const sub = oToken.substring(i, i+4);
+                   if (nToken.startsWith(sub) || nToken.endsWith(sub)) {
+                     if (oToken.startsWith(sub) || oToken.endsWith(sub)) {
+                       bestTokenScore = Math.max(bestTokenScore, 0.65);
+                     }
+                   }
+                 }
               }
             }
           }
-          overlapScore += bestTokenScore;
+          
+          // TASK 2: Weight category-defining nouns over descriptors
+          const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|käse|kaese|brot|bread|pudding|flammkuchen|granatapfel/i.test(t);
+          const weight = isCoreNoun(oToken) ? 3 : 1;
+          
+          overlapScore += (bestTokenScore * weight);
+          totalWeight += weight;
         }
 
-        let confidence = overlapScore / tSet.ocr.length;
+        let confidence = totalWeight > 0 ? overlapScore / totalWeight : 0;
 
         // Full string similarity
         const fullDist = levenshtein(tSet.fullOcrStr, tSet.fullFoodStr);
@@ -135,6 +197,11 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[]): { food: Food
         if (confidence > maxScore) {
           maxScore = confidence;
           bestMatch = food;
+        }
+        
+        // Task 1: Early Exit
+        if (maxScore > 0.95) {
+          return { food: bestMatch, confidence: maxScore };
         }
       }
     }
@@ -148,23 +215,33 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[]): { food: Food
   return null;
 }
 
-export function parseReceipt(ocrLines: string[], allFoods: FoodItem[]): ParsedReceiptItem[] {
+export function parseReceiptLine(line: string, allFoods: FoodItem[], indexData?: FoodIndexData): ParsedReceiptItem | null {
+  if (line.length < 4) return null;
+  if (/^\d+[\.,]\d{2}$/.test(line.trim())) return null;
+  // Filter out noise lines: e.g. "4 x 1,59", "0, 85", "-1,49"
+  if (/^-?\d+\s*[\.,]\s*\d{2}$/.test(line.trim())) return null;
+  if (/^\d+\s*x\s*-?\d+\s*[\.,]\s*\d{2}$/i.test(line.trim())) return null;
+  if (/date|time|total|tax|cash|change|datum|uhrzeit|summe|mwst|bar|ec-karte|rückgeld|rueckgeld|pfand|gratis|rabatt/i.test(line)) return null;
+
+  const match = matchFoodToOcrText(line, allFoods, indexData);
+  
+  return {
+    rawText: line,
+    matchedFood: match ? match.food : null,
+    confidence: match ? match.confidence : 0
+  };
+}
+
+// Keep synchronous version around for non-chunked tests or legacy usage
+export function parseReceipt(ocrLines: string[], allFoods: FoodItem[], indexData?: FoodIndexData): ParsedReceiptItem[] {
   const results: ParsedReceiptItem[] = [];
 
   for (const line of ocrLines) {
-    if (line.length < 4) continue;
-    if (/^\d+[\.,]\d{2}$/.test(line.trim())) continue;
-    if (/date|time|total|tax|cash|change|datum|uhrzeit|summe|mwst|bar|ec-karte|rückgeld|pfand|gratis/i.test(line)) continue;
-
-    const match = matchFoodToOcrText(line, allFoods);
-    
-    results.push({
-      rawText: line,
-      matchedFood: match ? match.food : null,
-      confidence: match ? match.confidence : 0
-    });
+    const parsed = parseReceiptLine(line, allFoods, indexData);
+    if (parsed) {
+      results.push(parsed);
+    }
   }
 
-  // We no longer filter out nulls so the UI can show unidentified items
   return results;
 }

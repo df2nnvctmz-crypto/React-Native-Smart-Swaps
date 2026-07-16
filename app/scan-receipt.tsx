@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { COLORS, globalStyles } from '../styles';
-import { parseReceipt, ParsedReceiptItem } from './engine/receiptParser';
+import { parseReceipt, parseReceiptLine, ParsedReceiptItem } from './engine/receiptParser';
 import { useFoods } from './useFoods';
 import { useProfile } from './context/ProfileContext';
 import { findBestSwaps } from './engine/swapAlgorithm';
@@ -15,22 +15,46 @@ import { SwapComparisonCard } from '../components/SwapComparisonCard';
 
 export default function ScanReceiptScreen() {
   const router = useRouter();
-  const { allFoods, foods } = useFoods();
+  const { allFoods, foods, foodIndexData } = useFoods();
   const { profile } = useProfile();
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<ParsedReceiptItem[] | null>(null);
   const [swaps, setSwaps] = useState<any[]>([]);
+  const [progressStatus, setProgressStatus] = useState<'idle'|'reading'|'matching'|'calculating'|'done'>('idle');
+  const [progressStats, setProgressStats] = useState({ current: 0, total: 0 });
 
   const processImage = async (imageUri: string) => {
     setIsProcessing(true);
     setResults(null);
     setSwaps([]);
+    setProgressStatus('reading');
     
     try {
       const recognitionResult = await TextRecognition.recognize(imageUri);
       const lines = recognitionResult.blocks.flatMap(b => b.lines.map(l => l.text));
       
-      const parsedItems = parseReceipt(lines, allFoods);
+      setProgressStatus('matching');
+      setProgressStats({ current: 0, total: lines.length });
+      
+      const parsedItems: ParsedReceiptItem[] = [];
+      const CHUNK_SIZE = 4;
+      
+      for (let i = 0; i < lines.length; i += CHUNK_SIZE) {
+        const chunk = lines.slice(i, i + CHUNK_SIZE);
+        for (const line of chunk) {
+          const parsed = parseReceiptLine(line, allFoods, foodIndexData);
+          if (parsed) {
+            parsedItems.push(parsed);
+          }
+        }
+        
+        setProgressStats({ current: Math.min(i + CHUNK_SIZE, lines.length), total: lines.length });
+        
+        // Yield thread
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+
+      setProgressStatus('calculating');
       setResults(parsedItems);
 
       const generatedSwaps = [];
@@ -53,6 +77,9 @@ export default function ScanReceiptScreen() {
             });
           }
         }
+        if (matchedCount % 5 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 0));
+        }
       }
 
       setSwaps(generatedSwaps);
@@ -64,9 +91,14 @@ export default function ScanReceiptScreen() {
         averageScore: matchedCount > 0 ? Math.round(totalScore / matchedCount) : 0
       });
 
+      setProgressStatus('done');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setProgressStatus('idle');
+
     } catch (e) {
       console.error(e);
       Alert.alert('OCR Error', 'Failed to process receipt. Make sure you are running a custom dev client.');
+      setProgressStatus('idle');
     } finally {
       setIsProcessing(false);
     }
@@ -202,34 +234,62 @@ export default function ScanReceiptScreen() {
           Take a picture of your grocery bill to check the health score of your purchases.
         </Text>
 
-        {/* Actions */}
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity 
-            style={[styles.actionBtn, styles.primaryBtn]} 
-            activeOpacity={0.8}
-            onPress={handleTakePhoto}
-            disabled={isProcessing}
-          >
-            {isProcessing ? (
-              <ActivityIndicator color={COLORS.white} />
-            ) : (
-              <>
-                <Ionicons name="camera-outline" size={22} color={COLORS.white} style={styles.btnIcon} />
-                <Text style={styles.primaryBtnText}>Take Photo</Text>
-              </>
+        {/* Actions or Progress */}
+        {isProcessing ? (
+          <View style={styles.progressContainer}>
+            {progressStatus === 'reading' && (
+              <View style={styles.progressRow}>
+                <ActivityIndicator color={COLORS.primaryGreen} />
+                <Text style={styles.progressText}>Reading receipt text...</Text>
+              </View>
             )}
-          </TouchableOpacity>
+            
+            {progressStatus === 'matching' && (
+              <View style={styles.progressBlock}>
+                <Text style={styles.progressText}>Matching items ({progressStats.current} of {progressStats.total})...</Text>
+                <View style={styles.progressBarBg}>
+                  <View 
+                    style={[styles.progressBarFill, { width: `${Math.round((progressStats.current / Math.max(1, progressStats.total)) * 100)}%` }]} 
+                  />
+                </View>
+              </View>
+            )}
+            
+            {progressStatus === 'calculating' && (
+              <View style={styles.progressRow}>
+                <ActivityIndicator color={COLORS.primaryGreen} />
+                <Text style={styles.progressText}>Calculating smart swaps...</Text>
+              </View>
+            )}
+            
+            {progressStatus === 'done' && (
+              <View style={styles.progressRow}>
+                <Ionicons name="checkmark-circle" size={24} color={COLORS.primaryGreen} />
+                <Text style={[styles.progressText, { color: COLORS.primaryGreen }]}>Done!</Text>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity 
+              style={[styles.actionBtn, styles.primaryBtn]} 
+              activeOpacity={0.8}
+              onPress={handleTakePhoto}
+            >
+              <Ionicons name="camera-outline" size={22} color={COLORS.white} style={styles.btnIcon} />
+              <Text style={styles.primaryBtnText}>Take Photo</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.actionBtn, styles.secondaryBtn]} 
-            activeOpacity={0.8}
-            onPress={handleChooseLibrary}
-            disabled={isProcessing}
-          >
-            <Ionicons name="image-outline" size={22} color={COLORS.textPrimary} style={styles.btnIcon} />
-            <Text style={styles.secondaryBtnText}>Choose from Library</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity 
+              style={[styles.actionBtn, styles.secondaryBtn]} 
+              activeOpacity={0.8}
+              onPress={handleChooseLibrary}
+            >
+              <Ionicons name="image-outline" size={22} color={COLORS.textPrimary} style={styles.btnIcon} />
+              <Text style={styles.secondaryBtnText}>Choose from Library</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* How it works */}
         <Text style={styles.sectionTitle}>How it works</Text>
@@ -372,6 +432,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1A1A1A',
     fontWeight: '500',
+  },
+  progressContainer: {
+    padding: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    marginBottom: 48,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 100,
+  },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressBlock: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  progressText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4A4A4A',
+    marginLeft: 12,
+  },
+  progressBarBg: {
+    width: '100%',
+    height: 8,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 4,
+    marginTop: 16,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: COLORS.primaryGreen,
+    borderRadius: 4,
   },
   matchedRow: {
     flexDirection: 'row',
