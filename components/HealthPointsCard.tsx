@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, globalStyles } from '../styles';
+import { CircularScoreRing } from './CircularScoreRing';
 
 interface HealthPointsCardProps {
   percentage: number;
@@ -17,9 +18,7 @@ export const HealthPointsCard: React.FC<HealthPointsCardProps> = ({
       <View style={styles.cardContent}>
         {/* Left Side: Circular Progress */}
         <View style={styles.progressContainer}>
-          <View style={styles.progressCircle}>
-            <Text style={styles.progressText}>{percentage}%</Text>
-          </View>
+          <CircularScoreRing percentage={percentage} size={90} strokeWidth={10} />
         </View>
 
         {/* Right Side: Details & Action */}
@@ -61,20 +60,6 @@ const styles = StyleSheet.create({
     marginRight: 20,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  progressCircle: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 10,
-    borderColor: '#ECEFF1',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  progressText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.primaryGreenDark,
   },
   detailsContainer: {
     flex: 1,

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { COLORS, globalStyles } from '../../styles';
 import { HealthPointsCard } from '../../components/HealthPointsCard';
 import { SpotlightCard } from '../../components/SpotlightCard';
@@ -24,6 +24,7 @@ import { NutritionModal } from '../../components/NutritionModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFoods } from '../useFoods';
 import { useProfile, DietaryPreference } from '../context/ProfileContext';
+import { StorageService, ScanRecord } from '../services/storage';
 
 export default function TodayTab() {
   const router = useRouter();
@@ -31,6 +32,16 @@ export default function TodayTab() {
   const [nutritionModalVisible, setNutritionModalVisible] = useState(false);
   const { profile, updateProfile, targetCalories } = useProfile();
   const currentPreference = profile.dietaryPreference[0] || 'Balanced';
+  const [scans, setScans] = useState<ScanRecord[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      StorageService.getScans().then(setScans);
+    }, [])
+  );
+
+  const totalPoints = scans.reduce((acc, scan) => acc + scan.averageScore, 0);
+  const avgWeeklyPoints = scans.length > 0 ? Math.round(totalPoints / scans.length) : 0;
 
   const openDietaryPicker = () => {
     const options: DietaryPreference[] = ['Balanced', 'High Protein', 'Low Carb', 'Vegetarian', 'Vegan'];
@@ -134,8 +145,8 @@ export default function TodayTab() {
 
         {/* Card 1: Health Points */}
         <HealthPointsCard 
-          percentage={0} 
-          onScanPress={() => router.replace('/bills')} 
+          percentage={avgWeeklyPoints} 
+          onScanPress={() => router.push('/scan-receipt')} 
         />
 
         {/* Food carousel: Spotlight & Recommended Stack */}

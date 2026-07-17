@@ -11,7 +11,8 @@ import { useFoods } from './useFoods';
 import { useProfile } from './context/ProfileContext';
 import { findBestSwaps } from './engine/swapAlgorithm';
 import { StorageService } from './services/storage';
-import { SwapComparisonCard } from '../components/SwapComparisonCard';
+import { ReceiptItemList } from '../components/ReceiptItemList';
+import { FoodItem } from './types';
 
 export default function ScanReceiptScreen() {
   const router = useRouter();
@@ -22,6 +23,8 @@ export default function ScanReceiptScreen() {
   const [swaps, setSwaps] = useState<any[]>([]);
   const [progressStatus, setProgressStatus] = useState<'idle'|'reading'|'matching'|'calculating'|'done'>('idle');
   const [progressStats, setProgressStats] = useState({ current: 0, total: 0 });
+  const [currentScanId, setCurrentScanId] = useState<string | null>(null);
+  const [currentScanDate, setCurrentScanDate] = useState<string | null>(null);
 
   const processImage = async (imageUri: string) => {
     setIsProcessing(true);
@@ -84,10 +87,15 @@ export default function ScanReceiptScreen() {
 
       setSwaps(generatedSwaps);
 
+      const scanId = Math.random().toString(36).substring(7);
+      const scanDate = new Date().toISOString();
+      setCurrentScanId(scanId);
+      setCurrentScanDate(scanDate);
+
       await StorageService.saveScan({
-        id: Math.random().toString(36).substring(7),
-        date: new Date().toISOString(),
-        items: parsedItems.filter(p => p.matchedFood !== null),
+        id: scanId,
+        date: scanDate,
+        items: parsedItems,
         averageScore: matchedCount > 0 ? Math.round(totalScore / matchedCount) : 0
       });
 
@@ -134,11 +142,33 @@ export default function ScanReceiptScreen() {
     }
   };
 
-  if (results) {
-    const highConfidence = results.filter(r => r.matchedFood && r.confidence > 0.6);
-    const lowConfidence = results.filter(r => r.matchedFood && r.confidence <= 0.6 && r.confidence > 0.3);
-    const unmatched = results.filter(r => !r.matchedFood || r.confidence <= 0.3);
+  const handleUpdateItem = async (index: number, newFood: FoodItem) => {
+    if (!results || !currentScanId || !currentScanDate) return;
+    
+    const newResults = [...results];
+    newResults[index] = { ...newResults[index], matchedFood: newFood, confidence: 1.0 };
+    setResults(newResults);
 
+    let totalScore = 0;
+    let matchedCount = 0;
+    for (const item of newResults) {
+      if (item.matchedFood) {
+        totalScore += item.matchedFood.health_score;
+        matchedCount++;
+      }
+    }
+    const averageScore = matchedCount > 0 ? Math.round(totalScore / matchedCount) : 0;
+
+    await StorageService.updateScan(currentScanId, {
+      id: currentScanId,
+      date: currentScanDate,
+      items: newResults,
+      averageScore,
+      interactions: []
+    });
+  };
+
+  if (results) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <View style={styles.header}>
@@ -150,67 +180,12 @@ export default function ScanReceiptScreen() {
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <Text style={styles.subtitle}>
-            We found {highConfidence.length + lowConfidence.length} food items on your receipt.
+            We found {results.length} items on your receipt.
           </Text>
 
-          {swaps.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Smart Swaps for Next Time</Text>
-              {swaps.map((swap, idx) => (
-                <View key={idx} style={{ marginBottom: 16 }}>
-                  <SwapComparisonCard 
-                    fromFood={swap.from} 
-                    toFood={swap.to} 
-                    improvement={swap.improvement}
-                    onPressFrom={() => router.push(`/food/${swap.from.id}`)}
-                    onPressTo={() => router.push(`/food/${swap.to.id}`)}
-                  />
-                </View>
-              ))}
-            </View>
-          )}
-
-          {highConfidence.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Identified Foods</Text>
-              {highConfidence.map((item, idx) => (
-                <View key={idx} style={styles.matchedRow}>
-                  <Ionicons name="checkmark-circle" size={20} color={COLORS.primaryGreen} />
-                  <Text style={styles.matchedText}>{item.matchedFood?.name}</Text>
-                  <Text style={styles.scoreText}>{item.matchedFood?.health_score}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {lowConfidence.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Possible Matches (Low Confidence)</Text>
-              {lowConfidence.map((item, idx) => (
-                <View key={idx} style={styles.matchedRow}>
-                  <Ionicons name="help-circle" size={20} color="#F5A623" />
-                  <View style={{ flex: 1, marginLeft: 8 }}>
-                    <Text style={styles.matchedText}>{item.matchedFood?.name}</Text>
-                    <Text style={styles.rawText}>Scanned as: "{item.rawText}"</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {unmatched.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Unidentified Items</Text>
-              {unmatched.map((item, idx) => (
-                <View key={idx} style={styles.matchedRow}>
-                  <Ionicons name="close-circle" size={20} color={COLORS.borderDark} />
-                  <Text style={[styles.matchedText, { color: COLORS.textMuted }]}>{item.rawText}</Text>
-                </View>
-              ))}
-            </View>
-          )}
+          <ReceiptItemList items={results} onUpdateItem={handleUpdateItem} />
           
-          <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn, { marginTop: 24 }]} onPress={() => router.push('/bills')}>
+          <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]} onPress={() => router.push('/bills')}>
             <Text style={styles.primaryBtnText}>View in Recent Bills</Text>
           </TouchableOpacity>
         </ScrollView>

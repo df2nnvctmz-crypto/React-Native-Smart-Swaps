@@ -13,6 +13,7 @@ import { GlassHeader, HEADER_CONTENT_HEIGHT } from '../../components/GlassHeader
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { StorageService, ScanRecord } from '../services/storage';
+import { CircularScoreRing } from '../../components/CircularScoreRing';
 
 export default function BillsTab() {
   const insets = useSafeAreaInsets();
@@ -61,10 +62,8 @@ export default function BillsTab() {
 
         <View style={globalStyles.card}>
           <View style={styles.progressContainer}>
-            <View style={styles.progressCircle}>
-              <Text style={styles.progressValue}>{avgWeeklyPoints}%</Text>
-            </View>
-            <Text style={styles.progressLabel}>Average scan health score</Text>
+            <CircularScoreRing percentage={avgWeeklyPoints} size={140} strokeWidth={14} />
+            <Text style={[styles.progressLabel, { marginTop: 12 }]}>Average scan health score</Text>
           </View>
         </View>
 
@@ -82,7 +81,12 @@ export default function BillsTab() {
         {scans.length > 0 ? (
           <View style={styles.historyContainer}>
             {scans.map((scan) => (
-              <View key={scan.id} style={styles.scanCard}>
+              <TouchableOpacity 
+                key={scan.id} 
+                style={styles.scanCard}
+                activeOpacity={0.7}
+                onPress={() => router.push(`/receipt/${scan.id}`)}
+              >
                 <View style={globalStyles.rowBetween}>
                   <View style={globalStyles.row}>
                     <View style={styles.receiptIconSmall}>
@@ -95,11 +99,11 @@ export default function BillsTab() {
                       <Text style={styles.scanItemsCount}>{scan.items.length} items matched</Text>
                     </View>
                   </View>
-                  <View style={styles.scorePill}>
-                    <Text style={styles.scorePillText}>{scan.averageScore} / 100</Text>
+                  <View style={{ marginLeft: 'auto' }}>
+                    <CircularScoreRing percentage={scan.averageScore} size={44} strokeWidth={4} />
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
             
             <TouchableOpacity onPress={() => {
@@ -130,16 +134,6 @@ const styles = StyleSheet.create({
   progressContainer: {
     alignItems: 'center',
     paddingVertical: 10,
-  },
-  progressCircle: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 14,
-    borderColor: COLORS.lightGreenBg,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
   },
   progressValue: {
     fontSize: 32,
@@ -206,17 +200,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textSecondary,
     marginTop: 2,
-  },
-  scorePill: {
-    backgroundColor: COLORS.lightGreenBg,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  scorePillText: {
-    color: COLORS.primaryGreen,
-    fontWeight: '700',
-    fontSize: 13,
   },
   emptyContainer: {
     alignItems: 'center',

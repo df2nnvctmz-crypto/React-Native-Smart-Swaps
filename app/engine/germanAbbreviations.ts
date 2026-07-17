@@ -1,0 +1,93 @@
+export const BRAND_STRIP_LIST = [
+  'gran', // e.g. Grandiso
+  'grandiso',
+  'grop', // e.g. Gropper
+  'm.i.',
+  'm.i',
+  'mi',
+  'bistro'
+];
+
+export const CERTIFICATIONS = [
+  'ogt', // ohne Gentechnik
+  'vlog',
+  'bio'
+];
+
+export const ABBREVIATIONS: Record<string, string> = {
+  'jogh': 'joghurt',
+  'sort': 'sortiert',
+  'sort.': 'sortiert',
+  'clas': 'classic',
+  'clas.': 'classic',
+  'pr': 'protein',
+  'pu': 'pudding',
+};
+
+/**
+ * Normalizes a German receipt line by expanding abbreviations, stripping brands/certifications,
+ * and applying context-dependent rules.
+ *
+ * @param line The raw OCR receipt line
+ * @returns A normalized string
+ */
+export function expandGermanAbbreviations(line: string): string {
+  // We want to operate on tokens so we don't accidentally replace substrings of real words.
+  // First, let's replace dots and hyphens with spaces for tokenization, as done in receiptParser.
+  let cleanLine = line.replace(/[\.\-]/g, ' ');
+
+  // Split common compound prefixes so they tokenize separately
+  // This helps "Proteinjogh" become "Protein" "jogh", or "BistroFlammk" become "Bistro" "Flammk"
+  const prefixesToSplit = ['protein', 'schoko', 'bistro', 'mini', 'bio', 'vegan', 'veggie'];
+  prefixesToSplit.forEach(prefix => {
+    const regex = new RegExp(`\\b(${prefix})`, 'gi');
+    cleanLine = cleanLine.replace(regex, '$1 ');
+  });
+  
+  // Also remove punctuation that might have been glued
+  cleanLine = cleanLine.replace(/[^\w\säöüßÄÖÜ]/g, ' ');
+
+  // Split into tokens, keeping only non-empty
+  let tokens = cleanLine.split(/\s+/).filter(t => t.length > 0);
+
+  // Apply context dependent rules BEFORE generic lowercasing/expansion
+  // "Gr" -> "Grieß" if context has dessert tokens (pudding, etc.)
+  const dessertTokens = ['pudding', 'dessert', 'joghurt', 'jogh', 'pu', 'pu.'];
+  const hasDessertContext = tokens.some(t => dessertTokens.includes(t.toLowerCase()));
+
+  tokens = tokens.map(token => {
+    if (token === 'Gr' || token === 'Gr.') {
+      if (hasDessertContext) {
+        return 'Grieß';
+      }
+    }
+    return token;
+  });
+
+  // Now process brands, certifications, and global abbreviations
+  const normalizedTokens: string[] = [];
+
+  for (let token of tokens) {
+    const lowerToken = token.toLowerCase();
+
+    // Strip brands
+    if (BRAND_STRIP_LIST.includes(lowerToken)) {
+      continue;
+    }
+
+    // Strip certifications
+    if (CERTIFICATIONS.includes(lowerToken)) {
+      continue;
+    }
+
+    // Expand abbreviations
+    if (ABBREVIATIONS[lowerToken]) {
+      normalizedTokens.push(ABBREVIATIONS[lowerToken]);
+      continue;
+    }
+
+    normalizedTokens.push(token);
+  }
+
+  return normalizedTokens.join(' ');
+}

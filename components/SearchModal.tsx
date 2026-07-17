@@ -6,9 +6,10 @@ interface SearchModalProps {
   visible: boolean;
   onClose: () => void;
   mode?: 'foods' | 'swaps';
+  onSelect?: (food: any) => void;
 }
 
-export const SearchModal: React.FC<SearchModalProps> = ({ visible, onClose, mode = 'foods' }) => {
+export const SearchModal: React.FC<SearchModalProps> = ({ visible, onClose, mode = 'foods', onSelect }) => {
   return (
     <Modal
       visible={visible}
@@ -16,7 +17,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ visible, onClose, mode
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SearchScreen onBack={onClose} mode={mode} />
+      <SearchScreen onBack={onClose} mode={mode} onSelect={onSelect} />
     </Modal>
   );
 };

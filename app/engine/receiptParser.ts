@@ -50,6 +50,8 @@ function levenshtein(a: string, b: string): number {
   return matrix[bn][an];
 }
 
+import { expandGermanAbbreviations } from './germanAbbreviations';
+
 function stripNoise(text: string): string {
   let cleaned = text.toLowerCase();
   
@@ -79,7 +81,10 @@ function stripNoise(text: string): string {
 }
 
 function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: FoodIndexData): { food: FoodItem, confidence: number } | null {
-  const cleanedOcr = stripNoise(ocrText);
+  // Apply German abbreviation expansions first
+  const expandedOcr = expandGermanAbbreviations(ocrText);
+  
+  const cleanedOcr = stripNoise(expandedOcr);
   const ocrTokensRaw = normalize(cleanedOcr).split(/\s+/).filter(t => t.length > 2);
   const ocrTokensAscii = asciiFold(cleanedOcr).split(/\s+/).filter(t => t.length > 2);
   
@@ -109,16 +114,18 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   const candidatesToScore = candidateSet.size > 0 ? Array.from(candidateSet) : allFoods;
   
   if (indexData) {
-    console.log(`OCR: ${ocrText} -> Candidates: ${candidatesToScore.length}`);
+    console.log(`OCR: ${ocrText} -> Expanded: ${expandedOcr} -> Candidates: ${candidatesToScore.length}`);
   }
 
   for (const food of candidatesToScore) {
-    let namesToTest: {rawStr: string, asciiStr: string, tokensRaw: string[], tokensAscii: string[]}[] = [];
+    let namesToTest: {rawStr: string, asciiStr: string, tokensRaw: string[], tokensAscii: string[], isFallback?: boolean}[] = [];
     
     if (indexData?.cache?.has(food.id)) {
       const cached = indexData.cache.get(food.id)!;
-      if (cached.de) namesToTest.push(cached.de);
-      namesToTest.push(cached.en);
+      if (cached.de) {
+        namesToTest.push({ ...cached.de, isFallback: false });
+      }
+      namesToTest.push({ ...cached.en, isFallback: true });
     } else {
       // Fallback if no cache
       if (food.name_de) {
@@ -126,14 +133,16 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           rawStr: normalize(food.name_de),
           asciiStr: asciiFold(food.name_de),
           tokensRaw: normalize(food.name_de).split(/\s+/).filter(t => t.length > 2),
-          tokensAscii: asciiFold(food.name_de).split(/\s+/).filter(t => t.length > 2)
+          tokensAscii: asciiFold(food.name_de).split(/\s+/).filter(t => t.length > 2),
+          isFallback: false
         });
       }
       namesToTest.push({
         rawStr: normalize(food.name),
         asciiStr: asciiFold(food.name),
         tokensRaw: normalize(food.name).split(/\s+/).filter(t => t.length > 2),
-        tokensAscii: asciiFold(food.name).split(/\s+/).filter(t => t.length > 2)
+        tokensAscii: asciiFold(food.name).split(/\s+/).filter(t => t.length > 2),
+        isFallback: true
       });
     }
 
@@ -162,15 +171,20 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
               if (sim > 0.7) {
                 bestTokenScore = Math.max(bestTokenScore, sim);
               } else if (minLen >= 4 && (nToken.startsWith(oToken) || oToken.startsWith(nToken))) {
-                bestTokenScore = Math.max(bestTokenScore, 0.85);
+                // Scale prefix match by length ratio so short prefixes don't over-score
+                const lenRatio = minLen / maxLen;
+                const score = 0.5 + (0.35 * lenRatio); 
+                bestTokenScore = Math.max(bestTokenScore, score);
               } else if (minLen >= 5 && (nToken.includes(oToken) || oToken.includes(nToken))) {
-                bestTokenScore = Math.max(bestTokenScore, 0.75);
+                const lenRatio = minLen / maxLen;
+                const score = 0.4 + (0.35 * lenRatio);
+                bestTokenScore = Math.max(bestTokenScore, score);
               } else if (minLen >= 4) {
                  for (let i=0; i<=oToken.length - 4; i++) {
                    const sub = oToken.substring(i, i+4);
                    if (nToken.startsWith(sub) || nToken.endsWith(sub)) {
                      if (oToken.startsWith(sub) || oToken.endsWith(sub)) {
-                       bestTokenScore = Math.max(bestTokenScore, 0.65);
+                       bestTokenScore = Math.max(bestTokenScore, 0.6);
                      }
                    }
                  }
@@ -179,7 +193,7 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           }
           
           // TASK 2: Weight category-defining nouns over descriptors
-          const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|käse|kaese|brot|bread|pudding|flammkuchen|granatapfel/i.test(t);
+          const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|käse|kaese|brot|bread|pudding|flammkuchen|grieß|griess|granatapfel/i.test(t);
           const weight = isCoreNoun(oToken) ? 3 : 1;
           
           overlapScore += (bestTokenScore * weight);
@@ -194,13 +208,33 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
         
         if (fullSim > confidence) confidence = fullSim;
 
+        // Apply fallback penalty: English matches need to be much better to beat German native matches
+        if (nameData.isFallback) {
+           confidence *= 0.85; 
+        }
+
+        // Category switch penalty: if OCR doesn't mention plant-based terms, don't fallback to them
+        const plantBasedKeywords = ['vegan', 'soja', 'pflanzlich', 'vegetarisch', 'alternative', 'tofu'];
+        const ocrHasPlant = tSet.ocr.some(t => plantBasedKeywords.some(kw => t.includes(kw)));
+        const dbHasPlant = tSet.food.some(t => plantBasedKeywords.some(kw => t.includes(kw)));
+        if (!ocrHasPlant && dbHasPlant) {
+          confidence *= 0.6; // Heavy penalty
+        }
+
+        // Composite dish penalty: prefer PLAIN base nouns over composite/filled dishes (e.g. donuts filled with pudding)
+        const compositeKeywords = ['gefüllt', 'mit', 'dessert', 'sauce', 'aromatisiert'];
+        const dbIsComposite = tSet.food.some(t => compositeKeywords.some(kw => t.includes(kw)));
+        if (dbIsComposite) {
+          confidence *= 0.8; // Penalize so a plain version wins if both match the base noun
+        }
+
         if (confidence > maxScore) {
           maxScore = confidence;
           bestMatch = food;
         }
         
-        // Task 1: Early Exit
-        if (maxScore > 0.95) {
+        // Early Exit (only for non-fallback native matches)
+        if (maxScore > 0.95 && bestMatch && !nameData.isFallback) {
           return { food: bestMatch, confidence: maxScore };
         }
       }
@@ -208,10 +242,9 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   }
 
   // Return matches even with low confidence so UI can flag them
-  if (bestMatch && maxScore > 0.3) {
+  if (bestMatch) {
     return { food: bestMatch, confidence: maxScore };
   }
-
   return null;
 }
 

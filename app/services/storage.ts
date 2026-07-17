@@ -32,6 +32,19 @@ export const StorageService = {
     }
   },
 
+  async updateScan(id: string, updatedScan: ScanRecord) {
+    try {
+      const existing = await this.getScans();
+      const index = existing.findIndex(s => s.id === id);
+      if (index !== -1) {
+        existing[index] = updatedScan;
+        await AsyncStorage.setItem(SCANS_KEY, JSON.stringify(existing));
+      }
+    } catch (e) {
+      console.error('Failed to update scan', e);
+    }
+  },
+
   async getScans(): Promise<ScanRecord[]> {
     try {
       const data = await AsyncStorage.getItem(SCANS_KEY);

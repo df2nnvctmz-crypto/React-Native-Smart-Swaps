@@ -28,9 +28,10 @@ import { SwapComparisonCard } from './components/SwapComparisonCard';
 interface SearchScreenProps {
   onBack: () => void;
   mode?: 'foods' | 'swaps';
+  onSelect?: (food: any) => void;
 }
 
-export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'foods' }) => {
+export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'foods', onSelect }) => {
   const quickSearches = ['Dairy', 'Produce', 'Snacks', 'Beverages', 'Pantry'];
   
   // App State
@@ -306,7 +307,21 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
               searchResults.slice(0, limit).map((food) => {
                 const scoreColor = getScoreColor(food.score);
                 return (
-                  <TouchableOpacity key={food.id} style={styles.foodCard} activeOpacity={0.7} onPress={() => { onBack(); router.push(`/food/${food.id}`); }}>
+                  <TouchableOpacity 
+                    key={food.id} 
+                    style={styles.foodCard} 
+                    activeOpacity={0.7} 
+                    onPress={() => { 
+                      if (onSelect) {
+                        const fullFood = allFoods.find(f => f.id === food.id);
+                        if (fullFood) onSelect(fullFood);
+                        onBack();
+                      } else {
+                        onBack(); 
+                        router.push(`/food/${food.id}`); 
+                      }
+                    }}
+                  >
                     {/* Left side: Icon inside square box */}
                     <View style={styles.foodIconBox}>
                       <Ionicons name={food.iconName} size={22} color={COLORS.primaryGreen} />
