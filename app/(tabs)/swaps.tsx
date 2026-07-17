@@ -17,14 +17,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, globalStyles } from '../../styles';
 import { useFoods } from '../useFoods';
 import { findBestSwaps } from '../engine/swapAlgorithm';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useProfile, DietaryPreference } from '../context/ProfileContext';
 import { SearchModal } from '../../components/SearchModal';
 import { GlassHeader, HEADER_CONTENT_HEIGHT } from '../../components/GlassHeader';
-import { SwapComparisonCard } from '../../components/SwapComparisonCard';
-import { CoverFlowCarousel } from '../../components/CoverFlowCarousel';
+import { CircularScoreRing } from '../../components/CircularScoreRing';
 import { useFavorites } from '../context/FavoritesContext';
 import { FoodItem } from '../types';
+import { StorageService, ScanRecord } from '../services/storage';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -34,9 +34,20 @@ export default function SwapsTab() {
   const [highlightExpanded, setHighlightExpanded] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [searchVisible, setSearchVisible] = useState(false);
+  const [scans, setScans] = useState<ScanRecord[]>([]);
   const router = useRouter();
   const { profile, updateProfile } = useProfile();
   const currentPreference = profile.dietaryPreference[0] || 'Balanced';
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
+      StorageService.getScans().then(fetched => {
+        if (isActive) setScans(fetched);
+      });
+      return () => { isActive = false; };
+    }, [])
+  );
 
   const openDietaryPicker = () => {
     const options: DietaryPreference[] = ['Balanced', 'High Protein', 'Low Carb', 'Vegetarian', 'Vegan'];
@@ -66,25 +77,53 @@ export default function SwapsTab() {
 
   const { foods, allFoods } = useFoods();
 
+  const uniquePurchasedFoods = useMemo(() => {
+    const foodMap = new Map<string, FoodItem>();
+    for (const scan of scans) {
+      for (const item of scan.items) {
+        if (item.matchedFood) {
+          foodMap.set(item.matchedFood.id, item.matchedFood);
+        }
+      }
+    }
+    return Array.from(foodMap.values());
+  }, [scans]);
+
   const { topSwapObjects } = useMemo(() => {
-    const badFood = allFoods.find(f => f.health_score < 40 && f.name.toLowerCase().includes('cola')) || 
-                    allFoods.find(f => f.health_score < 40 && f.category.toLowerCase().includes('sweet')) || 
-                    allFoods.find(f => f.health_score < 40) || 
-                    allFoods[0];
-
-    const safeFoods = foods.length > 0 ? foods : allFoods;
-    const bestSwaps = findBestSwaps(badFood, safeFoods, 3, profile.dietaryPreference);
+    if (uniquePurchasedFoods.length === 0) return { topSwapObjects: [] };
     
-    const topSwapObjects = bestSwaps.map((swap, index) => ({
-      id: `${badFood.id}-${swap.candidate.id}`,
-      from: badFood,
-      to: swap.candidate,
-      improvement: swap.candidate.health_score - badFood.health_score,
-      details: `Smart Swap Match (${Math.round(swap.score)} logic points)`,
-    }));
+    const safeFoods = foods.length > 0 ? foods : allFoods;
+    const allSwaps: any[] = [];
+    
+    for (const badFood of uniquePurchasedFoods) {
+      const bestSwaps = findBestSwaps(badFood, safeFoods, 3, profile.dietaryPreference);
+      for (const swap of bestSwaps) {
+        const improvement = swap.candidate.health_score - badFood.health_score;
+        if (improvement > 0) {
+          allSwaps.push({
+            id: `${badFood.id}-${swap.candidate.id}`,
+            from: badFood,
+            to: swap.candidate,
+            improvement: improvement,
+            details: `Smart Swap Match (${Math.round(swap.score)} logic points)`,
+          });
+        }
+      }
+    }
 
-    return { topSwapObjects };
-  }, [foods, profile.dietaryPreference, allFoods]);
+    // Deduplicate by swap ID
+    const uniqueSwapsMap = new Map<string, any>();
+    for (const swap of allSwaps) {
+      if (!uniqueSwapsMap.has(swap.id) || swap.improvement > uniqueSwapsMap.get(swap.id).improvement) {
+        uniqueSwapsMap.set(swap.id, swap);
+      }
+    }
+    
+    const finalSwaps = Array.from(uniqueSwapsMap.values());
+    finalSwaps.sort((a, b) => b.improvement - a.improvement);
+
+    return { topSwapObjects: finalSwaps.slice(0, 5) };
+  }, [uniquePurchasedFoods, foods, profile.dietaryPreference, allFoods]);
 
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
@@ -104,8 +143,6 @@ export default function SwapsTab() {
     }).filter(Boolean) as { id: string, from: FoodItem, to: FoodItem, improvement: number, details: string }[];
   }, [favorites.swaps, allFoods]);
 
-
-
   const toggleItem = (id: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedItem(expandedItem === id ? null : id);
@@ -113,8 +150,77 @@ export default function SwapsTab() {
 
   const insets = useSafeAreaInsets();
   const scrollY = useRef(new Animated.Value(0)).current;
-
   const headerHeight = insets.top + HEADER_CONTENT_HEIGHT;
+
+  const renderSwapCard = (item: any, isFavList: boolean = false) => {
+    const isExpanded = expandedItem === item.id;
+    const isFav = isFavorite('swap', item.id);
+    
+    return (
+      <View key={item.id} style={[globalStyles.card, { marginBottom: 12 }]}>
+        <View style={[globalStyles.rowBetween, { alignItems: 'center' }]}>
+           <TouchableOpacity style={styles.swapCol} onPress={() => router.push(`/food/${item.from.id}`)}>
+              <CircularScoreRing percentage={item.from.health_score} size={44} strokeWidth={4} />
+              <View style={styles.swapTextContainerLeft}>
+                 <Text style={styles.foodListName} numberOfLines={2}>{item.from.name}</Text>
+                 <Text style={styles.foodListKcal}>{Math.round(item.from.nutrients_per_100.kcal)} kcal</Text>
+              </View>
+           </TouchableOpacity>
+           
+           <TouchableOpacity 
+             style={styles.arrowCircle}
+             onPress={() => toggleItem(item.id)}
+           >
+             <Ionicons name="arrow-forward" size={16} color={COLORS.primaryGreen} />
+           </TouchableOpacity>
+           
+           <TouchableOpacity style={styles.swapColRight} onPress={() => router.push(`/food/${item.to.id}`)}>
+              <View style={styles.swapTextContainerRight}>
+                 <Text style={[styles.foodListName, { textAlign: 'right' }]} numberOfLines={2}>{item.to.name}</Text>
+                 <Text style={[styles.foodListKcal, { textAlign: 'right' }]}>{Math.round(item.to.nutrients_per_100.kcal)} kcal</Text>
+              </View>
+              <CircularScoreRing percentage={item.to.health_score} size={44} strokeWidth={4} />
+           </TouchableOpacity>
+        </View>
+
+        <View style={styles.cardDivider} />
+
+        <View style={globalStyles.rowBetween}>
+          <Text style={styles.swapDetailsText}>{item.details}</Text>
+          <View style={globalStyles.row}>
+            <TouchableOpacity style={styles.smallHeartButton} onPress={() => toggleFavorite('swap', item.id)}>
+              <Ionicons name={isFav ? "heart" : "heart-outline"} size={18} color={isFav ? "#FF3B30" : COLORS.textMuted} />
+            </TouchableOpacity>
+            <View style={styles.percentBadge}>
+              <Text style={styles.percentBadgeText}>+{item.improvement} pt</Text>
+            </View>
+            <TouchableOpacity onPress={() => toggleItem(item.id)} style={{ marginLeft: 8 }}>
+              <Ionicons
+                name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color={COLORS.textMuted}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {isExpanded && (
+          <View style={styles.expandedContent}>
+            <View style={styles.statRow}>
+              <Text style={styles.statName}>Score difference</Text>
+              <Text style={[styles.statValue, { color: COLORS.scoreRed }]}>{item.from.health_score} pt</Text>
+              <Text style={[styles.statValue, { color: COLORS.scoreGreen }]}>{item.to.health_score} pt</Text>
+            </View>
+            <View style={styles.statRow}>
+              <Text style={styles.statName}>Energy (100g)</Text>
+              <Text style={styles.statValue}>{Math.round(item.from.nutrients_per_100.kcal)} kcal</Text>
+              <Text style={[styles.statValue, { color: COLORS.scoreGreen }]}>{Math.round(item.to.nutrients_per_100.kcal)} kcal</Text>
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   return (
     <View style={globalStyles.safeArea}>
@@ -142,25 +248,38 @@ export default function SwapsTab() {
         )}
         scrollEventThrottle={16}
       >
-        {/* Subtitle */}
-        <Text style={[globalStyles.subtitle, { marginBottom: 24, marginTop: 4 }]}>Swipe to see top recommendations</Text>
-        
-        {/* Top Carousel */}
-        <View style={{ marginHorizontal: -20, marginBottom: 24 }}>
-          <CoverFlowCarousel
-            data={topSwapObjects}
-            keyExtractor={(item) => item.id}
-            renderItem={(item) => (
-              <SwapComparisonCard 
-                fromFood={item.from} 
-                toFood={item.to} 
-                improvement={item.improvement}
-                onPressFrom={() => router.push(`/food/${item.from.id}`)}
-                onPressTo={() => router.push(`/food/${item.to.id}`)}
-              />
-            )}
-          />
-        </View>
+        {scans.length === 0 ? (
+          <View style={[globalStyles.card, { padding: 40, alignItems: 'center', marginTop: 20, marginBottom: 32 }]}>
+            <Ionicons name="receipt-outline" size={48} color={COLORS.border} />
+            <Text style={{ marginTop: 16, fontSize: 18, fontWeight: '700', color: COLORS.textPrimary }}>
+              No scan history yet
+            </Text>
+            <Text style={{ marginTop: 8, color: COLORS.textMuted, fontWeight: '500', textAlign: 'center', lineHeight: 22, marginBottom: 24 }}>
+              Scan your first receipt to see personalized swaps here.
+            </Text>
+            <TouchableOpacity 
+              style={{ backgroundColor: COLORS.primaryGreen, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+              onPress={() => router.push('/scan-receipt')}
+            >
+              <Text style={{ color: COLORS.white, fontWeight: '700', fontSize: 16 }}>Scan Receipt</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <Text style={[globalStyles.subtitle, { marginBottom: 16, marginTop: 4 }]}>Smart Swaps for You</Text>
+            <View style={{ marginBottom: 24 }}>
+              {topSwapObjects.length > 0 ? (
+                topSwapObjects.map(item => renderSwapCard(item))
+              ) : (
+                <View style={{ padding: 40, alignItems: 'center', backgroundColor: COLORS.white, borderRadius: 16 }}>
+                  <Text style={{ color: COLORS.textMuted, textAlign: 'center', lineHeight: 22 }}>
+                    We couldn't find any smart swaps for your scanned items yet. Try scanning more receipts!
+                  </Text>
+                </View>
+              )}
+            </View>
+          </>
+        )}
 
         {/* Section: Favorized Swaps */}
         <View style={[globalStyles.rowBetween, { marginTop: 12, marginBottom: 12 }]}>
@@ -184,79 +303,7 @@ export default function SwapsTab() {
               </Text>
             </View>
           ) : (
-            favoritedSwapsList.map((item) => {
-              const isExpanded = expandedItem === item.id;
-              const isFav = isFavorite('swap', item.id);
-              return (
-                <View key={item.id} style={globalStyles.card}>
-                  {/* Main comparison grid */}
-                  <View style={styles.swapVisualContainer}>
-                    {/* From Col */}
-                    <TouchableOpacity style={styles.swapListCol} onPress={() => router.push(`/food/${item.from.id}`)} activeOpacity={0.7}>
-                      <Text style={styles.scoreTextFrom}>{item.from.health_score}</Text>
-                      <Text style={styles.foodListName} numberOfLines={3}>{item.from.name}</Text>
-                      <Text style={styles.foodListKcal}>{Math.round(item.from.nutrients_per_100.kcal)} kcal / 100g</Text>
-                    </TouchableOpacity>
-
-                    {/* Arrow Middle */}
-                    <View style={styles.arrowContainer}>
-                      <TouchableOpacity
-                        style={styles.arrowCircle}
-                        onPress={() => toggleItem(item.id)}
-                      >
-                        <Ionicons name="arrow-forward" size={16} color={COLORS.primaryGreen} />
-                      </TouchableOpacity>
-                    </View>
-
-                    {/* To Col */}
-                    <TouchableOpacity style={[styles.swapListCol, { alignItems: 'flex-end' }]} onPress={() => router.push(`/food/${item.to.id}`)} activeOpacity={0.7}>
-                      <Text style={styles.scoreTextTo}>{item.to.health_score}</Text>
-                      <Text style={[styles.foodListName, { textAlign: 'right' }]} numberOfLines={3}>{item.to.name}</Text>
-                      <Text style={styles.foodListKcal}>{Math.round(item.to.nutrients_per_100.kcal)} kcal / 100g</Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Card Divider */}
-                  <View style={styles.cardDivider} />
-
-                  {/* Footer bar */}
-                  <View style={globalStyles.rowBetween}>
-                    <Text style={styles.swapDetailsText}>{item.details}</Text>
-                    <View style={globalStyles.row}>
-                      <TouchableOpacity style={styles.smallHeartButton} onPress={() => toggleFavorite('swap', item.id)}>
-                        <Ionicons name={isFav ? "heart" : "heart-outline"} size={18} color={isFav ? "#FF3B30" : COLORS.textMuted} />
-                      </TouchableOpacity>
-                      <View style={styles.percentBadge}>
-                        <Text style={styles.percentBadgeText}>+{item.improvement} pt</Text>
-                      </View>
-                      <TouchableOpacity onPress={() => toggleItem(item.id)} style={{ marginLeft: 8 }}>
-                        <Ionicons
-                          name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                          size={18}
-                          color={COLORS.textMuted}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  {/* Expanded item details */}
-                  {isExpanded && (
-                    <View style={styles.expandedContent}>
-                      <View style={styles.statRow}>
-                        <Text style={styles.statName}>Score difference</Text>
-                        <Text style={[styles.statValue, { color: COLORS.scoreRed }]}>{item.from.health_score} pt</Text>
-                        <Text style={[styles.statValue, { color: COLORS.scoreGreen }]}>{item.to.health_score} pt</Text>
-                      </View>
-                      <View style={styles.statRow}>
-                        <Text style={styles.statName}>Energy (100g)</Text>
-                        <Text style={styles.statValue}>{Math.round(item.from.nutrients_per_100.kcal)} kcal</Text>
-                        <Text style={[styles.statValue, { color: COLORS.scoreGreen }]}>{Math.round(item.to.nutrients_per_100.kcal)} kcal</Text>
-                      </View>
-                    </View>
-                  )}
-                </View>
-              );
-            })
+            favoritedSwapsList.map((item) => renderSwapCard(item, true))
           )}
         </View>
       </Animated.ScrollView>
@@ -267,99 +314,36 @@ export default function SwapsTab() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingVertical: 12,
-    marginBottom: 8,
-  },
-  headerIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-  },
-  sectionLabel: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginTop: 10,
-    marginBottom: 12,
-  },
-  featuredBadge: {
-    backgroundColor: COLORS.lightGreenBg,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  featuredBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: COLORS.primaryGreen,
-  },
-  improvementBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  improvementText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.primaryGreen,
-    marginLeft: 4,
-  },
-  swapVisualContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-  swapItemCol: {
+  swapCol: {
     flex: 1,
-    alignItems: 'flex-start',
-  },
-  swapItemName: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    marginBottom: 8,
-    height: 44,
-  },
-  fromScorePill: {
-    backgroundColor: COLORS.scoreYellowLight,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginBottom: 8,
-  },
-  fromScoreText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.scoreYellow,
-  },
-  toScorePill: {
-    backgroundColor: COLORS.lightGreenBg,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginBottom: 8,
-    alignSelf: 'flex-end',
-  },
-  toScoreText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.primaryGreen,
-  },
-  swapItemKcal: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  arrowContainer: {
-    width: 44,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'center',
-    marginTop: -16,
+  },
+  swapColRight: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  swapTextContainerLeft: {
+    marginLeft: 10,
+    flex: 1,
+  },
+  swapTextContainerRight: {
+    marginRight: 10,
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  foodListName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  foodListKcal: {
+    fontSize: 11,
+    color: COLORS.textMuted,
   },
   arrowCircle: {
     width: 32,
@@ -370,16 +354,33 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
+    marginHorizontal: 8,
   },
   cardDivider: {
     height: 1,
     backgroundColor: COLORS.border,
     marginVertical: 16,
   },
-  toggleText: {
+  swapDetailsText: {
     fontSize: 12,
-    color: COLORS.textMuted,
-    fontWeight: '500',
+    color: COLORS.textSecondary,
+    flex: 1,
+    paddingRight: 8,
+  },
+  smallHeartButton: {
+    padding: 4,
+    marginRight: 6,
+  },
+  percentBadge: {
+    backgroundColor: COLORS.lightGreenBg,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  percentBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.primaryGreen,
   },
   expandedContent: {
     marginTop: 12,
@@ -414,17 +415,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.textPrimary,
   },
-  heartButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    marginRight: 8,
-  },
   filterBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -441,52 +431,5 @@ const styles = StyleSheet.create({
   swapsList: {
     marginTop: 4,
   },
-  swapListCol: {
-    flex: 1.2,
-  },
-  scoreTextFrom: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.scoreYellow,
-    marginBottom: 6,
-  },
-  scoreTextTo: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.primaryGreen,
-    textAlign: 'right',
-    marginBottom: 6,
-  },
-  foodListName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    lineHeight: 18,
-    marginBottom: 4,
-  },
-  foodListKcal: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-  },
-  swapDetailsText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    flex: 1,
-    paddingRight: 8,
-  },
-  smallHeartButton: {
-    padding: 4,
-    marginRight: 6,
-  },
-  percentBadge: {
-    backgroundColor: COLORS.lightGreenBg,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  percentBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.primaryGreen,
-  },
 });
+
