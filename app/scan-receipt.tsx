@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import TextRecognition from '@react-native-ml-kit/text-recognition';
+import TextRecognition from '../modules/native-ocr';
 import { COLORS, globalStyles } from '../styles';
 import { parseReceipt, parseReceiptLine, ParsedReceiptItem } from './engine/receiptParser';
 import { useFoods } from './useFoods';

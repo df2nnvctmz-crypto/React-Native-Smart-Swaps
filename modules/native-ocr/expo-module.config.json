@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["NativeOcrModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.nativeocr.NativeOcrModule"]
+  }
+}
