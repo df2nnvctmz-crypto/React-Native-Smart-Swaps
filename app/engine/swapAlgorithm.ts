@@ -149,8 +149,20 @@ export function findBestSwaps(badFood: FoodItem, allFoods: FoodItem[], count: nu
   // STRICT CATEGORIZATION FILTER:
   // Must either share the EXACT same swiss_category or belong to the same equivalence group (e.g. Dairy <-> Soy alternative)
   candidates = candidates.filter(f => {
+    if (f.swiss_category === badFood.swiss_category) return true;
+    
     const candGroup = getEquivalenceGroup(f.swiss_category, f.name);
-    return f.swiss_category === badFood.swiss_category || candGroup === targetGroup;
+    if (candGroup === targetGroup) {
+       const broadGroups = ['VEG', 'FRUIT', 'GRAINS', 'SWEETS', 'SNACKS'];
+       if (broadGroups.includes(targetGroup)) {
+          // Require them to be much closer, like same subcategory
+          const fSub = f.swiss_category.split('/')[1];
+          const bSub = badFood.swiss_category.split('/')[1];
+          return fSub && bSub && fSub === bSub;
+       }
+       return true;
+    }
+    return false;
   });
 
   // Physical State strictness

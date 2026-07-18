@@ -29,9 +29,10 @@ interface SearchScreenProps {
   onBack: () => void;
   mode?: 'foods' | 'swaps';
   onSelect?: (food: any) => void;
+  rawText?: string;
 }
 
-export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'foods', onSelect }) => {
+export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'foods', onSelect, rawText }) => {
   const quickSearches = ['Dairy', 'Produce', 'Snacks', 'Beverages', 'Pantry'];
   
   // App State
@@ -197,8 +198,15 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
           keyboardShouldPersistTaps="handled"
         >
 
+          {rawText && (
+            <View style={{ marginBottom: 16, backgroundColor: COLORS.lightGreenBg, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: COLORS.scoreGreen }}>
+              <Text style={{ fontSize: 13, color: COLORS.primaryGreenDark, fontWeight: '700', marginBottom: 4 }}>CORRECTING ITEM</Text>
+              <Text style={{ fontSize: 16, color: COLORS.textPrimary, fontStyle: 'italic' }}>"{rawText}"</Text>
+            </View>
+          )}
+
           {/* Search Bar */}
-          <View style={[globalStyles.rowBetween, { marginTop: 16 }]}>
+          <View style={[globalStyles.rowBetween, { marginTop: rawText ? 0 : 16 }]}>
             <View style={styles.searchBar}>
               <Ionicons name="search-outline" size={20} color={COLORS.textMuted} />
               <TextInput 

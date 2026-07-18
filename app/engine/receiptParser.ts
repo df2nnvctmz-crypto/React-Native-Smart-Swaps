@@ -202,11 +202,29 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
 
         let confidence = totalWeight > 0 ? overlapScore / totalWeight : 0;
 
+        // Compute food token coverage (penalize if OCR is missing lots of food words)
+        let matchedFoodTokens = 0;
+        for (const nToken of tSet.food) {
+          let hasMatch = false;
+          for (const oToken of tSet.ocr) {
+            if (nToken === oToken) { hasMatch = true; break; }
+            const dist = levenshtein(oToken, nToken);
+            const sim = 1 - (dist / Math.max(oToken.length, nToken.length));
+            if (sim > 0.6 || (nToken.length >= 4 && (nToken.includes(oToken) || oToken.includes(nToken)))) {
+              hasMatch = true; break;
+            }
+          }
+          if (hasMatch) matchedFoodTokens++;
+        }
+        const foodTokenCoverage = tSet.food.length > 0 ? (matchedFoodTokens / tSet.food.length) : 1;
+        confidence = (confidence * 0.65) + (foodTokenCoverage * 0.35);
+
         // Full string similarity
         const fullDist = levenshtein(tSet.fullOcrStr, tSet.fullFoodStr);
         const fullSim = 1 - (fullDist / Math.max(tSet.fullOcrStr.length, tSet.fullFoodStr.length));
         
-        if (fullSim > confidence) confidence = fullSim;
+        // Tighten fullSim override
+        if (fullSim > confidence && fullSim > 0.6 && confidence > 0.1) confidence = fullSim;
 
         // Apply fallback penalty: English matches need to be much better to beat German native matches
         if (nameData.isFallback) {
@@ -226,6 +244,12 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
         const dbIsComposite = tSet.food.some(t => compositeKeywords.some(kw => t.includes(kw)));
         if (dbIsComposite) {
           confidence *= 0.8; // Penalize so a plain version wins if both match the base noun
+        }
+
+        // Implausible categories deprioritization (e.g. Additives, Potash)
+        const isAdditive = /E\s?\d{3}|additive|chemical|curing salt|ingredient/i.test(food.name + ' ' + food.swiss_category);
+        if (isAdditive && confidence < 0.95) {
+           confidence *= 0.4;
         }
 
         if (confidence > maxScore) {
@@ -255,6 +279,13 @@ export function parseReceiptLine(line: string, allFoods: FoodItem[], indexData?:
   if (/^-?\d+\s*[\.,]\s*\d{2}$/.test(line.trim())) return null;
   if (/^\d+\s*x\s*-?\d+\s*[\.,]\s*\d{2}$/i.test(line.trim())) return null;
   if (/date|time|total|tax|cash|change|datum|uhrzeit|summe|mwst|bar|ec-karte|rückgeld|rueckgeld|pfand|gratis|rabatt/i.test(line)) return null;
+
+  // Standalone price with trailing letter
+  if (/^\d+[\.,]\d{2}\s*[A-Z]$/i.test(line.trim())) return null;
+  // Hallucinated lone percentage for alcohol
+  if (/^\s*\d{1,2}([\.,]\d)?\s*%\s*vol\.?\s*$/i.test(line.trim())) return null;
+  // Letter-spaced receipt footer
+  if (/^[-]?([A-Z0-9][\-\s]+){4,}[A-Z0-9][-]?$/i.test(line.trim())) return null;
 
   const match = matchFoodToOcrText(line, allFoods, indexData);
   

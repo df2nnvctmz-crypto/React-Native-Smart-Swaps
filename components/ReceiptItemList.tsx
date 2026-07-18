@@ -99,9 +99,7 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
                   {item.matchedFood ? item.matchedFood.name : item.rawText}
                 </Text>
                 {renderConfidenceIndicator(item.confidence, !!item.matchedFood)}
-                {!item.matchedFood && (
-                  <Text style={styles.rawTextScan}>Scanned as: "{item.rawText}"</Text>
-                )}
+                <Text style={styles.rawTextScan}>Scanned as: "{item.rawText}"</Text>
               </View>
 
               <View style={styles.actionsContainer}>
@@ -131,6 +129,7 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
         onClose={() => setEditingIndex(null)}
         mode="foods"
         onSelect={handleSelectCorrection}
+        rawText={editingIndex !== null ? sortedItems.find(x => x.originalIndex === editingIndex)?.item.rawText : undefined}
       />
     </View>
   );
