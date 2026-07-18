@@ -27,15 +27,15 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
   // Sort items: Verified (confidence > 0.6) first, then Possible (<= 0.6 and > 0.3), then Not found (<= 0.3)
   const sortedItems = [...items].map((item, originalIndex) => ({ item, originalIndex })).sort((a, b) => {
     const getSortValue = (it: ParsedReceiptItem) => {
-      if (!it.matchedFood || it.confidence <= 0.3) return 0; // Not found
-      if (it.confidence > 0.6) return 2; // High confidence / Verified
+      if (!it.matchedFood || it.confidence < 0.45) return 0; // Not found
+      if (it.confidence > 0.72) return 2; // High confidence / Verified
       return 1; // Possible match
     };
     return getSortValue(b.item) - getSortValue(a.item);
   });
 
   const renderConfidenceIndicator = (confidence: number, hasMatchedFood: boolean) => {
-    if (!hasMatchedFood || confidence <= 0.3) {
+    if (!hasMatchedFood || confidence < 0.45) {
       return (
         <View style={[styles.confidenceTag, { backgroundColor: '#F0F0F0' }]}>
           <View style={[styles.confidenceDot, { backgroundColor: '#999' }]} />
@@ -43,7 +43,7 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
         </View>
       );
     }
-    if (confidence > 0.6) {
+    if (confidence > 0.72) {
       return (
         <View style={[styles.confidenceTag, { backgroundColor: '#E8F5E9' }]}>
           <View style={[styles.confidenceDot, { backgroundColor: COLORS.primaryGreen }]} />

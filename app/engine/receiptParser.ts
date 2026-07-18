@@ -80,6 +80,20 @@ function stripNoise(text: string): string {
   return cleaned;
 }
 
+function candidateKeysFor(token: string, shingleIndex: Map<string, Set<string>>): Set<string> {
+  const keys = new Set<string>();
+  if (token.length < 5) {
+    const direct = shingleIndex.get(token);
+    if (direct) direct.forEach(k => keys.add(k));
+    return keys;
+  }
+  for (let i = 0; i <= token.length - 5; i++) {
+    const bucket = shingleIndex.get(token.substring(i, i + 5));
+    if (bucket) bucket.forEach(k => keys.add(k));
+  }
+  return keys;
+}
+
 function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: FoodIndexData): { food: FoodItem, confidence: number } | null {
   // Apply German abbreviation expansions first
   const expandedOcr = expandGermanAbbreviations(ocrText);
@@ -93,29 +107,25 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   let bestMatch: FoodItem | null = null;
   let maxScore = 0;
   
-  // Step 1: Use index to drastically reduce candidate pool
   let candidateSet = new Set<FoodItem>();
-  
   if (indexData) {
-    const searchTokens = [...ocrTokensRaw, ...ocrTokensAscii];
+    const searchTokens = [...new Set([...ocrTokensRaw, ...ocrTokensAscii])];
     for (const token of searchTokens) {
       if (token.length < 3) continue;
-      
-      // Allow partial matches on the index keys to catch abbreviated OCR like 'mozz' -> 'mozzarella'
-      for (const [key, foodsWithToken] of indexData.index.entries()) {
-        if (key.includes(token) || token.includes(key)) {
-          foodsWithToken.forEach(f => candidateSet.add(f));
+      const exact = indexData.index.get(token);
+      if (exact) exact.forEach(f => candidateSet.add(f));
+      if (token.length >= 4 && indexData.shingleIndex) {
+        for (const key of candidateKeysFor(token, indexData.shingleIndex)) {
+          if (key.includes(token) || token.includes(key)) {
+            indexData.index.get(key)!.forEach(f => candidateSet.add(f));
+          }
         }
       }
     }
   }
 
-  // If index found nothing (due to typos), fallback to all foods
-  const candidatesToScore = candidateSet.size > 0 ? Array.from(candidateSet) : allFoods;
-  
-  if (indexData) {
-    console.log(`OCR: ${ocrText} -> Expanded: ${expandedOcr} -> Candidates: ${candidatesToScore.length}`);
-  }
+  if (candidateSet.size === 0) return null;
+  const candidatesToScore = Array.from(candidateSet);
 
   for (const food of candidatesToScore) {
     let namesToTest: {rawStr: string, asciiStr: string, tokensRaw: string[], tokensAscii: string[], isFallback?: boolean}[] = [];
@@ -272,20 +282,42 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   return null;
 }
 
-export function parseReceiptLine(line: string, allFoods: FoodItem[], indexData?: FoodIndexData): ParsedReceiptItem | null {
-  if (line.length < 4) return null;
-  if (/^\d+[\.,]\d{2}$/.test(line.trim())) return null;
-  // Filter out noise lines: e.g. "4 x 1,59", "0, 85", "-1,49"
-  if (/^-?\d+\s*[\.,]\s*\d{2}$/.test(line.trim())) return null;
-  if (/^\d+\s*x\s*-?\d+\s*[\.,]\s*\d{2}$/i.test(line.trim())) return null;
-  if (/date|time|total|tax|cash|change|datum|uhrzeit|summe|mwst|bar|ec-karte|rückgeld|rueckgeld|pfand|gratis|rabatt/i.test(line)) return null;
+const asciiLow = (s: string) => s.toLowerCase()
+  .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss');
 
-  // Standalone price with trailing letter
-  if (/^\d+[\.,]\d{2}\s*[A-Z]$/i.test(line.trim())) return null;
-  // Hallucinated lone percentage for alcohol
-  if (/^\s*\d{1,2}([\.,]\d)?\s*%\s*vol\.?\s*$/i.test(line.trim())) return null;
-  // Letter-spaced receipt footer
-  if (/^[-]?([A-Z0-9][\-\s]+){4,}[A-Z0-9][-]?$/i.test(line.trim())) return null;
+const META_TOKENS = new Set([
+  'summe','zwischensumme','gesamt','total','betrag','eur','euro','ust','mwst','steuer',
+  'kartenzahlung','karte','karten','bar','ec','girocard','visa','mastercard','maestro',
+  'rueckgeld','wechselgeld','gegeben','geg','kundenbeleg','beleg','filiale','markt',
+  'discount','marken','netto','rewe','edeka','lidl','aldi','kaufland','penny',
+  'www','http','https','de','com','uid','ustid','tel','telefon','datum','uhrzeit','bon',
+  'terminal','trace','berlin','hamburg','muenchen','koeln','allee','strasse','platz','weg'
+]);
+const UNIT = new Set(['st','stk','pck','pkg','btl','lose','vke','sort','ca','ab','pk']);
+
+export function isLikelyProductLine(raw: string): boolean {
+  const line = raw.trim();
+  if (line.length < 4) return false;
+  const low = asciiLow(line);
+  if (/^-?\d+([.,]\d+)?\s*(kgx|kg|g|x)?$/.test(low)) return false;
+  if (/^\d+\s*x\s*-?\d+[.,]\d{2}/i.test(low)) return false;
+  if (/\beur\s*\/\s*kg\b/i.test(low)) return false;
+  if (/^\d+[.,]\d+\s*(kg|g)\b/i.test(low)) return false;
+  if (/^-?\d+[.,]\d{2}\s*[a-c]?$/i.test(low)) return false;
+  if (/www|http|\.de\b|\.com\b|online/i.test(low)) return false;
+  if (/\b\d{4,5}\b/.test(low) && /(allee|strasse|str\.|platz|weg|berlin|hamburg)/i.test(low)) return false;
+  if (((line.match(/-/g)||[]).length >= 3) && !/\d[.,]\d{2}/.test(line)) return false;
+  const tokens = low.replace(/[^\w\s]/g,' ').split(/\s+/).filter(Boolean);
+  if (tokens.some(t => META_TOKENS.has(t))) return false;
+  const wordTokens = tokens.filter(t => /[a-z]{3,}/.test(t) && !UNIT.has(t));
+  if (wordTokens.length === 0) return false;
+  const hasPrice = /\d[.,]\d{2}/.test(low);
+  if (!hasPrice && wordTokens.length < 2 && !wordTokens.some(t => t.length >= 5)) return false;
+  return true;
+}
+
+export function parseReceiptLine(line: string, allFoods: FoodItem[], indexData?: FoodIndexData): ParsedReceiptItem | null {
+  if (!isLikelyProductLine(line)) return null;
 
   const match = matchFoodToOcrText(line, allFoods, indexData);
   

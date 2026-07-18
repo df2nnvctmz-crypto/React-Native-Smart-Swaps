@@ -67,17 +67,19 @@ export default function ScanReceiptScreen() {
       let matchedCount = 0;
 
       for (const item of parsedItems) {
-        if (item.matchedFood && item.confidence > 0.3) {
+        if (item.matchedFood && item.confidence >= 0.45) {
           totalScore += item.matchedFood.health_score;
           matchedCount++;
 
-          const bestSwaps = findBestSwaps(item.matchedFood, safeFoods, 1, profile.dietaryPreference);
-          if (bestSwaps.length > 0) {
-            generatedSwaps.push({
-              from: item.matchedFood,
-              to: bestSwaps[0].candidate,
-              improvement: bestSwaps[0].candidate.health_score - item.matchedFood.health_score
-            });
+          if (item.confidence > 0.72) {
+            const bestSwaps = findBestSwaps(item.matchedFood, safeFoods, 1, profile.dietaryPreference);
+            if (bestSwaps.length > 0) {
+              generatedSwaps.push({
+                from: item.matchedFood,
+                to: bestSwaps[0].candidate,
+                improvement: bestSwaps[0].candidate.health_score - item.matchedFood.health_score
+              });
+            }
           }
         }
         if (matchedCount % 5 === 0) {
