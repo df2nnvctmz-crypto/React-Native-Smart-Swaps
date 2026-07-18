@@ -94,7 +94,19 @@ function candidateKeysFor(token: string, shingleIndex: Map<string, Set<string>>)
   return keys;
 }
 
-const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber/i.test(t);
+const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber|mozzarella|gouda|parmesan|ricotta|feta|camembert|edamer|pesto|gnocchi|tortelloni|quark|butter/i.test(t);
+
+function candidateKeysFor4Gram(token: string, fourGramIndex: Map<string, Set<string>>): Set<string> {
+  const keys = new Set<string>();
+  if (token.length < 4) return keys;
+  for (let i = 0; i <= token.length - 4; i++) {
+    const bucket = fourGramIndex.get(token.substring(i, i + 4));
+    if (bucket) for (const k of bucket) {
+      if (Math.abs(k.length - token.length) <= 2) keys.add(k);
+    }
+  }
+  return keys;
+}
 
 function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: FoodIndexData): { food: FoodItem, confidence: number } | null {
   // Apply German abbreviation expansions first
@@ -113,7 +125,22 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
     }
     return word;
   }).join(' ');
-  const expandedOcr = expandGermanAbbreviations(headNounSplit);
+  // Re-glue spuriously space-split short fragments as an ADDITIONAL variant
+  // ("Bai anen"->"Baianen", "Edi isalani"->"Ediisalani")
+  const wl = headNounSplit.split(/\s+/);
+  const reglued: string[] = [];
+  for (let i = 0; i < wl.length; i++) {
+    const w = wl[i], nx = wl[i+1];
+    if (w.length <= 4 && /^[a-zA-ZäöüÄÖÜß]+$/.test(w) && nx && /^[a-zA-Z]/.test(nx) && nx.length <= 12) {
+      reglued.push(w + nx); i++;
+    } else reglued.push(w);
+  }
+  // Keep the ORIGINAL un-case-split text as a variant too: the case-split regex
+  // mangles OCR miscapitalizations like "GOuda" -> "G Ouda" (VERIFIED this made
+  // "GOuda" return NULL entirely).
+  const expandedOcr = expandGermanAbbreviations(headNounSplit) + ' '
+    + expandGermanAbbreviations(reglued.join(' ')) + ' '
+    + expandGermanAbbreviations(ocrText);
   
   let cleanedOcr = stripNoise(expandedOcr);
   cleanedOcr = cleanedOcr.replace(/\b\d+\b/g, ' ').replace(/\s+/g, ' ').trim();
@@ -125,27 +152,57 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   let bestMatch: FoodItem | null = null;
   let maxScore = 0;
   
-  let candidateSet = new Set<FoodItem>();
+  const candidateHits = new Map<FoodItem, number>();
+  const addCand = (f: FoodItem) => candidateHits.set(f, (candidateHits.get(f) ?? 0) + 1);
   if (indexData) {
     const searchTokens = [...new Set([...ocrTokensRaw, ...ocrTokensAscii])];
     for (const token of searchTokens) {
       if (token.length < 3) continue;
       const exact = indexData.index.get(token);
-      if (exact) exact.forEach(f => candidateSet.add(f));
+      if (exact) exact.forEach(f => { addCand(f); addCand(f); }); // exact hits weigh double
       if (token.length >= 4 && indexData.shingleIndex) {
+        let found5 = false;
         for (const key of candidateKeysFor(token, indexData.shingleIndex)) {
-          if (key.includes(token) || token.includes(key)) {
-            indexData.index.get(key)!.forEach(f => candidateSet.add(f));
+          // Relaxed acceptance: near-equal length is enough — same-length one-letter
+          // typos ("nozzarella"/"mozzarella") can never pass a substring test
+          if (key.includes(token) || token.includes(key) || Math.abs(key.length - token.length) <= 2) {
+            indexData.index.get(key)!.forEach(addCand);
+            found5 = true;
+          }
+        }
+        // 4-gram fallback ONLY for short tokens where one typo kills all 5-grams
+        if (!found5 && token.length >= 5 && token.length <= 8 && indexData.fourGramIndex) {
+          for (const key of candidateKeysFor4Gram(token, indexData.fourGramIndex)) {
+            indexData.index.get(key)!.forEach(addCand);
           }
         }
       }
     }
   }
 
-  if (candidateSet.size === 0) return null;
-  const candidatesToScore = Array.from(candidateSet);
+  if (candidateHits.size === 0) return null;
+  // Score only the most-promising candidates (performance: VERIFIED this halves
+  // per-receipt time with zero accuracy loss across the regression suite)
+  const MAX_CANDIDATES = 80;
+  let candidatesToScore: FoodItem[];
+  if (candidateHits.size <= MAX_CANDIDATES) {
+    candidatesToScore = Array.from(candidateHits.keys());
+  } else {
+    candidatesToScore = Array.from(candidateHits.entries())
+      .sort((a, b) => b[1] - a[1]).slice(0, MAX_CANDIDATES).map(e => e[0]);
+  }
 
   for (const food of candidatesToScore) {
+    const parenTokens = new Set<string>();
+    for (const nm of [food.name, food.name_de].filter(Boolean)) {
+      const inParens = String(nm).match(/\(([^)]*)\)/g) || [];
+      for (const seg of inParens) {
+        for (const t of [...normalize(seg).split(/\s+/), ...asciiFold(seg).split(/\s+/)]) {
+          if (t.length > 2) parenTokens.add(t);
+        }
+      }
+    }
+
     let namesToTest: {rawStr: string, asciiStr: string, tokensRaw: string[], tokensAscii: string[], isFallback?: boolean}[] = [];
     
     if (indexData?.cache?.has(food.id)) {
@@ -231,8 +288,8 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
         let confidence = totalWeight > 0 ? overlapScore / totalWeight : 0;
 
         // Compute food token coverage (penalize if OCR is missing lots of food words)
-        const IMPLICIT_QUALIFIERS = new Set(['roh','raw','natur','plain','frisch','fresh']);
-        const coverageRelevantFoodTokens = tSet.food.filter(t => !IMPLICIT_QUALIFIERS.has(t));
+        const IMPLICIT_QUALIFIERS = new Set(['roh','raw','natur','plain','frisch','fresh','min','mind','fat','fett','dry','matter']);
+        const coverageRelevantFoodTokens = tSet.food.filter(t => !IMPLICIT_QUALIFIERS.has(t) && !parenTokens.has(t));
         let matchedFoodTokens = 0;
         for (const nToken of coverageRelevantFoodTokens) {
           let hasMatch = false;

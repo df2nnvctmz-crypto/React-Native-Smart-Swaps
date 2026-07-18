@@ -22,6 +22,9 @@ export const ABBREVIATIONS: Record<string, string> = {
   'clas.': 'classic',
   'pr': 'protein',
   'pu': 'pudding',
+  'mozz': 'mozzarella',
+  'nozz': 'mozzarella',   // common OCR m->n misread
+  'pfann': 'pfannengericht',
 };
 
 export const LOANWORD_SYNONYMS: Record<string, string> = {

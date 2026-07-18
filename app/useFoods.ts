@@ -17,6 +17,7 @@ export interface FoodIndexData {
   index: Map<string, Set<FoodItem>>;
   cache: Map<string, { de?: FoodTokensCache, en: FoodTokensCache }>;
   shingleIndex?: Map<string, Set<string>>;
+  fourGramIndex?: Map<string, Set<string>>;
 }
 
 export const getIconForCategory = (category: string): keyof typeof Ionicons.glyphMap => {
@@ -31,6 +32,21 @@ export const getIconForCategory = (category: string): keyof typeof Ionicons.glyp
   return 'fast-food-outline';
 };
 
+const DB_HEAD_NOUN_SUFFIXES = ['brot','broetchen','wurst','kaese','milch','saft','sahne','creme','schinken','salat','suppe'];
+function withHeadNounSplits(tokens: string[]): string[] {
+  const out = [...tokens];
+  for (const t of tokens) {
+    if (t.length < 8) continue;
+    for (const suf of DB_HEAD_NOUN_SUFFIXES) {
+      if (t.endsWith(suf) && t.length > suf.length + 3) {
+        out.push(t.slice(0, t.length - suf.length), suf);
+        break;
+      }
+    }
+  }
+  return out;
+}
+
 export function buildFoodIndex(foodsData: FoodItem[]): FoodIndexData {
   const index = new Map<string, Set<FoodItem>>();
   const cache = new Map<string, { de?: FoodTokensCache, en: FoodTokensCache }>();
@@ -40,8 +56,8 @@ export function buildFoodIndex(foodsData: FoodItem[]): FoodIndexData {
       en: {
         rawStr: normalize(food.name),
         asciiStr: asciiFold(food.name),
-        tokensRaw: normalize(food.name).split(/\s+/).filter(t => t.length > 2),
-        tokensAscii: asciiFold(food.name).split(/\s+/).filter(t => t.length > 2)
+        tokensRaw: withHeadNounSplits(normalize(food.name).split(/\s+/).filter(t => t.length > 2)),
+        tokensAscii: withHeadNounSplits(asciiFold(food.name).split(/\s+/).filter(t => t.length > 2))
       }
     };
 
@@ -49,8 +65,8 @@ export function buildFoodIndex(foodsData: FoodItem[]): FoodIndexData {
       foodCache.de = {
         rawStr: normalize(food.name_de),
         asciiStr: asciiFold(food.name_de),
-        tokensRaw: normalize(food.name_de).split(/\s+/).filter(t => t.length > 2),
-        tokensAscii: asciiFold(food.name_de).split(/\s+/).filter(t => t.length > 2)
+        tokensRaw: withHeadNounSplits(normalize(food.name_de).split(/\s+/).filter(t => t.length > 2)),
+        tokensAscii: withHeadNounSplits(asciiFold(food.name_de).split(/\s+/).filter(t => t.length > 2))
       };
     }
 
@@ -87,7 +103,17 @@ export function buildFoodIndex(foodsData: FoodItem[]): FoodIndexData {
     }
   }
 
-  return { index, cache, shingleIndex };
+  const fourGramIndex = new Map<string, Set<string>>();
+  for (const key of index.keys()) {
+    if (key.length < 4 || key.length > 10) continue;
+    for (let i = 0; i <= key.length - 4; i++) {
+      const g = key.substring(i, i + 4);
+      if (!fourGramIndex.has(g)) fourGramIndex.set(g, new Set());
+      fourGramIndex.get(g)!.add(key);
+    }
+  }
+
+  return { index, cache, shingleIndex, fourGramIndex };
 }
 
 export function useFoods() {
