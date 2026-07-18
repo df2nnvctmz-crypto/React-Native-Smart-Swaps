@@ -94,6 +94,8 @@ function candidateKeysFor(token: string, shingleIndex: Map<string, Set<string>>)
   return keys;
 }
 
+const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber/i.test(t);
+
 function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: FoodIndexData): { food: FoodItem, confidence: number } | null {
   // Apply German abbreviation expansions first
   const caseSplit = ocrText
@@ -113,7 +115,8 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   }).join(' ');
   const expandedOcr = expandGermanAbbreviations(headNounSplit);
   
-  const cleanedOcr = stripNoise(expandedOcr);
+  let cleanedOcr = stripNoise(expandedOcr);
+  cleanedOcr = cleanedOcr.replace(/\b\d+\b/g, ' ').replace(/\s+/g, ' ').trim();
   const ocrTokensRaw = normalize(cleanedOcr).split(/\s+/).filter(t => t.length > 2);
   const ocrTokensAscii = asciiFold(cleanedOcr).split(/\s+/).filter(t => t.length > 2);
   
@@ -218,7 +221,6 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           }
           
           // TASK 2: Weight category-defining nouns over descriptors
-          const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber/i.test(t);
           const isDescriptorStopword = (t: string) => /^(sort|sortiert|lose|natur|classic|clas|fein|extra|spezial|surt|frisch|hausgemacht|regional)$/i.test(t);
           const weight = isDescriptorStopword(oToken) ? 0 : (isCoreNoun(oToken) ? 3 : 1);
           
@@ -279,6 +281,22 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
         if (isAdditive && confidence < 0.95) {
            confidence *= 0.4;
         }
+
+        // Additive bonus (NOT a hard floor/replace) so relative ranking among core-noun
+        // matches is preserved based on their other token overlap, rather than collapsing
+        // to identical scores or an artificial ceiling.
+        let coreNounFloor = 0;
+        for (const oToken of tSet.ocr) {
+          if (!isCoreNoun(oToken)) continue;
+          for (const nToken of tSet.food) {
+            if (!isCoreNoun(nToken)) continue;
+            if (oToken === nToken) { coreNounFloor = Math.max(coreNounFloor, 0.55); continue; }
+            const d = levenshtein(oToken, nToken);
+            const s = 1 - d / Math.max(oToken.length, nToken.length);
+            if (s > 0.75) coreNounFloor = Math.max(coreNounFloor, 0.5);
+          }
+        }
+        confidence = Math.min(0.95, confidence + coreNounFloor * 0.2);
 
         if (confidence > maxScore) {
           maxScore = confidence;

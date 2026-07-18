@@ -12,8 +12,9 @@ const TESTS = [
   "Bananen Lose 0,89 B",
   "Edelsalami 150g 1,79 B",
   "Apfel Pink Lady Lose 2,07 B",
+  "M... Mozzarella oGt 125g 1,38 B",
+  "M...Grana/Para sort.ab125y 2,89 B",
   "NIPizzaSpeciale2ST690g 3,59 B",
-  "KI Gnocchi/Tagl.sort.6009 1,99 B",
   "KW 6er Broetchen 3009 0,69 B"
 ];
 
