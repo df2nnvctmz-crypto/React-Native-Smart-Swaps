@@ -29,6 +29,11 @@ exports.ABBREVIATIONS = {
     'pfann': 'pfannengericht',
     'sojajogh': 'soja joghurt',
     'sojadr': 'soja joghurt drink',
+    'moz': 'mozzarella',
+    'skr': 'skyr',
+    'himb': 'himbeere',
+    'cranb': 'cranberry',
+    'pudd': 'pudding',
 };
 exports.LOANWORD_SYNONYMS = {
     'fusilli': 'teigwaren pasta',
@@ -50,6 +55,8 @@ exports.LOANWORD_SYNONYMS = {
     'diavolo': 'pizza scharfe salami',
     'reggiano': 'parmesan hartkaese',
     'pringles': 'chips kartoffel',
+    'ravioli': 'teigwaren pasta',
+    'angus': 'rind beef',
 };
 /**
  * Normalizes a German receipt line by expanding abbreviations, stripping brands/certifications,

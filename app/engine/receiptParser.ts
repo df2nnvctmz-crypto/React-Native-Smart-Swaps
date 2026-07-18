@@ -7,7 +7,16 @@ export interface ParsedReceiptItem {
   confidence: number;
 }
 
-export const normalize = (text: string) => text.toLowerCase().replace(/[\.\-\/]/g, ' ').replace(/[^\w\säöüß]/gi, ' ').replace(/\s+/g, ' ').trim();
+export const normalize = (text: string) => {
+  return text.toLowerCase()
+    .replace(/ä/g, '__AUM__').replace(/ö/g, '__OUM__').replace(/ü/g, '__UUM__').replace(/ß/g, '__SZ__')
+    .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+    .replace(/__AUM__/g, 'ä').replace(/__OUM__/g, 'ö').replace(/__UUM__/g, 'ü').replace(/__SZ__/g, 'ß')
+    .replace(/[\.\-\/]/g, ' ')
+    .replace(/[^\w\säöüß]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
 
 export const asciiFold = (text: string) => {
   return text.toLowerCase()
@@ -15,6 +24,7 @@ export const asciiFold = (text: string) => {
     .replace(/ö/g, 'oe')
     .replace(/ü/g, 'ue')
     .replace(/ß/g, 'ss')
+    .normalize('NFD').replace(/\p{Diacritic}/gu, '')
     .replace(/[\.\-\/]/g, ' ')
     .replace(/[^\w\s]/g, ' ')
     .replace(/\s+/g, ' ')
@@ -94,7 +104,7 @@ function candidateKeysFor(token: string, shingleIndex: Map<string, Set<string>>)
   return keys;
 }
 
-const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber|mozzarella|gouda|parmesan|ricotta|feta|camembert|edamer|pesto|gnocchi|tortelloni|quark|butter|teigwaren|chili|paprika/i.test(t);
+const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber|mozzarella|gouda|parmesan|ricotta|feta|camembert|edamer|pesto|gnocchi|tortelloni|quark|butter|teigwaren|chili|paprika|skyr/i.test(t);
 
 function candidateKeysFor4Gram(token: string, fourGramIndex: Map<string, Set<string>>): Set<string> {
   const keys = new Set<string>();
@@ -114,13 +124,27 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')   // "NIPizza" -> "NI Pizza"
     .replace(/([a-z])([A-Z])/g, '$1 $2');          // "PizzaSpeciale" -> "Pizza Speciale"
 
-  const HEAD_NOUN_SUFFIXES = ['brot','wurst','kaese','käse','milch','saft','sahne','creme','oel','öl','schinken','pudding','paprika','joghurt','salat','suppe','fleisch','tee','wasser','wein','bier','pizza','reis'];
+  const HEAD_NOUN_SUFFIXES = ['brot','wurst','kaese','käse','milch','saft','sahne','creme','oel','öl','schinken','pudding','paprika','joghurt','salat','suppe','fleisch','tee','wasser','wein','bier','pizza','reis','baguette','baguett','mais','quark','nudeln'];
   const headNounSplit = caseSplit.split(/\s+/).map(word => {
     if (word.length < 8) return word;
     const lower = word.toLowerCase();
     for (const suf of HEAD_NOUN_SUFFIXES) {
       if (lower.endsWith(suf) && lower.length > suf.length + 3) {
         return word.slice(0, word.length - suf.length) + ' ' + word.slice(word.length - suf.length);
+      }
+      const tail = lower.slice(-suf.length);
+      if (tail.length === suf.length && levenshtein(tail, suf) <= 1 && lower.length > suf.length + 3) {
+        return word.slice(0, word.length - suf.length) + ' ' + suf;
+      }
+      if (suf.length > 3) {
+        const tailMinus1 = lower.slice(-(suf.length - 1));
+        if (tailMinus1.length === suf.length - 1 && levenshtein(tailMinus1, suf) <= 1 && lower.length > suf.length + 2) {
+          return word.slice(0, word.length - tailMinus1.length) + ' ' + suf;
+        }
+        const tailPlus1 = lower.slice(-(suf.length + 1));
+        if (tailPlus1.length === suf.length + 1 && levenshtein(tailPlus1, suf) <= 1 && lower.length > suf.length + 4) {
+          return word.slice(0, word.length - tailPlus1.length) + ' ' + suf;
+        }
       }
     }
     return word;
@@ -131,7 +155,7 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   const reglued: string[] = [];
   for (let i = 0; i < wl.length; i++) {
     const w = wl[i], nx = wl[i+1];
-    if (w.length <= 4 && /^[a-zA-ZäöüÄÖÜß]+$/.test(w) && nx && /^[a-zA-Z]/.test(nx) && nx.length <= 12) {
+    if (nx && (w.length <= 4 || nx.length <= 4) && (w.length + nx.length) <= 14 && /^[a-zA-ZäöüÄÖÜß]+$/.test(w) && /^[a-zA-ZäöüÄÖÜß]+$/.test(nx)) {
       reglued.push(w + nx); i++;
     } else reglued.push(w);
   }
@@ -155,7 +179,7 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   const candidateHits = new Map<FoodItem, number>();
   const addCand = (f: FoodItem) => candidateHits.set(f, (candidateHits.get(f) ?? 0) + 1);
   if (indexData) {
-    const searchTokens = [...new Set([...ocrTokensRaw, ...ocrTokensAscii])];
+    const searchTokens = Array.from(new Set(ocrTokensRaw.concat(ocrTokensAscii)));
     for (const token of searchTokens) {
       if (token.length < 3) continue;
       const exact = indexData.index.get(token);
@@ -168,21 +192,53 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
       // OCR-confusion variants: single-char substitutions with common misread pairs,
       // looked up EXACTLY (cheap Map.gets). Recovers mid-word typos that poison every
       // n-gram (VERIFIED: "Bat anen" -> "Bananen" -> Banana raw; unreachable before).
+      let foundVariant = false;
       if (!exact && token.length >= 5 && token.length <= 10) {
         const CONF: Record<string, string[]> = { t:['n','i','l'], i:['n','l','t'],
-          l:['i','t'], n:['m','t','i','u'], m:['n'], o:['0','e'], u:['n','v'], v:['u'],
-          f:['t'], c:['e','o'], e:['c','o'], r:['n'] };
+          l:['i','t'], n:['m','t','i','u','w'], m:['n'], o:['0','e','u'], u:['n','v','o'], v:['u'],
+          f:['t'], c:['e','o'], e:['c','o','s'], r:['n'], d:['g','b'], g:['d'], s:['e'], q:['o'], w:['n'], b:['d'] };
         for (let p = 0; p < token.length; p++) {
           const alts = CONF[token[p]];
           if (!alts) continue;
           for (const a of alts) {
             const v = token.slice(0, p) + a + token.slice(p + 1);
             const hit = indexData.index.get(v);
-            if (hit) hit.forEach(f => { addCand(f); addCand(f); });
+            if (hit) { hit.forEach(f => { addCand(f); addCand(f); }); foundVariant = true; }
             if (indexData.stemIndex) {
               const vs = v.length > 4 ? v.replace(/(en|e|n|s)$/,'') : v;
               const hs = indexData.stemIndex.get(vs) ?? indexData.stemIndex.get(v);
-              if (hs) hs.forEach(f => { addCand(f); addCand(f); });
+              if (hs) { hs.forEach(f => { addCand(f); addCand(f); }); foundVariant = true; }
+            }
+          }
+        }
+        
+        // Deletion variants
+        if (!foundVariant) {
+          for (let p = 0; p < token.length; p++) {
+            const v = token.slice(0, p) + token.slice(p + 1);
+            const hit = indexData.index.get(v);
+            if (hit) { hit.forEach(f => { addCand(f); addCand(f); }); foundVariant = true; }
+            if (indexData.stemIndex) {
+              const vs = v.length > 4 ? v.replace(/(en|e|n|s)$/,'') : v;
+              const hs = indexData.stemIndex.get(vs) ?? indexData.stemIndex.get(v);
+              if (hs) { hs.forEach(f => { addCand(f); addCand(f); }); foundVariant = true; }
+            }
+          }
+        }
+        
+        // Insertion variants
+        if (!foundVariant && token.length <= 9) {
+          const a_z = 'abcdefghijklmnopqrstuvwxyz';
+          for (let p = 0; p <= token.length; p++) {
+            for (let charIdx = 0; charIdx < 26; charIdx++) {
+              const v = token.slice(0, p) + a_z[charIdx] + token.slice(p);
+              const hit = indexData.index.get(v);
+              if (hit) { hit.forEach(f => { addCand(f); addCand(f); }); foundVariant = true; }
+              if (indexData.stemIndex) {
+                const vs = v.length > 4 ? v.replace(/(en|e|n|s)$/,'') : v;
+                const hs = indexData.stemIndex.get(vs) ?? indexData.stemIndex.get(v);
+                if (hs) { hs.forEach(f => { addCand(f); addCand(f); }); foundVariant = true; }
+              }
             }
           }
         }
@@ -314,7 +370,7 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           }
           
           // TASK 2: Weight category-defining nouns over descriptors
-          const isDescriptorStopword = (t: string) => /^(sort|sortiert|lose|natur|classic|clas|fein|extra|spezial|surt|frisch|hausgemacht|regional|leicht|light|mix|protein)$/i.test(t);
+          const isDescriptorStopword = (t: string) => /^(sort|sortiert|lose|natur|classic|clas|fein|extra|spezial|surt|frisch|hausgemacht|regional|leicht|light|mix|protein|steinofen|ofenfrisch)$/i.test(t);
           const weight = isDescriptorStopword(oToken) ? 0 : (isCoreNoun(oToken) ? 3 : 1);
           
           overlapScore += (bestTokenScore * weight);
@@ -431,7 +487,8 @@ const META_TOKENS = new Set([
   'rueckgeld','wechselgeld','gegeben','geg','kundenbeleg','beleg','filiale','markt',
   'discount','marken','netto','rewe','edeka','lidl','aldi','kaufland','penny',
   'www','http','https','de','com','uid','ustid','tel','telefon','datum','uhrzeit','bon','id',
-  'terminal','trace','berlin','hamburg','muenchen','koeln','allee','strasse','platz','weg'
+  'terminal','trace','berlin','hamburg','muenchen','koeln','allee','strasse','platz','weg',
+  'bezahlung','contactless','ohg','gmbh','inhaber'
 ]);
 const UNIT = new Set(['st','stk','pck','pkg','btl','lose','vke','sort','ca','ab','pk']);
 
@@ -445,6 +502,8 @@ export function isLikelyProductLine(raw: string): boolean {
   if (/^\d+[.,]\d+\s*(kg|g)\b/i.test(low)) return false;
   if (/^-?\d+[.,]\d{2}\s*[a-c]?$/i.test(low)) return false;
   if (/www|http|\.de\b|\.com\b|online/i.test(low)) return false;
+  if (/[a-zäöü]+stra(ß|ss)e$/i.test(low)) return false;
+  if (/^\d+\s*stk\.?\s*x?$/i.test(low)) return false;
   if (/\b\d{4,5}\b/.test(low) && /(allee|strasse|str\.|platz|weg|berlin|hamburg)/i.test(low)) return false;
   if (((line.match(/-/g)||[]).length >= 3) && !/\d[.,]\d{2}/.test(line)) return false;
   const tokens = low.replace(/[^\w\s]/g,' ').split(/\s+/).filter(Boolean);

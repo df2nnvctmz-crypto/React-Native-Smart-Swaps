@@ -27,6 +27,11 @@ export const ABBREVIATIONS: Record<string, string> = {
   'pfann': 'pfannengericht',
   'sojajogh': 'soja joghurt',
   'sojadr': 'soja joghurt drink',
+  'moz': 'mozzarella',
+  'skr': 'skyr',
+  'himb': 'himbeere',
+  'cranb': 'cranberry',
+  'pudd': 'pudding',
 };
 
 export const LOANWORD_SYNONYMS: Record<string, string> = {
@@ -49,6 +54,8 @@ export const LOANWORD_SYNONYMS: Record<string, string> = {
   'diavolo': 'pizza scharfe salami',
   'reggiano': 'parmesan hartkaese',
   'pringles': 'chips kartoffel',
+  'ravioli': 'teigwaren pasta',
+  'angus': 'rind beef',
 };
 
 /**

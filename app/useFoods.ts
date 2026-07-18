@@ -33,7 +33,7 @@ export const getIconForCategory = (category: string): keyof typeof Ionicons.glyp
   return 'fast-food-outline';
 };
 
-const DB_HEAD_NOUN_SUFFIXES = ['brot','broetchen','wurst','kaese','milch','saft','sahne','creme','schinken','salat','suppe','pudding','paprika','joghurt','fleisch','tee','wasser','wein','bier','pizza','reis'];
+const DB_HEAD_NOUN_SUFFIXES = ['brot','broetchen','wurst','kaese','milch','saft','sahne','creme','schinken','salat','suppe','pudding','paprika','joghurt','fleisch','tee','wasser','wein','bier','pizza','reis','baguette','baguett','mais','quark','nudeln'];
 function withHeadNounSplits(tokens: string[]): string[] {
   const out = [...tokens];
   for (const t of tokens) {
