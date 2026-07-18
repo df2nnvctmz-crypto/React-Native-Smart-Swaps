@@ -77,19 +77,36 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
     return (
       <View key={originalIndex} style={styles.row}>
         <View style={styles.rowTop}>
-          <View style={styles.infoContainer}>
+          <TouchableOpacity 
+            style={styles.infoContainer}
+            activeOpacity={item.matchedFood && item.confidence >= 0.45 ? 0.7 : 1}
+            onPress={() => {
+              if (item.matchedFood && item.confidence >= 0.45) {
+                router.push(`/food/${item.matchedFood.id}`);
+              }
+            }}
+          >
             <Text style={styles.foodName} numberOfLines={1}>
               {(item.matchedFood && item.confidence >= 0.45) ? item.matchedFood.name : item.rawText}
             </Text>
             <Text style={styles.rawTextScan} numberOfLines={1}>Scanned: "{item.rawText}"</Text>
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.actionsContainer}>
-            {item.matchedFood && item.confidence >= 0.45 ? (
-              <Text style={styles.scoreText}>{item.matchedFood.health_score}</Text>
-            ) : (
-              <Text style={[styles.scoreText, { color: '#999' }]}>-</Text>
-            )}
+            <TouchableOpacity
+              activeOpacity={item.matchedFood && item.confidence >= 0.45 ? 0.7 : 1}
+              onPress={() => {
+                if (item.matchedFood && item.confidence >= 0.45) {
+                  router.push(`/food/${item.matchedFood.id}`);
+                }
+              }}
+            >
+              {item.matchedFood && item.confidence >= 0.45 ? (
+                <Text style={styles.scoreText}>{item.matchedFood.health_score}</Text>
+              ) : (
+                <Text style={[styles.scoreText, { color: '#999' }]}>-</Text>
+              )}
+            </TouchableOpacity>
             
             <TouchableOpacity 
               style={styles.editBtn} 

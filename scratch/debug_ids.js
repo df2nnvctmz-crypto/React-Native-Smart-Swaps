@@ -1,0 +1,1 @@
+const fs = require('fs'); const foods = JSON.parse(fs.readFileSync('foods.json', 'utf8')); const f1 = foods.find(x => x.name_de === 'Schlagsahne mind. 30 % Fett'); const f2 = foods.find(x => x.name_de === 'Schlagsahne mind. 36 % Fett'); console.log(f1.id, f2.id);  

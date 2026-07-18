@@ -1,0 +1,1 @@
+const { normalize, asciiFold } = require('../app/engine/receiptParser'); console.log(normalize('Bert.0livenoel sort.50Oml')); console.log(asciiFold('Bert.0livenoel sort.50Oml')); console.log(normalize('Knotenbeutel')); console.log(normalize('Ostmann Pfefferkoer.wei. 60g')); console.log(normalize('Suppengemuese 500g'));  

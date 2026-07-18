@@ -68,6 +68,8 @@ export const LOANWORD_SYNONYMS: Record<string, string> = {
   'pringles': 'chips kartoffel',
   'ravioli': 'teigwaren pasta',
   'angus': 'rind beef',
+  'pfefferkoer': 'pfefferkoerner pfeffer',
+  'suppengemuese': 'suppengruen gemuese',
 };
 
 /**

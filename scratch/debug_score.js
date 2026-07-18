@@ -1,0 +1,1 @@
+const { parseReceiptLine } = require('../app/engine/receiptParser'); const { buildFoodIndex } = require('../app/useFoods'); const fs = require('fs'); const foods = JSON.parse(fs.readFileSync('foods.json', 'utf8')); const idx = buildFoodIndex(foods); const f = foods.find(x => x.id === 'bls5763'); console.log(parseReceiptLine('Knotenbeutel', [f], idx));  

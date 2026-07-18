@@ -47,7 +47,14 @@ const tests = [
   "TOMATE CHERRY",
   "APFEL ROT",
   "SKYR HIMB -CRANB",
-  "KIDNEY BOHNEN"
+  "KIDNEY BOHNEN",
+  "Bert.0livenoel sort.50Oml",
+  "Knotenbeutel",
+  "Ostmann Pfefferkoer.wei. 60g",
+  "Mon.Ital.Pesto sort.190g",
+  "GL Sahne 30% 200g VLOG",
+  "Suppengemuese 500g",
+  "Frankf. Allee 57-59"
 ];
 
 for (const t of tests) {

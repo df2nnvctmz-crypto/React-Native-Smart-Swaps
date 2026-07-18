@@ -1,0 +1,1 @@
+const { buildFoodIndex } = require('../app/useFoods'); const fs = require('fs'); const foods = JSON.parse(fs.readFileSync('foods.json', 'utf8')); const idx = buildFoodIndex(foods); console.log(Array.from(idx.index.get('beutel') ? idx.index.get('beutel') : []).map(f => f.name_de).slice(0, 5));  
