@@ -28,10 +28,16 @@ export const ABBREVIATIONS: Record<string, string> = {
 };
 
 export const LOANWORD_SYNONYMS: Record<string, string> = {
-  'fusilli': 'pasta nudeln',
-  'penne': 'pasta nudeln',
-  'spaghetti': 'pasta nudeln',
-  'tagliatelle': 'pasta nudeln',
+  'fusilli': 'teigwaren pasta',
+  'penne': 'teigwaren pasta',
+  'spaghetti': 'teigwaren pasta',
+  'tagliatelle': 'teigwaren pasta',
+  'lady': 'apfel apple',
+  'braeburn': 'apfel apple',
+  'elstar': 'apfel apple',
+  'jonagold': 'apfel apple',
+  'boskoop': 'apfel apple',
+  'pinova': 'apfel apple',
   'grana': 'parmesan hartkaese',
   'para': 'parmesan',
   'parmigiano': 'parmesan',

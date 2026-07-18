@@ -18,6 +18,11 @@ import { RecipeCard } from '../../components/RecipeCard';
 import { useProfile } from '../context/ProfileContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { RecipeSearchModal } from '../../components/RecipeSearchModal';
+import { StorageService, ScanRecord } from '../services/storage';
+import { findBestSwaps } from '../engine/swapAlgorithm';
+import { FoodItem } from '../types';
+import { useFocusEffect } from 'expo-router';
+import { useFoods } from '../useFoods';
 
 const CATEGORIES = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert'];
 
@@ -26,12 +31,38 @@ export default function RecipesTab() {
   const insets = useSafeAreaInsets();
   const { profile } = useProfile();
   const { isFavorite } = useFavorites();
+  const { allFoods, foods } = useFoods();
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerHeight = insets.top + HEADER_CONTENT_HEIGHT;
   
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchVisible, setSearchVisible] = useState(false);
   const [limit, setLimit] = useState(10);
+  const [scans, setScans] = useState<ScanRecord[]>([]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      StorageService.getScans().then(setScans);
+    }, [])
+  );
+
+  const relevantFoodIds = useMemo(() => {
+    const ids = new Set<string>();
+    const safeFoods = foods.length > 0 ? foods : allFoods;
+    
+    for (const scan of scans) {
+      for (const item of scan.items) {
+        if (item.matchedFood) {
+          ids.add(item.matchedFood.id);
+          const swaps = findBestSwaps(item.matchedFood, safeFoods, 2, profile.dietaryPreference);
+          for (const swap of swaps) {
+            ids.add(swap.candidate.id);
+          }
+        }
+      }
+    }
+    return ids;
+  }, [scans, foods, allFoods, profile.dietaryPreference]);
 
   // Reset limit when category changes
   const handleCategoryChange = (cat: string) => {
@@ -60,9 +91,23 @@ export default function RecipesTab() {
       );
     }
     
-    // Sort by health score for "Popular"
-    return recipes.sort((a, b) => b.health_score - a.health_score);
-  }, [selectedCategory, profile.dietaryPreference]);
+    const scoredRecipes = recipes.map(r => {
+      let relevance = 0;
+      for (const ing of r.ingredients) {
+        if (ing.food && relevantFoodIds.has(ing.food.id)) {
+          relevance += 1;
+        }
+      }
+      return { ...r, relevance_score: relevance };
+    });
+
+    return scoredRecipes.sort((a, b) => {
+      if (b.relevance_score !== a.relevance_score) {
+        return b.relevance_score - a.relevance_score;
+      }
+      return b.health_score - a.health_score;
+    });
+  }, [selectedCategory, profile.dietaryPreference, relevantFoodIds]);
 
   const featured = filtered[0];
   const rest = filtered.slice(1);

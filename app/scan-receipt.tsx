@@ -187,8 +187,8 @@ export default function ScanReceiptScreen() {
 
           <ReceiptItemList items={results} onUpdateItem={handleUpdateItem} />
           
-          <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]} onPress={() => router.push('/bills')}>
-            <Text style={styles.primaryBtnText}>View in Recent Bills</Text>
+          <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]} onPress={() => router.push('/receipts')}>
+            <Text style={styles.primaryBtnText}>View in Recent Receipts</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>

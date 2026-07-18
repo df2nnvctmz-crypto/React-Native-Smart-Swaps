@@ -24,9 +24,9 @@ function NativeTabLayout() {
         <Icon sf={{ default: "arrow.left.arrow.right", selected: "arrow.left.arrow.right" }} />
         <Label>Swaps</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="bills">
+      <NativeTabs.Trigger name="receipts">
         <Icon sf={{ default: "list.bullet.rectangle", selected: "list.bullet.rectangle.fill" }} />
-        <Label>Bills</Label>
+        <Label>Receipts</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -110,9 +110,9 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="bills"
+        name="receipts"
         options={{
-          title: "Bills",
+          title: "Receipts",
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="list.bullet.rectangle" tintColor={color} size={22} />

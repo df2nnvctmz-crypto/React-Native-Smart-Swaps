@@ -9,6 +9,7 @@ import { useFoods } from '../app/useFoods';
 import { useProfile } from '../app/context/ProfileContext';
 import { findBestSwaps } from '../app/engine/swapAlgorithm';
 import { SearchModal } from './SearchModal';
+import * as Haptics from 'expo-haptics';
 
 interface ReceiptItemListProps {
   items: ParsedReceiptItem[];
@@ -24,40 +25,19 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
 
   const safeFoods = foods.length > 0 ? foods : allFoods;
 
-  // Sort items: Verified (confidence > 0.6) first, then Possible (<= 0.6 and > 0.3), then Not found (<= 0.3)
-  const sortedItems = [...items].map((item, originalIndex) => ({ item, originalIndex })).sort((a, b) => {
-    const getSortValue = (it: ParsedReceiptItem) => {
-      if (!it.matchedFood || it.confidence < 0.45) return 0; // Not found
-      if (it.confidence > 0.72) return 2; // High confidence / Verified
-      return 1; // Possible match
-    };
-    return getSortValue(b.item) - getSortValue(a.item);
-  });
+  const confident: { item: ParsedReceiptItem; originalIndex: number }[] = [];
+  const potential: { item: ParsedReceiptItem; originalIndex: number }[] = [];
+  const notFound: { item: ParsedReceiptItem; originalIndex: number }[] = [];
 
-  const renderConfidenceIndicator = (confidence: number, hasMatchedFood: boolean) => {
-    if (!hasMatchedFood || confidence < 0.45) {
-      return (
-        <View style={[styles.confidenceTag, { backgroundColor: '#F0F0F0' }]}>
-          <View style={[styles.confidenceDot, { backgroundColor: '#999' }]} />
-          <Text style={[styles.confidenceText, { color: '#666' }]}>Not found</Text>
-        </View>
-      );
+  items.forEach((item, index) => {
+    if (!item.matchedFood || item.confidence < 0.45) {
+      notFound.push({ item, originalIndex: index });
+    } else if (item.confidence > 0.72) {
+      confident.push({ item, originalIndex: index });
+    } else {
+      potential.push({ item, originalIndex: index });
     }
-    if (confidence > 0.72) {
-      return (
-        <View style={[styles.confidenceTag, { backgroundColor: '#E8F5E9' }]}>
-          <View style={[styles.confidenceDot, { backgroundColor: COLORS.primaryGreen }]} />
-          <Text style={[styles.confidenceText, { color: COLORS.primaryGreenDark }]}>Verified</Text>
-        </View>
-      );
-    }
-    return (
-      <View style={[styles.confidenceTag, { backgroundColor: '#FFF8E1' }]}>
-        <View style={[styles.confidenceDot, { backgroundColor: '#F5A623' }]} />
-        <Text style={[styles.confidenceText, { color: '#D48806' }]}>Possible match</Text>
-      </View>
-    );
-  };
+  });
 
   const handleSelectCorrection = (food: FoodItem) => {
     if (editingIndex !== null) {
@@ -66,70 +46,90 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
     }
   };
 
+  const handleEditPress = (index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setEditingIndex(index);
+  };
+
+  const renderItemRow = ({ item, originalIndex }: { item: ParsedReceiptItem; originalIndex: number }) => {
+    let swapLine = null;
+    if (item.matchedFood) {
+      const bestSwaps = findBestSwaps(item.matchedFood, safeFoods, 1, profile.dietaryPreference);
+      if (bestSwaps.length > 0) {
+        const swap = bestSwaps[0];
+        const improvement = swap.candidate.health_score - item.matchedFood.health_score;
+        if (improvement > 0) {
+          swapLine = (
+            <TouchableOpacity 
+              style={styles.swapLineContainer}
+              onPress={() => router.push(`/food/${swap.candidate.id}`)}
+            >
+              <Ionicons name="arrow-undo-outline" size={12} color={COLORS.primaryGreen} style={{ transform: [{ scaleX: -1 }] }} />
+              <Text style={styles.swapLineText} numberOfLines={1}>
+                Swap: {swap.candidate.name} <Text style={styles.swapImprovement}>(+{improvement})</Text>
+              </Text>
+            </TouchableOpacity>
+          );
+        }
+      }
+    }
+
+    return (
+      <View key={originalIndex} style={styles.row}>
+        <View style={styles.rowTop}>
+          <View style={styles.infoContainer}>
+            <Text style={styles.foodName} numberOfLines={1}>
+              {(item.matchedFood && item.confidence >= 0.45) ? item.matchedFood.name : item.rawText}
+            </Text>
+            <Text style={styles.rawTextScan} numberOfLines={1}>Scanned: "{item.rawText}"</Text>
+          </View>
+
+          <View style={styles.actionsContainer}>
+            {item.matchedFood && item.confidence >= 0.45 ? (
+              <Text style={styles.scoreText}>{item.matchedFood.health_score}</Text>
+            ) : (
+              <Text style={[styles.scoreText, { color: '#999' }]}>-</Text>
+            )}
+            
+            <TouchableOpacity 
+              style={styles.editBtn} 
+              onPress={() => handleEditPress(originalIndex)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="pencil-outline" size={16} color={COLORS.textMuted} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {swapLine}
+      </View>
+    );
+  };
+
+  const renderSection = (title: string, data: typeof confident) => {
+    if (data.length === 0) return null;
+    return (
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <View style={styles.sectionList}>
+          {data.map(renderItemRow)}
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
-      {sortedItems.map(({ item, originalIndex }) => {
-        let swapLine = null;
-        if (item.matchedFood) {
-          const bestSwaps = findBestSwaps(item.matchedFood, safeFoods, 1, profile.dietaryPreference);
-          if (bestSwaps.length > 0) {
-            const swap = bestSwaps[0];
-            const improvement = swap.candidate.health_score - item.matchedFood.health_score;
-            if (improvement > 0) {
-              swapLine = (
-                <TouchableOpacity 
-                  style={styles.swapLineContainer}
-                  onPress={() => router.push(`/food/${swap.candidate.id}`)}
-                >
-                  <Ionicons name="arrow-undo-outline" size={14} color={COLORS.primaryGreen} style={{ transform: [{ scaleX: -1 }] }} />
-                  <Text style={styles.swapLineText} numberOfLines={1}>
-                    Swap: {swap.candidate.name} <Text style={styles.swapImprovement}>(+{improvement} pt)</Text>
-                  </Text>
-                </TouchableOpacity>
-              );
-            }
-          }
-        }
-
-        return (
-          <View key={originalIndex} style={styles.row}>
-            <View style={styles.rowTop}>
-              <View style={styles.infoContainer}>
-                <Text style={styles.foodName} numberOfLines={2}>
-                  {item.matchedFood ? item.matchedFood.name : item.rawText}
-                </Text>
-                {renderConfidenceIndicator(item.confidence, !!item.matchedFood)}
-                <Text style={styles.rawTextScan}>Scanned as: "{item.rawText}"</Text>
-              </View>
-
-              <View style={styles.actionsContainer}>
-                {item.matchedFood ? (
-                  <Text style={styles.scoreText}>{item.matchedFood.health_score}</Text>
-                ) : (
-                  <Text style={[styles.scoreText, { color: '#999' }]}>-</Text>
-                )}
-                
-                <TouchableOpacity 
-                  style={styles.editBtn} 
-                  onPress={() => setEditingIndex(originalIndex)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <Ionicons name="pencil-outline" size={18} color={COLORS.textMuted} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {swapLine}
-          </View>
-        );
-      })}
+      {renderSection('Confident Matches', confident)}
+      {renderSection('Potential Matches', potential)}
+      {renderSection('Not Found', notFound)}
 
       <SearchModal 
         visible={editingIndex !== null}
         onClose={() => setEditingIndex(null)}
         mode="foods"
         onSelect={handleSelectCorrection}
-        rawText={editingIndex !== null ? sortedItems.find(x => x.originalIndex === editingIndex)?.item.rawText : undefined}
+        rawText={editingIndex !== null ? items[editingIndex].rawText : undefined}
       />
     </View>
   );
@@ -139,69 +139,61 @@ const styles = StyleSheet.create({
   container: {
     paddingBottom: 24,
   },
-  row: {
+  sectionContainer: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  sectionList: {
     backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.02,
-    shadowRadius: 4,
-    elevation: 1,
+    overflow: 'hidden',
+  },
+  row: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: COLORS.border,
   },
   rowTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   infoContainer: {
     flex: 1,
     paddingRight: 12,
   },
   foodName: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     color: COLORS.textPrimary,
-    marginBottom: 6,
-  },
-  confidenceTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 4,
-  },
-  confidenceDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 6,
-  },
-  confidenceText: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
   },
   rawTextScan: {
-    fontSize: 12,
+    fontSize: 11,
     color: COLORS.textMuted,
     fontStyle: 'italic',
-    marginTop: 4,
+    marginTop: 2,
   },
   actionsContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   scoreText: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '800',
     color: COLORS.primaryGreen,
+    width: 28,
+    textAlign: 'right',
   },
   editBtn: {
     padding: 4,
@@ -209,13 +201,13 @@ const styles = StyleSheet.create({
   swapLineContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
+    marginTop: 6,
+    paddingTop: 6,
+    borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: COLORS.border,
   },
   swapLineText: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textSecondary,
     marginLeft: 6,
     flex: 1,
@@ -226,3 +218,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   }
 });
+

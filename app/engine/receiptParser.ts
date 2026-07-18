@@ -94,7 +94,7 @@ function candidateKeysFor(token: string, shingleIndex: Map<string, Set<string>>)
   return keys;
 }
 
-const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber|mozzarella|gouda|parmesan|ricotta|feta|camembert|edamer|pesto|gnocchi|tortelloni|quark|butter/i.test(t);
+const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber|mozzarella|gouda|parmesan|ricotta|feta|camembert|edamer|pesto|gnocchi|tortelloni|quark|butter|teigwaren/i.test(t);
 
 function candidateKeysFor4Gram(token: string, fourGramIndex: Map<string, Set<string>>): Set<string> {
   const keys = new Set<string>();
@@ -160,6 +160,33 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
       if (token.length < 3) continue;
       const exact = indexData.index.get(token);
       if (exact) exact.forEach(f => { addCand(f); addCand(f); }); // exact hits weigh double
+      const stem = token.length > 4 ? token.replace(/(en|e|n|s)$/,'') : token;
+      if (stem !== token && indexData.stemIndex) {
+        const st = indexData.stemIndex.get(stem) ?? indexData.stemIndex.get(token);
+        if (st) st.forEach(f => { addCand(f); addCand(f); });
+      }
+      // OCR-confusion variants: single-char substitutions with common misread pairs,
+      // looked up EXACTLY (cheap Map.gets). Recovers mid-word typos that poison every
+      // n-gram (VERIFIED: "Bat anen" -> "Bananen" -> Banana raw; unreachable before).
+      if (!exact && token.length >= 5 && token.length <= 10) {
+        const CONF: Record<string, string[]> = { t:['n','i','l'], i:['n','l','t'],
+          l:['i','t'], n:['m','t','i','u'], m:['n'], o:['0','e'], u:['n','v'], v:['u'],
+          f:['t'], c:['e','o'], e:['c','o'], r:['n'] };
+        for (let p = 0; p < token.length; p++) {
+          const alts = CONF[token[p]];
+          if (!alts) continue;
+          for (const a of alts) {
+            const v = token.slice(0, p) + a + token.slice(p + 1);
+            const hit = indexData.index.get(v);
+            if (hit) hit.forEach(f => { addCand(f); addCand(f); });
+            if (indexData.stemIndex) {
+              const vs = v.length > 4 ? v.replace(/(en|e|n|s)$/,'') : v;
+              const hs = indexData.stemIndex.get(vs) ?? indexData.stemIndex.get(v);
+              if (hs) hs.forEach(f => { addCand(f); addCand(f); });
+            }
+          }
+        }
+      }
       if (token.length >= 4 && indexData.shingleIndex) {
         let found5 = false;
         for (const key of candidateKeysFor(token, indexData.shingleIndex)) {
@@ -252,7 +279,13 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
               const dist = levenshtein(oToken, nToken);
               const maxLen = Math.max(oToken.length, nToken.length);
               const minLen = Math.min(oToken.length, nToken.length);
-              const sim = 1 - (dist / maxLen);
+              let sim = 1 - (dist / maxLen);
+              const dfl = (w: string) => w.length > 4 ? w.replace(/(en|e|n|s)$/,'') : w;
+              const oS = dfl(oToken), nS = dfl(nToken);
+              if (sim > 0.45 && sim <= 0.75 && (oS !== oToken || nS !== nToken)) {
+                const sd = 1 - levenshtein(oS, nS) / Math.max(oS.length, nS.length);
+                if (sd > sim) sim = sd;
+              }
               if (sim > 0.7) {
                 bestTokenScore = Math.max(bestTokenScore, sim);
               } else if (minLen >= 4 && (nToken.startsWith(oToken) || oToken.startsWith(nToken))) {
@@ -288,7 +321,10 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
         let confidence = totalWeight > 0 ? overlapScore / totalWeight : 0;
 
         // Compute food token coverage (penalize if OCR is missing lots of food words)
-        const IMPLICIT_QUALIFIERS = new Set(['roh','raw','natur','plain','frisch','fresh','min','mind','fat','fett','dry','matter']);
+        const IMPLICIT_QUALIFIERS = new Set(['roh','raw','natur','plain','frisch','fresh','min','mind','fat','fett',
+        'dry','matter','schwein','rind','pute','kalb','haehnchen','huhn','lamm','pork',
+        'beef','veal','kochpoekelware','poekelware','konserve','dose','dosenschinken',
+        'cured','canned','geroestet','roasted','gesalzen','salted']);
         const coverageRelevantFoodTokens = tSet.food.filter(t => !IMPLICIT_QUALIFIERS.has(t) && !parenTokens.has(t));
         let matchedFoodTokens = 0;
         for (const nToken of coverageRelevantFoodTokens) {
@@ -344,12 +380,13 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
         // to identical scores or an artificial ceiling.
         let coreNounFloor = 0;
         for (const oToken of tSet.ocr) {
-          if (!isCoreNoun(oToken)) continue;
           for (const nToken of tSet.food) {
-            if (!isCoreNoun(nToken)) continue;
+            if (!isCoreNoun(nToken) && !isCoreNoun(oToken)) continue;
             if (oToken === nToken) { coreNounFloor = Math.max(coreNounFloor, 0.55); continue; }
-            const d = levenshtein(oToken, nToken);
-            const s = 1 - d / Math.max(oToken.length, nToken.length);
+            const oS2 = oToken.length > 4 ? oToken.replace(/(en|e|n|s)$/,'') : oToken;
+            const nS2 = nToken.length > 4 ? nToken.replace(/(en|e|n|s)$/,'') : nToken;
+            const d = levenshtein(oS2, nS2);
+            const s = 1 - d / Math.max(oS2.length, nS2.length);
             if (s > 0.75) coreNounFloor = Math.max(coreNounFloor, 0.5);
           }
         }
@@ -383,7 +420,7 @@ const META_TOKENS = new Set([
   'kartenzahlung','karte','karten','bar','ec','girocard','visa','mastercard','maestro',
   'rueckgeld','wechselgeld','gegeben','geg','kundenbeleg','beleg','filiale','markt',
   'discount','marken','netto','rewe','edeka','lidl','aldi','kaufland','penny',
-  'www','http','https','de','com','uid','ustid','tel','telefon','datum','uhrzeit','bon',
+  'www','http','https','de','com','uid','ustid','tel','telefon','datum','uhrzeit','bon','id',
   'terminal','trace','berlin','hamburg','muenchen','koeln','allee','strasse','platz','weg'
 ]);
 const UNIT = new Set(['st','stk','pck','pkg','btl','lose','vke','sort','ca','ab','pk']);

@@ -18,6 +18,7 @@ export interface FoodIndexData {
   cache: Map<string, { de?: FoodTokensCache, en: FoodTokensCache }>;
   shingleIndex?: Map<string, Set<string>>;
   fourGramIndex?: Map<string, Set<string>>;
+  stemIndex?: Map<string, Set<FoodItem>>;
 }
 
 export const getIconForCategory = (category: string): keyof typeof Ionicons.glyphMap => {
@@ -50,6 +51,7 @@ function withHeadNounSplits(tokens: string[]): string[] {
 export function buildFoodIndex(foodsData: FoodItem[]): FoodIndexData {
   const index = new Map<string, Set<FoodItem>>();
   const cache = new Map<string, { de?: FoodTokensCache, en: FoodTokensCache }>();
+  const stemIndex = new Map<string, Set<FoodItem>>();
 
   for (const food of foodsData) {
     const foodCache: { de?: FoodTokensCache, en: FoodTokensCache } = {
@@ -86,6 +88,16 @@ export function buildFoodIndex(foodsData: FoodItem[]): FoodIndexData {
       }
       index.get(token)!.add(food);
     });
+
+    allTokens.forEach(t => {
+      if (t.length > 4) {
+        const s = t.replace(/(en|e|n|s)$/,'');
+        if (s.length > 2 && s !== t) {
+          if (!stemIndex.has(s)) stemIndex.set(s, new Set());
+          stemIndex.get(s)!.add(food);
+        }
+      }
+    });
   }
 
   const SHINGLE_LEN = 5;
@@ -113,7 +125,7 @@ export function buildFoodIndex(foodsData: FoodItem[]): FoodIndexData {
     }
   }
 
-  return { index, cache, shingleIndex, fourGramIndex };
+  return { index, cache, shingleIndex, fourGramIndex, stemIndex };
 }
 
 export function useFoods() {

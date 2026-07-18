@@ -22,6 +22,7 @@ import { useProfile, DietaryPreference } from '../context/ProfileContext';
 import { SearchModal } from '../../components/SearchModal';
 import { GlassHeader, HEADER_CONTENT_HEIGHT } from '../../components/GlassHeader';
 import { CircularScoreRing } from '../../components/CircularScoreRing';
+import { CoverFlowCarousel } from '../../components/CoverFlowCarousel';
 import { useFavorites } from '../context/FavoritesContext';
 import { FoodItem } from '../types';
 import { StorageService, ScanRecord } from '../services/storage';
@@ -152,12 +153,12 @@ export default function SwapsTab() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerHeight = insets.top + HEADER_CONTENT_HEIGHT;
 
-  const renderSwapCard = (item: any, isFavList: boolean = false) => {
+  const renderSwapCard = (item: any, isCarousel: boolean = false) => {
     const isExpanded = expandedItem === item.id;
     const isFav = isFavorite('swap', item.id);
     
     return (
-      <View key={item.id} style={[globalStyles.card, { marginBottom: 12 }]}>
+      <View key={item.id} style={[globalStyles.card, { marginBottom: 12 }, isCarousel && { width: '100%', marginBottom: 8 }]}>
         <View style={[globalStyles.rowBetween, { alignItems: 'center' }]}>
            <TouchableOpacity style={styles.swapCol} onPress={() => router.push(`/food/${item.from.id}`)}>
               <CircularScoreRing percentage={item.from.health_score} size={44} strokeWidth={4} />
@@ -267,11 +268,15 @@ export default function SwapsTab() {
         ) : (
           <>
             <Text style={[globalStyles.subtitle, { marginBottom: 16, marginTop: 4 }]}>Smart Swaps for You</Text>
-            <View style={{ marginBottom: 24 }}>
+            <View style={{ marginBottom: 24, marginHorizontal: -20 }}>
               {topSwapObjects.length > 0 ? (
-                topSwapObjects.map(item => renderSwapCard(item))
+                <CoverFlowCarousel
+                  data={topSwapObjects}
+                  keyExtractor={(item) => item.id}
+                  renderItem={(item) => renderSwapCard(item, true)}
+                />
               ) : (
-                <View style={{ padding: 40, alignItems: 'center', backgroundColor: COLORS.white, borderRadius: 16 }}>
+                <View style={{ padding: 40, alignItems: 'center', backgroundColor: COLORS.white, borderRadius: 16, marginHorizontal: 20 }}>
                   <Text style={{ color: COLORS.textMuted, textAlign: 'center', lineHeight: 22 }}>
                     We couldn't find any smart swaps for your scanned items yet. Try scanning more receipts!
                   </Text>
@@ -303,7 +308,7 @@ export default function SwapsTab() {
               </Text>
             </View>
           ) : (
-            favoritedSwapsList.map((item) => renderSwapCard(item, true))
+            favoritedSwapsList.map((item) => renderSwapCard(item, false))
           )}
         </View>
       </Animated.ScrollView>

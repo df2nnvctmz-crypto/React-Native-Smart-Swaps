@@ -25,6 +25,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFoods } from '../useFoods';
 import { useProfile, DietaryPreference } from '../context/ProfileContext';
 import { StorageService, ScanRecord } from '../services/storage';
+import { findBestSwaps } from '../engine/swapAlgorithm';
+import { FoodItem } from '../types';
 
 export default function TodayTab() {
   const router = useRouter();
@@ -68,27 +70,62 @@ export default function TodayTab() {
       ], { cancelable: true });
     }
   };
-  const { foods, getIconForCategory } = useFoods();
+  const { foods, allFoods, getIconForCategory } = useFoods();
+
+  const uniquePurchasedFoods = useMemo(() => {
+    const foodMap = new Map<string, FoodItem>();
+    for (const scan of scans) {
+      for (const item of scan.items) {
+        if (item.matchedFood) {
+          foodMap.set(item.matchedFood.id, item.matchedFood);
+        }
+      }
+    }
+    return Array.from(foodMap.values());
+  }, [scans]);
 
   const { spotlightItem, carouselItems, initialScrollIndex } = useMemo(() => {
-    // Simple random shuffle for the moment, strictly for healthy foods
-    const healthyFoods = foods.filter(f => f.health_score >= 60);
-    const shuffledFoods = [...healthyFoods].sort(() => 0.5 - Math.random());
-    const spotlight = shuffledFoods[0] || foods[0]; // fallback
-    const recommendedItems = shuffledFoods.slice(1, 5);
+    let items: FoodItem[] = [];
+
+    if (uniquePurchasedFoods.length > 0) {
+      const safeFoods = foods.length > 0 ? foods : allFoods;
+      const candidatesMap = new Map<string, FoodItem>();
+      for (const badFood of uniquePurchasedFoods) {
+        const bestSwaps = findBestSwaps(badFood, safeFoods, 2, profile.dietaryPreference);
+        for (const swap of bestSwaps) {
+          if (!candidatesMap.has(swap.candidate.id)) {
+             candidatesMap.set(swap.candidate.id, swap.candidate);
+          }
+        }
+      }
+      items = Array.from(candidatesMap.values());
+    }
+
+    if (items.length < 5) {
+      // Fallback: fill with random healthy foods
+      const healthyFoods = foods.filter(f => f.health_score >= 60 && !items.some(i => i.id === f.id));
+      const shuffled = [...healthyFoods].sort(() => 0.5 - Math.random());
+      items = [...items, ...shuffled.slice(0, 5 - items.length)];
+    }
+
+    // Limit to 5
+    items = items.slice(0, 5);
+
+    const spotlight = items[0] || foods[0]; // fallback
+    const recommendedItems = items.slice(1);
     
-    // Combine items: put spotlight in the middle of recommended items so you can swipe both left and right
+    // Combine items: put spotlight in the middle of recommended items
     const centerIndex = Math.floor(recommendedItems.length / 2);
-    const items = spotlight 
+    const finalItems = spotlight 
       ? [...recommendedItems.slice(0, centerIndex), spotlight, ...recommendedItems.slice(centerIndex)] 
       : recommendedItems;
       
     return {
       spotlightItem: spotlight,
-      carouselItems: items,
+      carouselItems: finalItems,
       initialScrollIndex: spotlight ? centerIndex : 0
     };
-  }, [foods]);
+  }, [foods, allFoods, uniquePurchasedFoods, profile.dietaryPreference]);
 
   const insets = useSafeAreaInsets();
   const scrollY = useRef(new Animated.Value(0)).current;

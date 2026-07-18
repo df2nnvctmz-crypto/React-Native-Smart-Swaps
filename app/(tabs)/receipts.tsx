@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,8 +14,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { StorageService, ScanRecord } from '../services/storage';
 import { CircularScoreRing } from '../../components/CircularScoreRing';
+import * as Haptics from 'expo-haptics';
 
-export default function BillsTab() {
+export default function ReceiptsTab() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -29,12 +30,42 @@ export default function BillsTab() {
 
   const headerHeight = insets.top + HEADER_CONTENT_HEIGHT;
 
-  const totalPoints = scans.reduce((acc, scan) => acc + scan.averageScore, 0);
-  const avgWeeklyPoints = scans.length > 0 ? Math.round(totalPoints / scans.length) : 0;
+  const getWeekKey = (dateString: string) => {
+    const d = new Date(dateString);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const startOfWeek = new Date(d.setDate(diff));
+    startOfWeek.setHours(0,0,0,0);
+    return startOfWeek.getTime();
+  };
+
+  const groupedScans = useMemo(() => {
+    const groups: Record<string, ScanRecord[]> = {};
+    for (const scan of scans) {
+      const wk = getWeekKey(scan.date);
+      if (!groups[wk]) groups[wk] = [];
+      groups[wk].push(scan);
+    }
+    const sortedKeys = Object.keys(groups).sort((a, b) => Number(b) - Number(a));
+    return sortedKeys.map(k => {
+      const s = groups[k];
+      const avg = s.reduce((acc, sc) => acc + sc.averageScore, 0) / s.length;
+      return {
+        timestamp: Number(k),
+        scans: s.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+        averageScore: Math.round(avg),
+      };
+    });
+  }, [scans]);
+
+  const handleScanPress = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push(`/receipt/${id}`);
+  };
 
   return (
     <View style={globalStyles.safeArea}>
-      <GlassHeader title="Bills" scrollY={scrollY} />
+      <GlassHeader title="Receipts" scrollY={scrollY} />
       <Animated.ScrollView
         style={globalStyles.container}
         contentInset={{ 
@@ -60,13 +91,6 @@ export default function BillsTab() {
       >
         <Text style={[globalStyles.subtitle, { marginBottom: 24, marginTop: 4 }]}>Track your receipts and health points</Text>
 
-        <View style={globalStyles.card}>
-          <View style={styles.progressContainer}>
-            <CircularScoreRing percentage={avgWeeklyPoints} size={140} strokeWidth={14} />
-            <Text style={[styles.progressLabel, { marginTop: 12 }]}>Average scan health score</Text>
-          </View>
-        </View>
-
         <TouchableOpacity 
           style={styles.bigScanBtn} 
           activeOpacity={0.8}
@@ -76,35 +100,52 @@ export default function BillsTab() {
           <Text style={styles.bigScanBtnText}>Scan New Receipt</Text>
         </TouchableOpacity>
 
-        <Text style={styles.sectionLabel}>RECENT BILLS</Text>
-
-        {scans.length > 0 ? (
+        {groupedScans.length > 0 ? (
           <View style={styles.historyContainer}>
-            {scans.map((scan) => (
-              <TouchableOpacity 
-                key={scan.id} 
-                style={styles.scanCard}
-                activeOpacity={0.7}
-                onPress={() => router.push(`/receipt/${scan.id}`)}
-              >
-                <View style={globalStyles.rowBetween}>
-                  <View style={globalStyles.row}>
-                    <View style={styles.receiptIconSmall}>
-                      <Ionicons name="receipt" size={16} color={COLORS.primaryGreen} />
-                    </View>
-                    <View style={{ marginLeft: 12 }}>
-                      <Text style={styles.scanDate}>
-                        {new Date(scan.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </Text>
-                      <Text style={styles.scanItemsCount}>{scan.items.length} items matched</Text>
+            {groupedScans.map((group) => {
+              const weekStartDate = new Date(group.timestamp);
+              const weekEndDate = new Date(group.timestamp + 6 * 24 * 60 * 60 * 1000);
+              
+              const startFormat = weekStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              const endFormat = weekEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+              return (
+                <View key={group.timestamp} style={styles.weekGroup}>
+                  <View style={styles.weekHeaderRow}>
+                    <Text style={styles.weekTitle}>Week of {startFormat} - {endFormat}</Text>
+                    <View style={styles.weeklyScorePill}>
+                      <Text style={styles.weeklyScoreText}>Avg: {group.averageScore}</Text>
                     </View>
                   </View>
-                  <View style={{ marginLeft: 'auto' }}>
-                    <CircularScoreRing percentage={scan.averageScore} size={44} strokeWidth={4} />
-                  </View>
+
+                  {group.scans.map((scan) => (
+                    <TouchableOpacity 
+                      key={scan.id} 
+                      style={styles.scanCard}
+                      activeOpacity={0.7}
+                      onPress={() => handleScanPress(scan.id)}
+                    >
+                      <View style={globalStyles.rowBetween}>
+                        <View style={globalStyles.row}>
+                          <View style={styles.receiptIconSmall}>
+                            <Ionicons name="receipt" size={16} color={COLORS.primaryGreen} />
+                          </View>
+                          <View style={{ marginLeft: 12 }}>
+                            <Text style={styles.scanDate}>
+                              {new Date(scan.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                            </Text>
+                            <Text style={styles.scanItemsCount}>{scan.items.length} items matched</Text>
+                          </View>
+                        </View>
+                        <View style={{ marginLeft: 'auto' }}>
+                          <CircularScoreRing percentage={scan.averageScore} size={44} strokeWidth={4} />
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
                 </View>
-              </TouchableOpacity>
-            ))}
+              );
+            })}
             
             <TouchableOpacity onPress={() => {
               StorageService.clearScans().then(() => setScans([]));
@@ -131,20 +172,6 @@ export default function BillsTab() {
 }
 
 const styles = StyleSheet.create({
-  progressContainer: {
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  progressValue: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: COLORS.primaryGreenDark,
-  },
-  progressLabel: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-  },
   bigScanBtn: {
     backgroundColor: COLORS.primaryGreen,
     flexDirection: 'row',
@@ -165,15 +192,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 8,
   },
-  sectionLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.textMuted,
-    marginBottom: 12,
-    letterSpacing: 0.8,
-  },
   historyContainer: {
     paddingBottom: 24,
+  },
+  weekGroup: {
+    marginBottom: 20,
+  },
+  weekHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 12,
+  },
+  weekTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  weeklyScorePill: {
+    backgroundColor: COLORS.lightGreenBg,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  weeklyScoreText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.primaryGreenDark,
   },
   scanCard: {
     backgroundColor: COLORS.white,
@@ -182,6 +229,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: COLORS.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 4,
+    elevation: 1,
   },
   receiptIconSmall: {
     width: 36,
@@ -228,3 +280,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 });
+
