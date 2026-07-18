@@ -96,7 +96,22 @@ function candidateKeysFor(token: string, shingleIndex: Map<string, Set<string>>)
 
 function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: FoodIndexData): { food: FoodItem, confidence: number } | null {
   // Apply German abbreviation expansions first
-  const expandedOcr = expandGermanAbbreviations(ocrText);
+  const caseSplit = ocrText
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')   // "NIPizza" -> "NI Pizza"
+    .replace(/([a-z])([A-Z])/g, '$1 $2');          // "PizzaSpeciale" -> "Pizza Speciale"
+
+  const HEAD_NOUN_SUFFIXES = ['brot','wurst','kaese','käse','milch','saft','sahne','creme','oel','öl','schinken'];
+  const headNounSplit = caseSplit.split(/\s+/).map(word => {
+    if (word.length < 8) return word;
+    const lower = word.toLowerCase();
+    for (const suf of HEAD_NOUN_SUFFIXES) {
+      if (lower.endsWith(suf) && lower.length > suf.length + 3) {
+        return word.slice(0, word.length - suf.length) + ' ' + word.slice(word.length - suf.length);
+      }
+    }
+    return word;
+  }).join(' ');
+  const expandedOcr = expandGermanAbbreviations(headNounSplit);
   
   const cleanedOcr = stripNoise(expandedOcr);
   const ocrTokensRaw = normalize(cleanedOcr).split(/\s+/).filter(t => t.length > 2);
@@ -159,8 +174,8 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
     for (const nameData of namesToTest) {
       // Test both raw tokens and ascii tokens against food names
       const tokenSets = [
-        { ocr: ocrTokensRaw, food: nameData.tokensRaw, fullOcrStr: normalize(cleanedOcr), fullFoodStr: nameData.rawStr },
-        { ocr: ocrTokensAscii, food: nameData.tokensAscii, fullOcrStr: asciiFold(cleanedOcr), fullFoodStr: nameData.asciiStr }
+        { ocr: ocrTokensRaw, food: nameData.tokensRaw, fullOcrStr: ocrTokensRaw.join(' '), fullFoodStr: nameData.rawStr },
+        { ocr: ocrTokensAscii, food: nameData.tokensAscii, fullOcrStr: ocrTokensAscii.join(' '), fullFoodStr: nameData.asciiStr }
       ];
 
       for (const tSet of tokenSets) {
@@ -203,8 +218,9 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           }
           
           // TASK 2: Weight category-defining nouns over descriptors
-          const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|käse|kaese|brot|bread|pudding|flammkuchen|grieß|griess|granatapfel/i.test(t);
-          const weight = isCoreNoun(oToken) ? 3 : 1;
+          const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber/i.test(t);
+          const isDescriptorStopword = (t: string) => /^(sort|sortiert|lose|natur|classic|clas|fein|extra|spezial|surt|frisch|hausgemacht|regional)$/i.test(t);
+          const weight = isDescriptorStopword(oToken) ? 0 : (isCoreNoun(oToken) ? 3 : 1);
           
           overlapScore += (bestTokenScore * weight);
           totalWeight += weight;
@@ -213,8 +229,10 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
         let confidence = totalWeight > 0 ? overlapScore / totalWeight : 0;
 
         // Compute food token coverage (penalize if OCR is missing lots of food words)
+        const IMPLICIT_QUALIFIERS = new Set(['roh','raw','natur','plain','frisch','fresh']);
+        const coverageRelevantFoodTokens = tSet.food.filter(t => !IMPLICIT_QUALIFIERS.has(t));
         let matchedFoodTokens = 0;
-        for (const nToken of tSet.food) {
+        for (const nToken of coverageRelevantFoodTokens) {
           let hasMatch = false;
           for (const oToken of tSet.ocr) {
             if (nToken === oToken) { hasMatch = true; break; }
@@ -226,7 +244,7 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           }
           if (hasMatch) matchedFoodTokens++;
         }
-        const foodTokenCoverage = tSet.food.length > 0 ? (matchedFoodTokens / tSet.food.length) : 1;
+        const foodTokenCoverage = coverageRelevantFoodTokens.length > 0 ? (matchedFoodTokens / coverageRelevantFoodTokens.length) : 1;
         confidence = (confidence * 0.65) + (foodTokenCoverage * 0.35);
 
         // Full string similarity

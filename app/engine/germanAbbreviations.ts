@@ -24,6 +24,19 @@ export const ABBREVIATIONS: Record<string, string> = {
   'pu': 'pudding',
 };
 
+export const LOANWORD_SYNONYMS: Record<string, string> = {
+  'fusilli': 'pasta nudeln',
+  'penne': 'pasta nudeln',
+  'spaghetti': 'pasta nudeln',
+  'tagliatelle': 'pasta nudeln',
+  'grana': 'parmesan hartkaese',
+  'para': 'parmesan',
+  'parmigiano': 'parmesan',
+  'tomme': 'kaese cheese',
+  'blanche': 'kaese cheese',
+  'pestu': 'pesto',   // common OCR misread
+};
+
 /**
  * Normalizes a German receipt line by expanding abbreviations, stripping brands/certifications,
  * and applying context-dependent rules.
@@ -83,6 +96,11 @@ export function expandGermanAbbreviations(line: string): string {
     // Expand abbreviations
     if (ABBREVIATIONS[lowerToken]) {
       normalizedTokens.push(ABBREVIATIONS[lowerToken]);
+      continue;
+    }
+
+    if (LOANWORD_SYNONYMS[lowerToken]) {
+      normalizedTokens.push(token, LOANWORD_SYNONYMS[lowerToken]);
       continue;
     }
 
