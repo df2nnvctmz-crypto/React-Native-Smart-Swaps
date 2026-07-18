@@ -32,10 +32,22 @@ export const ABBREVIATIONS: Record<string, string> = {
   'himb': 'himbeere',
   'cranb': 'cranberry',
   'pudd': 'pudding',
+  'brocc': 'brokkoli',
+  'erdbe': 'erdbeere',
+  'heidelbe': 'heidelbeere',
+  'himbe': 'himbeere',
+  'geflueg': 'gefluegel',
+  'put': 'pute',
 };
 
 export const LOANWORD_SYNONYMS: Record<string, string> = {
   'fusilli': 'teigwaren pasta',
+  'nudeln': 'teigwaren pasta',
+  'maccheroni': 'teigwaren pasta',
+  'aceto': 'essig',
+  'balsamico': 'essig balsam',
+  'arrabbiata': 'tomatensauce scharf',
+  'arrabiat': 'tomatensauce scharf',
   'penne': 'teigwaren pasta',
   'spaghetti': 'teigwaren pasta',
   'tagliatelle': 'teigwaren pasta',

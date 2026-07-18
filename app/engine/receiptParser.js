@@ -118,7 +118,7 @@ function candidateKeysFor(token, shingleIndex) {
     }
     return keys;
 }
-var isCoreNoun = function (t) { return /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber|mozzarella|gouda|parmesan|ricotta|feta|camembert|edamer|pesto|gnocchi|tortelloni|quark|butter|teigwaren|chili|paprika|skyr/i.test(t); };
+var isCoreNoun = function (t) { return /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber|mozzarella|gouda|parmesan|ricotta|feta|camembert|edamer|pesto|gnocchi|tortelloni|quark|butter|teigwaren|chili|paprika|skyr|baguette|baguett|roggen|ravioli/i.test(t); };
 function candidateKeysFor4Gram(token, fourGramIndex) {
     var keys = new Set();
     if (token.length < 4)
@@ -140,7 +140,8 @@ function matchFoodToOcrText(ocrText, allFoods, indexData) {
     var caseSplit = ocrText
         .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2') // "NIPizza" -> "NI Pizza"
         .replace(/([a-z])([A-Z])/g, '$1 $2'); // "PizzaSpeciale" -> "Pizza Speciale"
-    var HEAD_NOUN_SUFFIXES = ['brot', 'wurst', 'kaese', 'käse', 'milch', 'saft', 'sahne', 'creme', 'oel', 'öl', 'schinken', 'pudding', 'paprika', 'joghurt', 'salat', 'suppe', 'fleisch', 'tee', 'wasser', 'wein', 'bier', 'pizza', 'reis', 'baguette', 'baguett', 'mais', 'quark', 'nudeln'];
+    var HEAD_NOUN_SUFFIXES = ['brot', 'wurst', 'kaese', 'käse', 'milch', 'saft', 'sahne', 'creme', 'oel', 'öl', 'schinken', 'pudding', 'paprika', 'joghurt', 'salat', 'suppe', 'fleisch', 'tee', 'wasser', 'wein', 'bier', 'pizza', 'reis', 'baguette', 'baguett', 'mais', 'quark', 'nudeln', 'butter'];
+    var splitHeads = new Set();
     var headNounSplit = caseSplit.split(/\s+/).map(function (word) {
         if (word.length < 8)
             return word;
@@ -148,19 +149,23 @@ function matchFoodToOcrText(ocrText, allFoods, indexData) {
         for (var _i = 0, HEAD_NOUN_SUFFIXES_1 = HEAD_NOUN_SUFFIXES; _i < HEAD_NOUN_SUFFIXES_1.length; _i++) {
             var suf = HEAD_NOUN_SUFFIXES_1[_i];
             if (lower.endsWith(suf) && lower.length > suf.length + 3) {
+                splitHeads.add(suf);
                 return word.slice(0, word.length - suf.length) + ' ' + word.slice(word.length - suf.length);
             }
             var tail = lower.slice(-suf.length);
             if (tail.length === suf.length && levenshtein(tail, suf) <= 1 && lower.length > suf.length + 3) {
+                splitHeads.add(suf);
                 return word.slice(0, word.length - suf.length) + ' ' + suf;
             }
             if (suf.length > 3) {
                 var tailMinus1 = lower.slice(-(suf.length - 1));
                 if (tailMinus1.length === suf.length - 1 && levenshtein(tailMinus1, suf) <= 1 && lower.length > suf.length + 2) {
+                    splitHeads.add(suf);
                     return word.slice(0, word.length - tailMinus1.length) + ' ' + suf;
                 }
                 var tailPlus1 = lower.slice(-(suf.length + 1));
                 if (tailPlus1.length === suf.length + 1 && levenshtein(tailPlus1, suf) <= 1 && lower.length > suf.length + 4) {
+                    splitHeads.add(suf);
                     return word.slice(0, word.length - tailPlus1.length) + ' ' + suf;
                 }
             }
@@ -373,18 +378,25 @@ function matchFoodToOcrText(ocrText, allFoods, indexData) {
                     return "continue";
                 var overlapScore = 0;
                 var totalWeight = 0;
-                for (var _u = 0, _v = tSet.ocr; _u < _v.length; _u++) {
-                    var oToken = _v[_u];
+                for (var i = 0; i < tSet.ocr.length; i++) {
+                    var oToken = tSet.ocr[i];
+                    var isFirstOcrToken = (i === 0);
                     var bestTokenScore = 0;
-                    for (var _w = 0, _x = tSet.food; _w < _x.length; _w++) {
-                        var nToken = _x[_w];
-                        if (nToken === oToken) {
-                            bestTokenScore = Math.max(bestTokenScore, 1);
+                    var bestTokenWasFirstFoodToken = false;
+                    for (var j = 0; j < tSet.food.length; j++) {
+                        var nToken = tSet.food[j];
+                        var isFirstFoodToken = (j === 0);
+                        var minLen = Math.min(oToken.length, nToken.length);
+                        if (minLen < 4 && oToken !== nToken)
+                            continue;
+                        var simScore = 0;
+                        if (oToken === nToken || nToken.startsWith(oToken) || oToken.startsWith(nToken)) {
+                            var lenRatio = minLen / Math.max(oToken.length, nToken.length);
+                            simScore = oToken === nToken ? 1.0 : 0.5 + (0.35 * lenRatio);
                         }
                         else {
                             var dist = levenshtein(oToken, nToken);
                             var maxLen = Math.max(oToken.length, nToken.length);
-                            var minLen = Math.min(oToken.length, nToken.length);
                             var sim = 1 - (dist / maxLen);
                             var dfl = function (w) { return w.length > 4 ? w.replace(/(en|e|n|s)$/, '') : w; };
                             var oS = dfl(oToken), nS = dfl(nToken);
@@ -394,35 +406,47 @@ function matchFoodToOcrText(ocrText, allFoods, indexData) {
                                     sim = sd;
                             }
                             if (sim > 0.7) {
-                                bestTokenScore = Math.max(bestTokenScore, sim);
+                                simScore = sim;
                             }
                             else if (minLen >= 4 && (nToken.startsWith(oToken) || oToken.startsWith(nToken))) {
-                                // Scale prefix match by length ratio so short prefixes don't over-score
                                 var lenRatio = minLen / maxLen;
-                                var score = 0.5 + (0.35 * lenRatio);
-                                bestTokenScore = Math.max(bestTokenScore, score);
+                                simScore = 0.5 + (0.35 * lenRatio);
                             }
                             else if (minLen >= 5 && (nToken.includes(oToken) || oToken.includes(nToken))) {
                                 var lenRatio = minLen / maxLen;
-                                var score = 0.4 + (0.35 * lenRatio);
-                                bestTokenScore = Math.max(bestTokenScore, score);
+                                simScore = 0.4 + (0.35 * lenRatio);
                             }
                             else if (minLen >= 4) {
-                                for (var i = 0; i <= oToken.length - 4; i++) {
-                                    var sub = oToken.substring(i, i + 4);
+                                for (var k = 0; k <= oToken.length - 4; k++) {
+                                    var sub = oToken.substring(k, k + 4);
                                     if (nToken.startsWith(sub) || nToken.endsWith(sub)) {
                                         if (oToken.startsWith(sub) || oToken.endsWith(sub)) {
-                                            bestTokenScore = Math.max(bestTokenScore, 0.6);
+                                            simScore = Math.max(simScore, 0.6);
                                         }
                                     }
                                 }
                             }
                         }
+                        if (simScore > bestTokenScore) {
+                            bestTokenScore = simScore;
+                            bestTokenWasFirstFoodToken = isFirstFoodToken;
+                        }
                     }
-                    // TASK 2: Weight category-defining nouns over descriptors
-                    var isDescriptorStopword = function (t) { return /^(sort|sortiert|lose|natur|classic|clas|fein|extra|spezial|surt|frisch|hausgemacht|regional|leicht|light|mix|protein|steinofen|ofenfrisch)$/i.test(t); };
-                    var weight = isDescriptorStopword(oToken) ? 0 : (isCoreNoun(oToken) ? 3 : 1);
-                    overlapScore += (bestTokenScore * weight);
+                    var isDescriptorStopword = function (t) { return /^(sort|sortiert|lose|natur|classic|clas|fein|extra|spezial|surt|frisch|hausgemacht|regional|leicht|light|mix|protein|steinofen|ofenfrisch|pur|marken|pikant|toskana|toscana|provence|griechischer|griechische)$/i.test(t); };
+                    var isCore = isCoreNoun(oToken) || splitHeads.has(oToken);
+                    var weight = isDescriptorStopword(oToken) ? 0 : (isCore ? 3 : 1);
+                    if (splitHeads.has(oToken))
+                        weight = 5;
+                    if (isFirstOcrToken && isCore)
+                        weight *= 1.5;
+                    if (bestTokenScore > 0) {
+                        var adjustedScore = bestTokenScore;
+                        // First food token bonus (+0.08)
+                        if (isCore && bestTokenWasFirstFoodToken && bestTokenScore > 0.8) {
+                            adjustedScore += 0.08;
+                        }
+                        overlapScore += (adjustedScore * weight);
+                    }
                     totalWeight += weight;
                 }
                 var confidence = totalWeight > 0 ? overlapScore / totalWeight : 0;
@@ -433,11 +457,11 @@ function matchFoodToOcrText(ocrText, allFoods, indexData) {
                     'cured', 'canned', 'geroestet', 'roasted', 'gesalzen', 'salted']);
                 var coverageRelevantFoodTokens = tSet.food.filter(function (t) { return !IMPLICIT_QUALIFIERS.has(t) && !parenTokens.has(t); });
                 var matchedFoodTokens = 0;
-                for (var _y = 0, coverageRelevantFoodTokens_1 = coverageRelevantFoodTokens; _y < coverageRelevantFoodTokens_1.length; _y++) {
-                    var nToken = coverageRelevantFoodTokens_1[_y];
+                for (var _u = 0, coverageRelevantFoodTokens_1 = coverageRelevantFoodTokens; _u < coverageRelevantFoodTokens_1.length; _u++) {
+                    var nToken = coverageRelevantFoodTokens_1[_u];
                     var hasMatch = false;
-                    for (var _z = 0, _0 = tSet.ocr; _z < _0.length; _z++) {
-                        var oToken = _0[_z];
+                    for (var _v = 0, _w = tSet.ocr; _v < _w.length; _v++) {
+                        var oToken = _w[_v];
                         if (nToken === oToken) {
                             hasMatch = true;
                             break;
@@ -486,10 +510,10 @@ function matchFoodToOcrText(ocrText, allFoods, indexData) {
                 // matches is preserved based on their other token overlap, rather than collapsing
                 // to identical scores or an artificial ceiling.
                 var coreNounFloor = 0;
-                for (var _1 = 0, _2 = tSet.ocr; _1 < _2.length; _1++) {
-                    var oToken = _2[_1];
-                    for (var _3 = 0, _4 = tSet.food; _3 < _4.length; _3++) {
-                        var nToken = _4[_3];
+                for (var _x = 0, _y = tSet.ocr; _x < _y.length; _x++) {
+                    var oToken = _y[_x];
+                    for (var _z = 0, _0 = tSet.food; _z < _0.length; _z++) {
+                        var nToken = _0[_z];
                         if (!isCoreNoun(nToken) && !isCoreNoun(oToken))
                             continue;
                         if (oToken === nToken) {
@@ -543,20 +567,31 @@ function matchFoodToOcrText(ocrText, allFoods, indexData) {
 var asciiLow = function (s) { return s.toLowerCase()
     .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss'); };
 var META_TOKENS = new Set([
-    'summe', 'zwischensumme', 'gesamt', 'total', 'betrag', 'eur', 'euro', 'ust', 'mwst', 'steuer',
-    'kartenzahlung', 'karte', 'karten', 'bar', 'ec', 'girocard', 'visa', 'mastercard', 'maestro',
-    'rueckgeld', 'wechselgeld', 'gegeben', 'geg', 'kundenbeleg', 'beleg', 'filiale', 'markt',
-    'discount', 'marken', 'netto', 'rewe', 'edeka', 'lidl', 'aldi', 'kaufland', 'penny',
-    'www', 'http', 'https', 'de', 'com', 'uid', 'ustid', 'tel', 'telefon', 'datum', 'uhrzeit', 'bon', 'id',
-    'terminal', 'trace', 'berlin', 'hamburg', 'muenchen', 'koeln', 'allee', 'strasse', 'platz', 'weg',
-    'bezahlung', 'contactless', 'ohg', 'gmbh', 'inhaber'
+    'pfand', 'leergut', 'summe', 'total', 'mwst', 'steuer', 'rabatt', 'coupon',
+    'aktions', 'gutschein', 'rueckgeld', 'visa', 'mastercard', 'maestro',
+    'girocard', 'ec-karte', 'gegeben', 'rueck', 'kasse', 'bediener', 'nr',
+    'datum', 'uhrzeit', 'artikel', 'netto', 'brutto', 'eur', 'euro',
+    'kartenzahlung', 'barzahlung', 'zahlen', 'kreditkarte', 'kontaktlos',
+    'kundenbeleg', 'kunden', 'beleg', 'geg'
 ]);
 var UNIT = new Set(['st', 'stk', 'pck', 'pkg', 'btl', 'lose', 'vke', 'sort', 'ca', 'ab', 'pk']);
-function isLikelyProductLine(raw) {
-    var line = raw.trim();
+function isLikelyProductLine(line) {
+    var low = line.toLowerCase();
+    var asciiLowStr = asciiLow(line);
+    // Reject street names (e.g., "Müllerstraße 141")
+    if (/[a-z]+strasse(\s+\d+)?$/.test(asciiLowStr))
+        return false;
+    var tokens1 = asciiLowStr.split(/\s+/);
+    var wordTokens1 = tokens1.filter(function (t) { return /[a-z]{3,}/.test(t) && !UNIT.has(t); });
+    if (wordTokens1.length === 0)
+        return false;
+    // Reject legal entity / person names headers
+    var legalEntities = new Set(['ohg', 'ohb', 'gmbh', 'inhaber', 'ust', 'uid']);
+    if (wordTokens1.some(function (t) { return legalEntities.has(t); }))
+        return false;
+    var hasPrice1 = /\d[.,]\d{2}/.test(low);
     if (line.length < 4)
         return false;
-    var low = asciiLow(line);
     if (/^-?\d+([.,]\d+)?\s*(kgx|kg|g|x)?$/.test(low))
         return false;
     if (/^\d+\s*x\s*-?\d+[.,]\d{2}/i.test(low))
@@ -577,19 +612,16 @@ function isLikelyProductLine(raw) {
         return false;
     if (((line.match(/-/g) || []).length >= 3) && !/\d[.,]\d{2}/.test(line))
         return false;
-    var tokens = low.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(Boolean);
-    if (tokens.some(function (t) { return META_TOKENS.has(t); })) {
-        console.log('META_TOKENS');
+    var tokens2 = low.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(Boolean);
+    if (tokens2.some(function (t) { return META_TOKENS.has(t); })) {
         return false;
     }
-    var wordTokens = tokens.filter(function (t) { return /[a-z]{3,}/.test(t) && !UNIT.has(t); });
-    if (wordTokens.length === 0) {
-        console.log('wordTokens === 0');
+    var wordTokens2 = tokens2.filter(function (t) { return /[a-z]{3,}/.test(t) && !UNIT.has(t); });
+    if (wordTokens2.length === 0) {
         return false;
     }
-    var hasPrice = /\d[.,]\d{2}/.test(low);
-    if (!hasPrice && wordTokens.length < 2 && !wordTokens.some(function (t) { return t.length >= 4; })) {
-        console.log('no price and short');
+    var hasPrice2 = /\d[.,]\d{2}/.test(low);
+    if (!hasPrice2 && wordTokens2.length < 2 && !wordTokens2.some(function (t) { return t.length >= 4; })) {
         return false;
     }
     return true;

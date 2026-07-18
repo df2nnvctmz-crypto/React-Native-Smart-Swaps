@@ -35,7 +35,7 @@ var getIconForCategory = function (category) {
     return 'fast-food-outline';
 };
 exports.getIconForCategory = getIconForCategory;
-var DB_HEAD_NOUN_SUFFIXES = ['brot', 'broetchen', 'wurst', 'kaese', 'milch', 'saft', 'sahne', 'creme', 'schinken', 'salat', 'suppe', 'pudding', 'paprika', 'joghurt', 'fleisch', 'tee', 'wasser', 'wein', 'bier', 'pizza', 'reis', 'baguette', 'baguett', 'mais', 'quark', 'nudeln'];
+var DB_HEAD_NOUN_SUFFIXES = ['brot', 'broetchen', 'wurst', 'kaese', 'milch', 'saft', 'sahne', 'creme', 'schinken', 'salat', 'suppe', 'pudding', 'paprika', 'joghurt', 'fleisch', 'tee', 'wasser', 'wein', 'bier', 'pizza', 'reis', 'baguette', 'baguett', 'mais', 'quark', 'nudeln', 'butter'];
 function withHeadNounSplits(tokens) {
     var out = __spreadArray([], tokens, true);
     for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
