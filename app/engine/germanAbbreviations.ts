@@ -25,6 +25,8 @@ export const ABBREVIATIONS: Record<string, string> = {
   'mozz': 'mozzarella',
   'nozz': 'mozzarella',   // common OCR m->n misread
   'pfann': 'pfannengericht',
+  'sojajogh': 'soja joghurt',
+  'sojadr': 'soja joghurt drink',
 };
 
 export const LOANWORD_SYNONYMS: Record<string, string> = {
@@ -44,6 +46,8 @@ export const LOANWORD_SYNONYMS: Record<string, string> = {
   'tomme': 'kaese cheese',
   'blanche': 'kaese cheese',
   'pestu': 'pesto',   // common OCR misread
+  'diavolo': 'pizza scharfe salami',
+  'reggiano': 'parmesan hartkaese',
 };
 
 /**
@@ -68,6 +72,8 @@ export function expandGermanAbbreviations(line: string): string {
   
   // Also remove punctuation that might have been glued
   cleanLine = cleanLine.replace(/[^\w\säöüßÄÖÜ]/g, ' ');
+
+  cleanLine = cleanLine.replace(/\bbio\s*bio\b/gi, 'bio');
 
   // Split into tokens, keeping only non-empty
   let tokens = cleanLine.split(/\s+/).filter(t => t.length > 0);

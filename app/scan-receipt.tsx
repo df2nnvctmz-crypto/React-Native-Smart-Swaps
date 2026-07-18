@@ -123,7 +123,6 @@ export default function ScanReceiptScreen() {
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
       quality: 0.8,
     });
 
@@ -135,7 +134,6 @@ export default function ScanReceiptScreen() {
   const handleChooseLibrary = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
       quality: 0.8,
     });
 

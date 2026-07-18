@@ -311,7 +311,7 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           }
           
           // TASK 2: Weight category-defining nouns over descriptors
-          const isDescriptorStopword = (t: string) => /^(sort|sortiert|lose|natur|classic|clas|fein|extra|spezial|surt|frisch|hausgemacht|regional)$/i.test(t);
+          const isDescriptorStopword = (t: string) => /^(sort|sortiert|lose|natur|classic|clas|fein|extra|spezial|surt|frisch|hausgemacht|regional|leicht|light)$/i.test(t);
           const weight = isDescriptorStopword(oToken) ? 0 : (isCoreNoun(oToken) ? 3 : 1);
           
           overlapScore += (bestTokenScore * weight);
@@ -442,7 +442,7 @@ export function isLikelyProductLine(raw: string): boolean {
   const wordTokens = tokens.filter(t => /[a-z]{3,}/.test(t) && !UNIT.has(t));
   if (wordTokens.length === 0) return false;
   const hasPrice = /\d[.,]\d{2}/.test(low);
-  if (!hasPrice && wordTokens.length < 2 && !wordTokens.some(t => t.length >= 5)) return false;
+  if (!hasPrice && wordTokens.length < 2 && !wordTokens.some(t => t.length >= 4)) return false;
   return true;
 }
 
