@@ -42,3 +42,11 @@ scripts/fixtures/
 # generated native folders
 /ios
 /android
+
+# native module build outputs
+modules/*/android/build/
+modules/*/ios/build/
+
+# logs
+logcat.txt
+*.log
