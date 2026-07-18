@@ -161,17 +161,10 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onPress, variant
 const styles = StyleSheet.create({
   // ── Large card ──────────────────────────────────────────────────
   largeCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 24,
-    padding: 20,
+    ...globalStyles.card,
     marginBottom: 20,
     borderWidth: 1,
     borderColor: COLORS.border,
-    shadowColor: COLORS.shadowColor,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
   },
   featuredTag: {
     flexDirection: 'row',
@@ -274,11 +267,16 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: COLORS.shadowColor,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.shadowColor,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.03,
+        shadowRadius: 6,
+      },
+      android: { elevation: 1 },
+      default: { boxShadow: '0px 2px 6px rgba(15, 29, 17, 0.03)' }
+    }),
   },
   smallIconBox: {
     width: 46,

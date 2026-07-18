@@ -48,6 +48,7 @@ export const LOANWORD_SYNONYMS: Record<string, string> = {
   'pestu': 'pesto',   // common OCR misread
   'diavolo': 'pizza scharfe salami',
   'reggiano': 'parmesan hartkaese',
+  'pringles': 'chips kartoffel',
 };
 
 /**
@@ -64,7 +65,7 @@ export function expandGermanAbbreviations(line: string): string {
 
   // Split common compound prefixes so they tokenize separately
   // This helps "Proteinjogh" become "Protein" "jogh", or "BistroFlammk" become "Bistro" "Flammk"
-  const prefixesToSplit = ['protein', 'schoko', 'bistro', 'mini', 'bio', 'vegan', 'veggie'];
+  const prefixesToSplit = ['protein', 'schoko', 'bistro', 'mini', 'bio', 'vegan', 'veggie', 'chili'];
   prefixesToSplit.forEach(prefix => {
     const regex = new RegExp(`\\b(${prefix})`, 'gi');
     cleanLine = cleanLine.replace(regex, '$1 ');

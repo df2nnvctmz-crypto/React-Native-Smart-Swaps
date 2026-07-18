@@ -185,8 +185,8 @@ export default function ScanReceiptScreen() {
 
           <ReceiptItemList items={results} onUpdateItem={handleUpdateItem} />
           
-          <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]} onPress={() => router.push('/receipts')}>
-            <Text style={styles.primaryBtnText}>View in Recent Receipts</Text>
+          <TouchableOpacity style={globalStyles.primaryButton} onPress={() => router.push('/receipts')}>
+            <Text style={globalStyles.primaryButtonText}>View in Recent Receipts</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -247,21 +247,21 @@ export default function ScanReceiptScreen() {
         ) : (
           <View style={styles.actionsContainer}>
             <TouchableOpacity 
-              style={[styles.actionBtn, styles.primaryBtn]} 
+              style={[globalStyles.primaryButton, { height: 56 }]} 
               activeOpacity={0.8}
               onPress={handleTakePhoto}
             >
               <Ionicons name="camera-outline" size={22} color={COLORS.white} style={styles.btnIcon} />
-              <Text style={styles.primaryBtnText}>Take Photo</Text>
+              <Text style={globalStyles.primaryButtonText}>Take Photo</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={[styles.actionBtn, styles.secondaryBtn]} 
+              style={[globalStyles.secondaryButton, { height: 56 }]} 
               activeOpacity={0.8}
               onPress={handleChooseLibrary}
             >
               <Ionicons name="image-outline" size={22} color={COLORS.textPrimary} style={styles.btnIcon} />
-              <Text style={styles.secondaryBtnText}>Choose from Library</Text>
+              <Text style={globalStyles.secondaryButtonText}>Choose from Library</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -298,7 +298,7 @@ export default function ScanReceiptScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F9FAF9',
+    backgroundColor: COLORS.background,
   },
   scrollContent: {
     padding: 24,
@@ -314,26 +314,31 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.shadowColor,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: { elevation: 2 },
+      default: { boxShadow: '0px 2px 8px rgba(15, 29, 17, 0.05)' }
+    }),
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: COLORS.border,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
   },
   subtitle: {
     fontSize: 16,
-    color: '#4A4A4A',
+    color: COLORS.textSecondary,
     lineHeight: 24,
     marginBottom: 32,
   },
@@ -341,53 +346,10 @@ const styles = StyleSheet.create({
     gap: 16,
     marginBottom: 48,
   },
-  actionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 56,
-    borderRadius: 16,
-  },
   btnIcon: {
     marginRight: 10,
   },
-  primaryBtn: {
-    backgroundColor: '#4CAF50',
-    shadowColor: '#4CAF50',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  primaryBtnText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryBtn: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  secondaryBtnText: {
-    color: '#1A1A1A',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  section: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1A1A1A',
-    marginBottom: 16,
-  },
+  sectionTitle: globalStyles.sectionTitle,
   stepRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -397,7 +359,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 16,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: COLORS.lightGreenBg,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -405,24 +367,16 @@ const styles = StyleSheet.create({
   stepText: {
     flex: 1,
     fontSize: 16,
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
     fontWeight: '500',
   },
   progressContainer: {
-    padding: 24,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    marginBottom: 48,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    ...globalStyles.card,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 100,
+    marginBottom: 48,
+    padding: 24,
   },
   progressRow: {
     flexDirection: 'row',
@@ -436,13 +390,13 @@ const styles = StyleSheet.create({
   progressText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#4A4A4A',
+    color: COLORS.textSecondary,
     marginLeft: 12,
   },
   progressBarBg: {
     width: '100%',
     height: 8,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: COLORS.lightGreenBg,
     borderRadius: 4,
     marginTop: 16,
     overflow: 'hidden',
@@ -452,31 +406,4 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryGreen,
     borderRadius: 4,
   },
-  matchedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  matchedText: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginLeft: 8,
-  },
-  scoreText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: COLORS.primaryGreen,
-  },
-  rawText: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    marginTop: 4,
-  }
 });

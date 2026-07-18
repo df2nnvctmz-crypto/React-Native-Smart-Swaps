@@ -41,16 +41,8 @@ export const HealthPointsCard: React.FC<HealthPointsCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
+    ...globalStyles.card,
     backgroundColor: COLORS.cardBackground,
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 16,
-    // Native iOS SwiftUI shadow emulation: highly dispersed, low opacity
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 3,
   },
   cardContent: {
     flexDirection: 'row',

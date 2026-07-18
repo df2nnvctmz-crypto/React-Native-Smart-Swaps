@@ -94,7 +94,7 @@ function candidateKeysFor(token: string, shingleIndex: Map<string, Set<string>>)
   return keys;
 }
 
-const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber|mozzarella|gouda|parmesan|ricotta|feta|camembert|edamer|pesto|gnocchi|tortelloni|quark|butter|teigwaren/i.test(t);
+const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber|mozzarella|gouda|parmesan|ricotta|feta|camembert|edamer|pesto|gnocchi|tortelloni|quark|butter|teigwaren|chili|paprika/i.test(t);
 
 function candidateKeysFor4Gram(token: string, fourGramIndex: Map<string, Set<string>>): Set<string> {
   const keys = new Set<string>();
@@ -114,7 +114,7 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')   // "NIPizza" -> "NI Pizza"
     .replace(/([a-z])([A-Z])/g, '$1 $2');          // "PizzaSpeciale" -> "Pizza Speciale"
 
-  const HEAD_NOUN_SUFFIXES = ['brot','wurst','kaese','käse','milch','saft','sahne','creme','oel','öl','schinken'];
+  const HEAD_NOUN_SUFFIXES = ['brot','wurst','kaese','käse','milch','saft','sahne','creme','oel','öl','schinken','pudding','paprika','joghurt','salat','suppe','fleisch','tee','wasser','wein','bier','pizza','reis'];
   const headNounSplit = caseSplit.split(/\s+/).map(word => {
     if (word.length < 8) return word;
     const lower = word.toLowerCase();
@@ -207,6 +207,9 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
     }
   }
 
+  if (ocrText.includes('Mix') || ocrText.includes('Grop')) {
+    console.log(`[DEBUG] ${ocrText} -> candidateHits size: ${candidateHits.size}`);
+  }
   if (candidateHits.size === 0) return null;
   // Score only the most-promising candidates (performance: VERIFIED this halves
   // per-receipt time with zero accuracy loss across the regression suite)
@@ -311,7 +314,7 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           }
           
           // TASK 2: Weight category-defining nouns over descriptors
-          const isDescriptorStopword = (t: string) => /^(sort|sortiert|lose|natur|classic|clas|fein|extra|spezial|surt|frisch|hausgemacht|regional|leicht|light)$/i.test(t);
+          const isDescriptorStopword = (t: string) => /^(sort|sortiert|lose|natur|classic|clas|fein|extra|spezial|surt|frisch|hausgemacht|regional|leicht|light|mix|protein)$/i.test(t);
           const weight = isDescriptorStopword(oToken) ? 0 : (isCoreNoun(oToken) ? 3 : 1);
           
           overlapScore += (bestTokenScore * weight);
@@ -397,16 +400,23 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           bestMatch = food;
         }
         
-        // Early Exit (only for non-fallback native matches)
+          // Early Exit (only for non-fallback native matches)
         if (maxScore > 0.95 && bestMatch && !nameData.isFallback) {
+          // console.log(`[DEBUG] Early exit for ${bestMatch.name_de} with score ${maxScore}`);
           return { food: bestMatch, confidence: maxScore };
         }
       }
+    }
+    
+    // DEBUG:
+    if (ocrText.includes('Mix') || ocrText.includes('Grop')) {
+       // console.log(`[DEBUG] ${food.name_de || food.name} -> score: ${confidence}`);
     }
   }
 
   // Return matches even with low confidence so UI can flag them
   if (bestMatch) {
+    if (ocrText.includes('Mix') || ocrText.includes('Grop')) console.log(`[DEBUG WINNER] ${bestMatch.name_de || bestMatch.name} with score ${maxScore}`);
     return { food: bestMatch, confidence: maxScore };
   }
   return null;
@@ -438,11 +448,11 @@ export function isLikelyProductLine(raw: string): boolean {
   if (/\b\d{4,5}\b/.test(low) && /(allee|strasse|str\.|platz|weg|berlin|hamburg)/i.test(low)) return false;
   if (((line.match(/-/g)||[]).length >= 3) && !/\d[.,]\d{2}/.test(line)) return false;
   const tokens = low.replace(/[^\w\s]/g,' ').split(/\s+/).filter(Boolean);
-  if (tokens.some(t => META_TOKENS.has(t))) return false;
+  if (tokens.some(t => META_TOKENS.has(t))) { console.log('META_TOKENS'); return false; }
   const wordTokens = tokens.filter(t => /[a-z]{3,}/.test(t) && !UNIT.has(t));
-  if (wordTokens.length === 0) return false;
+  if (wordTokens.length === 0) { console.log('wordTokens === 0'); return false; }
   const hasPrice = /\d[.,]\d{2}/.test(low);
-  if (!hasPrice && wordTokens.length < 2 && !wordTokens.some(t => t.length >= 4)) return false;
+  if (!hasPrice && wordTokens.length < 2 && !wordTokens.some(t => t.length >= 4)) { console.log('no price and short'); return false; }
   return true;
 }
 

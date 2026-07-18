@@ -29,6 +29,28 @@ export const COLORS = {
   // Miscellaneous
   shadowColor: '#0F1D11',
   white: '#FFFFFF',
+  
+  // System Colors (iOS-like defaults)
+  systemBlue: '#007AFF',
+  systemOrange: '#FF9500',
+  systemRed: '#FF3B30',
+  systemPink: '#FF2D55',
+  systemPurple: '#AF52DE',
+  systemIndigo: '#5856D6',
+  systemTeal: '#00C7BE',
+  systemGreen: '#34C759',
+  systemGray: '#8E8E93',
+  systemGrayLight: '#EFEFF4',
+  systemGray2: '#C6C6C8',
+  
+  // Macro Colors
+  macroCarbs: '#FF9500',
+  macroSugars: '#FFCC00',
+  macroFat: '#FF2D55',
+  macroSatFat: '#FF9F0A',
+  macroProtein: '#32ADE6',
+  macroFiber: '#34C759',
+  macroSalt: '#8E8E93',
 };
 
 export const globalStyles = StyleSheet.create({
@@ -48,15 +70,24 @@ export const globalStyles = StyleSheet.create({
   
   // Card base styles
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: COLORS.white,
     borderRadius: 24,
     padding: 20,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.shadowColor,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.04,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 3,
+      },
+      default: {
+        boxShadow: '0px 6px 12px rgba(15, 29, 17, 0.04)',
+      }
+    }),
   },
   
   // Badges & Pills
@@ -122,6 +153,24 @@ export const globalStyles = StyleSheet.create({
   },
   primaryButtonText: {
     color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  secondaryButton: {
+    backgroundColor: COLORS.cardBackground,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginTop: 12,
+  },
+  secondaryButtonText: {
+    color: COLORS.textPrimary,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,

@@ -93,80 +93,80 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({ visible, onClose
             <View style={styles.macroRow}>
               <View style={styles.rowBetween}>
                 <View style={globalStyles.row}>
-                  <View style={[styles.dot, { backgroundColor: COLORS.primaryGreen }]} />
+                  <View style={[styles.dot, { backgroundColor: COLORS.macroProtein }]} />
                   <Text style={styles.macroName}>Protein</Text>
                   <TouchableOpacity onPress={() => Alert.alert('Protein', 'Protein is essential for building and repairing tissues, including muscle. It also plays a key role in the production of enzymes and hormones.')} style={styles.infoIcon}>
-                    <Ionicons name="information-circle-outline" size={16} color="#8E8E93" />
+                    <Ionicons name="information-circle-outline" size={16} color={COLORS.systemGray} />
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.macroValue}>{targetMacros.protein}g <Text style={styles.macroPct}>({Math.round(targetMacroPercentages.protein * 100)}%)</Text></Text>
               </View>
-              {renderProgressBar(COLORS.primaryGreen, targetMacroPercentages.protein)}
+              {renderProgressBar(COLORS.macroProtein, targetMacroPercentages.protein)}
             </View>
 
             <View style={styles.macroRow}>
               <View style={styles.rowBetween}>
                 <View style={globalStyles.row}>
-                  <View style={[styles.dot, { backgroundColor: '#FF9500' }]} />
+                  <View style={[styles.dot, { backgroundColor: COLORS.macroCarbs }]} />
                   <Text style={styles.macroName}>Carbohydrates</Text>
                   <TouchableOpacity onPress={() => Alert.alert('Carbohydrates', 'Carbohydrates are your body\'s primary energy source. They fuel your brain, kidneys, heart muscles, and central nervous system.')} style={styles.infoIcon}>
-                    <Ionicons name="information-circle-outline" size={16} color="#8E8E93" />
+                    <Ionicons name="information-circle-outline" size={16} color={COLORS.systemGray} />
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.macroValue}>{targetMacros.carbs}g <Text style={styles.macroPct}>({Math.round(targetMacroPercentages.carbs * 100)}%)</Text></Text>
               </View>
-              {renderProgressBar('#FF9500', targetMacroPercentages.carbs)}
+              {renderProgressBar(COLORS.macroCarbs, targetMacroPercentages.carbs)}
             </View>
 
             <View style={styles.macroRow}>
               <View style={styles.rowBetween}>
                 <View style={globalStyles.row}>
-                  <View style={[styles.dot, { backgroundColor: '#FFCC00' }]} />
+                  <View style={[styles.dot, { backgroundColor: COLORS.macroSugars }]} />
                   <Text style={styles.macroName}>Sugars</Text>
                   <TouchableOpacity onPress={() => Alert.alert('Sugars', 'Naturally occurring sugars provide quick energy. However, limiting added sugars is important for heart health and preventing energy crashes.')} style={styles.infoIcon}>
-                    <Ionicons name="information-circle-outline" size={16} color="#8E8E93" />
+                    <Ionicons name="information-circle-outline" size={16} color={COLORS.systemGray} />
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.macroValue}>{targetMacros.sugars}g <Text style={styles.macroPct}>({Math.round(targetMacroPercentages.sugars * 100)}%)</Text></Text>
               </View>
-              {renderProgressBar('#FFCC00', targetMacroPercentages.sugars)}
+              {renderProgressBar(COLORS.macroSugars, targetMacroPercentages.sugars)}
             </View>
 
             <View style={styles.macroRow}>
               <View style={styles.rowBetween}>
                 <View style={globalStyles.row}>
-                  <View style={[styles.dot, { backgroundColor: '#FF2D55' }]} />
+                  <View style={[styles.dot, { backgroundColor: COLORS.macroFat }]} />
                   <Text style={styles.macroName}>Total Fat</Text>
                   <TouchableOpacity onPress={() => Alert.alert('Total Fat', 'Fats provide dense energy, support cell growth, and protect your organs. They also help your body absorb essential fat-soluble vitamins.')} style={styles.infoIcon}>
-                    <Ionicons name="information-circle-outline" size={16} color="#8E8E93" />
+                    <Ionicons name="information-circle-outline" size={16} color={COLORS.systemGray} />
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.macroValue}>{targetMacros.fat}g <Text style={styles.macroPct}>({Math.round(targetMacroPercentages.fat * 100)}%)</Text></Text>
               </View>
-              {renderProgressBar('#FF2D55', targetMacroPercentages.fat)}
+              {renderProgressBar(COLORS.macroFat, targetMacroPercentages.fat)}
             </View>
 
             <View style={[styles.macroRow, styles.subMacroRow]}>
               <View style={styles.rowBetween}>
                 <View style={globalStyles.row}>
-                  <View style={[styles.dot, { backgroundColor: '#FF9F0A' }]} />
+                  <View style={[styles.dot, { backgroundColor: COLORS.macroSatFat }]} />
                   <Text style={styles.macroName}>Saturated Fat</Text>
                   <TouchableOpacity onPress={() => Alert.alert('Saturated Fat', 'While some saturated fat is fine, replacing it with unsaturated fats can help lower cholesterol levels and reduce cardiovascular risks.')} style={styles.infoIcon}>
-                    <Ionicons name="information-circle-outline" size={16} color="#8E8E93" />
+                    <Ionicons name="information-circle-outline" size={16} color={COLORS.systemGray} />
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.macroValue}>{targetMacros.satFat}g <Text style={styles.macroPct}>({Math.round(targetMacroPercentages.satFat * 100)}%)</Text></Text>
               </View>
-              {renderProgressBar('#FF9F0A', targetMacroPercentages.satFat)}
+              {renderProgressBar(COLORS.macroSatFat, targetMacroPercentages.satFat)}
             </View>
 
             <View style={styles.macroRow}>
               <View style={styles.rowBetween}>
                 <View style={globalStyles.row}>
-                  <View style={[styles.dot, { backgroundColor: '#32ADE6' }]} />
+                  <View style={[styles.dot, { backgroundColor: COLORS.macroFiber }]} />
                   <Text style={styles.macroName}>Dietary Fiber</Text>
                   <TouchableOpacity onPress={() => Alert.alert('Dietary Fiber', 'Fiber aids in digestion and helps regulate blood sugar levels. It also contributes to satiety, keeping you feeling full for longer.')} style={styles.infoIcon}>
-                    <Ionicons name="information-circle-outline" size={16} color="#8E8E93" />
+                    <Ionicons name="information-circle-outline" size={16} color={COLORS.systemGray} />
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.macroValue}>{targetMacros.fiber}g</Text>
@@ -176,10 +176,10 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({ visible, onClose
             <View style={[styles.macroRow, { marginBottom: 24 }]}>
               <View style={styles.rowBetween}>
                 <View style={globalStyles.row}>
-                  <View style={[styles.dot, { backgroundColor: '#8E8E93' }]} />
+                  <View style={[styles.dot, { backgroundColor: COLORS.macroSalt }]} />
                   <Text style={styles.macroName}>Salt</Text>
                   <TouchableOpacity onPress={() => Alert.alert('Salt', 'Salt is necessary for fluid balance and nerve function. However, excess sodium can lead to high blood pressure and strain your heart.')} style={styles.infoIcon}>
-                    <Ionicons name="information-circle-outline" size={16} color="#8E8E93" />
+                    <Ionicons name="information-circle-outline" size={16} color={COLORS.systemGray} />
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.macroValue}>{targetMacros.salt}g</Text>
@@ -195,7 +195,7 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({ visible, onClose
                   <View style={globalStyles.row}>
                     <Text style={styles.microName}>{micro.name}</Text>
                     <TouchableOpacity onPress={() => Alert.alert(micro.name, micro.description)} style={styles.infoIcon}>
-                      <Ionicons name="information-circle-outline" size={16} color="#8E8E93" />
+                      <Ionicons name="information-circle-outline" size={16} color={COLORS.systemGray} />
                     </TouchableOpacity>
                   </View>
                   <Text style={styles.microAmount}>{micro.amount} <Text style={styles.microUnit}>{micro.unit}</Text></Text>
@@ -209,8 +209,8 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({ visible, onClose
 
           {/* Footer Button */}
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.primaryButton} onPress={onClose}>
-              <Text style={styles.primaryButtonText}>Got it!</Text>
+            <TouchableOpacity style={globalStyles.primaryButton} onPress={onClose}>
+              <Text style={globalStyles.primaryButtonText}>Got it!</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#E8F5E9', // Light green background
+    backgroundColor: COLORS.lightGreenBg, // Light green background
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -268,12 +268,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1A1A1A', // Force dark text
+    color: COLORS.textPrimary, // Force dark text
   },
   subtitle: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#8E8E93',
+    color: COLORS.systemGray,
     letterSpacing: 0.5,
     marginTop: 2,
   },
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: COLORS.systemGrayLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -289,12 +289,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   budgetCard: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: COLORS.cardBackground,
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#EFEFEF',
+    borderColor: COLORS.border,
   },
   rowBetween: {
     flexDirection: 'row',
@@ -303,24 +303,24 @@ const styles = StyleSheet.create({
   },
   budgetLabel: {
     fontSize: 15,
-    color: '#666666',
+    color: COLORS.textSecondary,
     fontWeight: '500',
   },
   budgetValue: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
   },
   budgetDescription: {
     fontSize: 13,
-    color: '#888888',
+    color: COLORS.textMuted,
     lineHeight: 18,
     marginTop: 12,
   },
   sectionTitle: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#8E8E93',
+    color: COLORS.systemGray,
     letterSpacing: 1,
     marginBottom: 16,
     textTransform: 'uppercase',
@@ -345,20 +345,20 @@ const styles = StyleSheet.create({
   macroName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
   },
   macroValue: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
   },
   macroPct: {
-    color: '#8E8E93',
+    color: COLORS.systemGray,
     fontWeight: '500',
   },
   progressBarContainer: {
     height: 6,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: COLORS.systemGrayLight,
     borderRadius: 3,
     marginTop: 8,
     width: '100%',
@@ -374,43 +374,32 @@ const styles = StyleSheet.create({
   microName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
   },
   microAmount: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
   },
   microUnit: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#666666',
+    color: COLORS.textSecondary,
   },
   microDesc: {
     fontSize: 12,
-    color: '#888888',
+    color: COLORS.textMuted,
     marginTop: 4,
   },
   microDivider: {
     height: 1,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: COLORS.border,
     marginTop: 12,
   },
   footer: {
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    backgroundColor: '#FFFFFF',
-  },
-  primaryButton: {
-    backgroundColor: COLORS.primaryGreen,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
+    borderTopColor: COLORS.border,
+    backgroundColor: COLORS.white,
   },
 });

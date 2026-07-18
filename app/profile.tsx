@@ -139,41 +139,41 @@ export default function ProfileScreen() {
         
         {/* Calorie Target */}
         <SettingsGroup title="Nutrition Target">
-          <SettingsRow icon="flash" sfSymbol="bolt.fill" iconBg="#FF9500" title="Daily Calories" isLast={true}>
+          <SettingsRow icon="flash" sfSymbol="bolt.fill" iconBg={COLORS.systemOrange} title="Daily Calories" isLast={true}>
             <Text style={styles.rowValue}>{targetCalories.toLocaleString('de-DE')} kcal</Text>
           </SettingsRow>
         </SettingsGroup>
 
         {/* Personal Info */}
         <SettingsGroup title="Personal Info">
-          <SettingsRow icon="person" sfSymbol="person.fill" iconBg="#007AFF" title="Biological Sex" onPress={() => openPickerModal('sex', 'Biological Sex', ['Male', 'Female'])}>
+          <SettingsRow icon="person" sfSymbol="person.fill" iconBg={COLORS.systemBlue} title="Biological Sex" onPress={() => openPickerModal('sex', 'Biological Sex', ['Male', 'Female'])}>
             <Text style={styles.rowValue}>{profile.sex}</Text>
-            <Ionicons name="chevron-forward" size={16} color="#C6C6C8" style={{ marginLeft: 6 }} />
+            <Ionicons name="chevron-forward" size={16} color={COLORS.systemGray2} style={{ marginLeft: 6 }} />
           </SettingsRow>
           
-          <SettingsRow icon="calendar" sfSymbol="calendar" iconBg="#FF2D55" title="Age" onPress={() => openInputModal('age', 'Age', 'yrs')}>
+          <SettingsRow icon="calendar" sfSymbol="calendar" iconBg={COLORS.systemPink} title="Age" onPress={() => openInputModal('age', 'Age', 'yrs')}>
             <Text style={styles.rowValue}>{profile.age} <Text style={styles.rowUnit}>yrs</Text></Text>
           </SettingsRow>
 
-          <SettingsRow icon="barbell" sfSymbol="dumbbell.fill" iconBg="#5856D6" title="Weight" onPress={() => openInputModal('weight', 'Weight', 'kg')}>
+          <SettingsRow icon="barbell" sfSymbol="dumbbell.fill" iconBg={COLORS.systemIndigo} title="Weight" onPress={() => openInputModal('weight', 'Weight', 'kg')}>
             <Text style={styles.rowValue}>{profile.weight} <Text style={styles.rowUnit}>kg</Text></Text>
           </SettingsRow>
 
-          <SettingsRow icon="body" sfSymbol="figure.stand" iconBg="#AF52DE" title="Height" isLast={true} onPress={() => openInputModal('height', 'Height', 'cm')}>
+          <SettingsRow icon="body" sfSymbol="figure.stand" iconBg={COLORS.systemPurple} title="Height" isLast={true} onPress={() => openInputModal('height', 'Height', 'cm')}>
             <Text style={styles.rowValue}>{profile.height} <Text style={styles.rowUnit}>cm</Text></Text>
           </SettingsRow>
         </SettingsGroup>
 
         {/* Goals */}
         <SettingsGroup title="Goals">
-          <SettingsRow icon="bicycle" sfSymbol="figure.run" iconBg="#FF9500" title="Activity Level" onPress={() => openPickerModal('activityLevel', 'Activity Level', ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active', 'Extra Active'])}>
+          <SettingsRow icon="bicycle" sfSymbol="figure.run" iconBg={COLORS.systemOrange} title="Activity Level" onPress={() => openPickerModal('activityLevel', 'Activity Level', ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active', 'Extra Active'])}>
             <Text style={styles.rowValue}>{profile.activityLevel}</Text>
-            <Ionicons name="chevron-forward" size={16} color="#C6C6C8" style={{ marginLeft: 6 }} />
+            <Ionicons name="chevron-forward" size={16} color={COLORS.systemGray2} style={{ marginLeft: 6 }} />
           </SettingsRow>
           
-          <SettingsRow icon="trending-down" sfSymbol="arrow.down.right.circle.fill" iconBg="#34C759" title="Weight Goal" isLast={true} onPress={() => openPickerModal('weightGoal', 'Weight Goal', ['-0.5 kg', '-0.25 kg', 'stay', '+0.25 kg', '+0.5 kg'])}>
+          <SettingsRow icon="trending-down" sfSymbol="arrow.down.right.circle.fill" iconBg={COLORS.systemGreen} title="Weight Goal" isLast={true} onPress={() => openPickerModal('weightGoal', 'Weight Goal', ['-0.5 kg', '-0.25 kg', 'stay', '+0.25 kg', '+0.5 kg'])}>
             <Text style={styles.rowValue}>{profile.weightGoal}</Text>
-            <Ionicons name="chevron-forward" size={16} color="#C6C6C8" style={{ marginLeft: 6 }} />
+            <Ionicons name="chevron-forward" size={16} color={COLORS.systemGray2} style={{ marginLeft: 6 }} />
           </SettingsRow>
         </SettingsGroup>
 
@@ -184,13 +184,13 @@ export default function ProfileScreen() {
               key={diet}
               icon="restaurant" 
               sfSymbol="fork.knife"
-              iconBg={profile.dietaryPreference.includes(diet) ? "#34C759" : "#8E8E93"} 
+              iconBg={profile.dietaryPreference.includes(diet) ? COLORS.systemGreen : COLORS.systemGray} 
               title={diet} 
               isLast={index === arr.length - 1}
               onPress={() => toggleDiet(diet)}
             >
               {profile.dietaryPreference.includes(diet) && (
-                <Ionicons name="checkmark" size={20} color="#007AFF" />
+                <Ionicons name="checkmark" size={20} color={COLORS.systemBlue} />
               )}
             </SettingsRow>
           ))}
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 17,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
   },
   scrollContent: {
     paddingBottom: 100,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 16,
     padding: 24,
-    shadowColor: '#000',
+    shadowColor: COLORS.shadowColor,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
     shadowRadius: 20,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#000',
+    color: COLORS.textPrimary,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   groupTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#8E8E93',
+    color: COLORS.systemGray,
     marginLeft: 32,
     marginBottom: 8,
   },
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   groupBlockAndroid: {
     borderTopWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E0E0E0',
+    borderColor: COLORS.border,
   },
   settingsRow: {
     flexDirection: 'row',
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   },
   rowTitle: {
     fontSize: 16,
-    color: '#000000',
+    color: COLORS.textPrimary,
     marginLeft: 16,
     flex: 1,
   },
@@ -451,11 +451,11 @@ const styles = StyleSheet.create({
   },
   rowValue: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: COLORS.systemGray,
   },
   rowInput: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: COLORS.systemGray,
     textAlign: 'right',
     minWidth: 40,
     padding: 0,
@@ -463,12 +463,12 @@ const styles = StyleSheet.create({
   },
   rowUnit: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: COLORS.systemGray,
     marginLeft: 4,
   },
   separator: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#C6C6C8',
+    backgroundColor: COLORS.systemGray2,
     marginLeft: 60, // Align with text
   },
 });
