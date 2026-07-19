@@ -7,7 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import TextRecognition from '../modules/native-ocr';
 import { COLORS, globalStyles } from '../styles';
 import { ParsedReceiptItem } from './engine/receiptParser';
-import { resolveProductLine } from './engine/resolveProduct';
+import { resolveProductLine, enrichWithOff } from './engine/resolveProduct';
 import { useFoods } from './useFoods';
 import { useProfile } from './context/ProfileContext';
 import { findBestSwaps } from './engine/swapAlgorithm';
@@ -23,7 +23,7 @@ export default function ScanReceiptScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<ParsedReceiptItem[] | null>(null);
   const [swaps, setSwaps] = useState<any[]>([]);
-  const [progressStatus, setProgressStatus] = useState<'idle'|'reading'|'matching'|'calculating'|'done'>('idle');
+  const [progressStatus, setProgressStatus] = useState<'idle'|'reading'|'matching'|'enriching'|'calculating'|'done'>('idle');
   const [progressStats, setProgressStats] = useState({ current: 0, total: 0 });
   const [currentScanId, setCurrentScanId] = useState<string | null>(null);
   const [currentScanDate, setCurrentScanDate] = useState<string | null>(null);
@@ -62,8 +62,14 @@ export default function ScanReceiptScreen() {
         await new Promise(resolve => setTimeout(resolve, 0));
       }
 
+      // Second pass: ask OpenFoodFacts to identify the branded lines the offline matcher
+      // left weak, then map them onto a BLS food. Best-effort - offline or on any failure
+      // the items are returned unchanged.
+      setProgressStatus('enriching');
+      const enrichedItems = await enrichWithOff(parsedItems, { allFoods, foodIndexData });
+
       setProgressStatus('calculating');
-      setResults(parsedItems);
+      setResults(enrichedItems);
 
       const generatedSwaps = [];
       const safeFoods = foods.length > 0 ? foods : allFoods;
@@ -71,7 +77,7 @@ export default function ScanReceiptScreen() {
       let totalScore = 0;
       let matchedCount = 0;
 
-      for (const item of parsedItems) {
+      for (const item of enrichedItems) {
         if (item.matchedFood && item.confidence >= 0.45) {
           totalScore += item.matchedFood.health_score;
           matchedCount++;
@@ -102,7 +108,7 @@ export default function ScanReceiptScreen() {
       await StorageService.saveScan({
         id: scanId,
         date: scanDate,
-        items: parsedItems,
+        items: enrichedItems,
         averageScore: matchedCount > 0 ? Math.round(totalScore / matchedCount) : 0
       });
 
@@ -239,6 +245,13 @@ export default function ScanReceiptScreen() {
               </View>
             )}
             
+            {progressStatus === 'enriching' && (
+              <View style={styles.progressRow}>
+                <ActivityIndicator color={COLORS.primaryGreen} />
+                <Text style={styles.progressText}>Looking up branded products...</Text>
+              </View>
+            )}
+
             {progressStatus === 'calculating' && (
               <View style={styles.progressRow}>
                 <ActivityIndicator color={COLORS.primaryGreen} />

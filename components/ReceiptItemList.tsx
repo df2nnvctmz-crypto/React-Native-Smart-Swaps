@@ -87,8 +87,15 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
             }}
           >
             <Text style={styles.foodName} numberOfLines={1}>
-              {(item.matchedFood && item.confidence >= 0.45) ? item.matchedFood.name : item.rawText}
+              {(item.matchedFood && item.confidence >= 0.45)
+                ? (item.source === 'off' && item.displayName ? item.displayName : item.matchedFood.name)
+                : item.rawText}
             </Text>
+            {item.source === 'off' && item.matchedFood && item.confidence >= 0.45 && (
+              <Text style={styles.nutritionBasis} numberOfLines={1}>
+                Nutrition based on: {item.matchedFood.name}
+              </Text>
+            )}
             <Text style={styles.rawTextScan} numberOfLines={1}>Scanned: "{item.rawText}"</Text>
           </TouchableOpacity>
 
@@ -135,13 +142,21 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
     );
   };
 
+  const usedOff = items.some(i => i.source === 'off');
+
   return (
     <View style={styles.container}>
       {renderSection('Confident Matches', confident)}
       {renderSection('Potential Matches', potential)}
       {renderSection('Not Found', notFound)}
 
-      <SearchModal 
+      {usedOff && (
+        <Text style={styles.attribution}>
+          Some products identified using Open Food Facts, © contributors, ODbL.
+        </Text>
+      )}
+
+      <SearchModal
         visible={editingIndex !== null}
         onClose={() => setEditingIndex(null)}
         mode="foods"
@@ -194,11 +209,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.textPrimary,
   },
+  nutritionBasis: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: 1,
+  },
   rawTextScan: {
     fontSize: 11,
     color: COLORS.textMuted,
     fontStyle: 'italic',
     marginTop: 2,
+  },
+  attribution: {
+    fontSize: 10,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 8,
   },
   actionsContainer: {
     flexDirection: 'row',
