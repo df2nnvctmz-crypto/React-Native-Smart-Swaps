@@ -6,34 +6,15 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import TextRecognition from '../modules/native-ocr';
 import { COLORS, globalStyles } from '../styles';
-import { parseReceipt, parseReceiptLine, ParsedReceiptItem } from './engine/receiptParser';
-import { useFoods, FoodIndexData } from './useFoods';
+import { ParsedReceiptItem } from './engine/receiptParser';
+import { resolveProductLine } from './engine/resolveProduct';
+import { useFoods } from './useFoods';
 import { useProfile } from './context/ProfileContext';
 import { findBestSwaps } from './engine/swapAlgorithm';
 import { StorageService } from './services/storage';
 import { OverrideStore } from './services/overrideStore';
 import { ReceiptItemList } from '../components/ReceiptItemList';
 import { FoodItem } from './types';
-
-/**
- * Resolve one OCR line, honouring a saved user correction before falling back to the matcher.
- * OverrideStore.load() must have completed before this is called (the lookup is synchronous).
- * NOTE: superseded by app/engine/resolveProduct.ts in the next step.
- */
-function resolveProductLine(
-  line: string,
-  allFoods: FoodItem[],
-  foodIndexData: FoodIndexData
-): ParsedReceiptItem | null {
-  const overrideId = OverrideStore.get(line);
-  if (overrideId) {
-    const food = allFoods.find(f => f.id === overrideId);
-    if (food) {
-      return { rawText: line, matchedFood: food, confidence: 1.0 };
-    }
-  }
-  return parseReceiptLine(line, allFoods, foodIndexData);
-}
 
 export default function ScanReceiptScreen() {
   const router = useRouter();
@@ -69,7 +50,7 @@ export default function ScanReceiptScreen() {
       for (let i = 0; i < lines.length; i += CHUNK_SIZE) {
         const chunk = lines.slice(i, i + CHUNK_SIZE);
         for (const line of chunk) {
-          const parsed = resolveProductLine(line, allFoods, foodIndexData);
+          const parsed = resolveProductLine(line, { allFoods, foodIndexData });
           if (parsed) {
             parsedItems.push(parsed);
           }
