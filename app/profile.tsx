@@ -7,6 +7,7 @@ import { SymbolView } from 'expo-symbols';
 import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import { useProfile, Sex, ActivityLevel, WeightGoal, DietaryPreference } from './context/ProfileContext';
+import { useSettings } from './context/SettingsContext';
 import { COLORS, globalStyles } from '../styles';
 
 const isIOS = Platform.OS === 'ios';
@@ -56,6 +57,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { profile, updateProfile, targetCalories } = useProfile();
+  const { settings, updateSettings } = useSettings();
 
   const [inputModalVisible, setInputModalVisible] = useState(false);
   const [pickerModalVisible, setPickerModalVisible] = useState(false);
@@ -195,6 +197,30 @@ export default function ProfileScreen() {
             </SettingsRow>
           ))}
         </SettingsGroup>
+
+        {/* Scanning */}
+        <SettingsGroup title="Scanning">
+          <SettingsRow
+            icon="cloud-outline"
+            sfSymbol="cloud.fill"
+            iconBg={COLORS.systemTeal}
+            title="Look up branded products online (beta)"
+            isLast={true}
+          >
+            <Switch
+              value={settings.offLookupEnabled}
+              onValueChange={(value) => updateSettings({ offLookupEnabled: value })}
+              trackColor={{ true: COLORS.primaryGreen }}
+            />
+          </SettingsRow>
+        </SettingsGroup>
+        {settings.offLookupEnabled && (
+          <Text style={styles.settingsHint}>
+            Branded products the offline database can't recognize (e.g. "Pringles") will be
+            looked up online via Open Food Facts. This sends the scanned product name over the
+            network and is still being tuned - occasionally it may pick the wrong item.
+          </Text>
+        )}
 
       </ScrollView>
 
@@ -402,6 +428,13 @@ const styles = StyleSheet.create({
   },
   groupContainer: {
     marginTop: 28,
+  },
+  settingsHint: {
+    fontSize: 12,
+    color: COLORS.systemGray,
+    marginHorizontal: 32,
+    marginTop: 8,
+    lineHeight: 16,
   },
   groupTitle: {
     fontSize: 13,

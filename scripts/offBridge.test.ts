@@ -61,12 +61,19 @@ import * as path from 'path';
     if (q.toLowerCase().includes('pringles')) return pringles as any;
     return null;
   };
-  const enriched = await enrichWithOff(items as any, deps, { lookup: fakeLookup as any });
+  const enriched = await enrichWithOff(items as any, deps, true, { lookup: fakeLookup as any });
   check('enrich only queried OFF for the weak line', lookupCalls === 1, `called ${lookupCalls}x`);
   check('strong BLS line untouched', enriched[0].source === 'bls' && enriched[0].matchedFood?.id === 'bls0090');
   check('weak line upgraded via OFF', enriched[1].source === 'off' && enriched[1].matchedFood?.id === 'bls0327');
   check('weak line kept its raw OCR text', enriched[1].rawText === 'Pringles Original 165g');
   check('override line never touched by OFF', enriched[2].source === 'override');
+
+  // 4. The gate itself: enabled=false must make zero network calls and return items untouched.
+  lookupCalls = 0;
+  const gatedOff = await enrichWithOff(items as any, deps, false, { lookup: fakeLookup as any });
+  check('disabled: zero OFF calls', lookupCalls === 0, `called ${lookupCalls}x`);
+  check('disabled: items returned unchanged (same weak bls source)', gatedOff[1].source === 'bls' && gatedOff[1].confidence === 0.36);
+  check('disabled: returns the identical array reference', gatedOff === (items as any));
 
   console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
   process.exit(failures === 0 ? 0 : 1);

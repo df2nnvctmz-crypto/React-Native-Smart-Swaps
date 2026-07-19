@@ -10,6 +10,7 @@ import { ParsedReceiptItem } from './engine/receiptParser';
 import { resolveProductLine, enrichWithOff } from './engine/resolveProduct';
 import { useFoods } from './useFoods';
 import { useProfile } from './context/ProfileContext';
+import { useSettings } from './context/SettingsContext';
 import { findBestSwaps } from './engine/swapAlgorithm';
 import { StorageService } from './services/storage';
 import { OverrideStore } from './services/overrideStore';
@@ -20,6 +21,7 @@ export default function ScanReceiptScreen() {
   const router = useRouter();
   const { allFoods, foods, foodIndexData } = useFoods();
   const { profile } = useProfile();
+  const { settings } = useSettings();
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<ParsedReceiptItem[] | null>(null);
   const [swaps, setSwaps] = useState<any[]>([]);
@@ -64,9 +66,12 @@ export default function ScanReceiptScreen() {
 
       // Second pass: ask OpenFoodFacts to identify the branded lines the offline matcher
       // left weak, then map them onto a BLS food. Best-effort - offline or on any failure
-      // the items are returned unchanged.
-      setProgressStatus('enriching');
-      const enrichedItems = await enrichWithOff(parsedItems, { allFoods, foodIndexData });
+      // the items are returned unchanged. Gated behind a user setting defaulting to off
+      // (see SettingsContext); when disabled this makes no network calls at all.
+      if (settings.offLookupEnabled) {
+        setProgressStatus('enriching');
+      }
+      const enrichedItems = await enrichWithOff(parsedItems, { allFoods, foodIndexData }, settings.offLookupEnabled);
 
       setProgressStatus('calculating');
       setResults(enrichedItems);

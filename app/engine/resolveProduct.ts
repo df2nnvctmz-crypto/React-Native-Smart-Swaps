@@ -10,7 +10,7 @@ import { normalizeOverrideKey } from './overrideKey';
  *
  *   1. override   - the user's saved manual corrections (offline, authoritative)
  *   2. bls-direct - the existing offline fuzzy matcher
- *   3. off         - OpenFoodFacts, on demand, for lines the above left weak
+ *   3. off         - OpenFoodFacts, on demand, for lines the above left weak (OPT-IN, gated)
  *
  * Nutrition ALWAYS comes from BLS: OFF is used only to turn a branded receipt line into a
  * generic product description (its category tags), which is then matched against BLS. So a
@@ -18,7 +18,9 @@ import { normalizeOverrideKey } from './overrideKey';
  *
  * Tiers 1-2 are synchronous (resolveProductLine) and run in the per-line loop. Tier 3 is a
  * network call, so it runs as an async SECOND PASS (enrichWithOff) over only the lines the
- * offline path could not place - keeping OFF traffic minimal and the hot path fast.
+ * offline path could not place - keeping OFF traffic minimal and the hot path fast. Tier 3
+ * is also gated behind a user setting defaulting to OFF (see enrichWithOff's `enabled` arg):
+ * with it disabled, resolution is exactly tiers 1-2, the fully-offline path.
  */
 
 /** Below this confidence a BLS-direct result is considered "weak" and worth an OFF lookup. */
@@ -100,12 +102,23 @@ export function bridgeOffToBls(off: OffProduct, deps: ResolveDeps): ParsedReceip
  * identify the product and bridge it onto a BLS food. Upgrades in place (returns a new array).
  * Best-effort and fully optional - offline or on any OFF failure the items are returned
  * unchanged. A saved override (source === 'override') is never overridden by OFF.
+ *
+ * `enabled` gates the entire pass and is required (not defaulted) so every call site must
+ * make an explicit decision. When false, this makes ZERO network calls and returns `items`
+ * completely unchanged - resolution is then exactly override cache -> BLS-direct matcher.
+ * The OFF category-bridge is known to occasionally pick a confidently wrong same-category
+ * neighbour (e.g. Coca-Cola -> tonic water) and has not been tuned against a labelled eval
+ * set yet, so callers should wire this to a user setting defaulting to false
+ * (see app/context/SettingsContext.ts: settings.offLookupEnabled).
  */
 export async function enrichWithOff(
   items: ParsedReceiptItem[],
   deps: ResolveDeps,
+  enabled: boolean,
   opts: { lookup?: typeof lookupOffProduct; lookupOptions?: OffLookupOptions } = {}
 ): Promise<ParsedReceiptItem[]> {
+  if (!enabled) return items;
+
   const lookup = opts.lookup ?? lookupOffProduct;
   const result = [...items];
 
