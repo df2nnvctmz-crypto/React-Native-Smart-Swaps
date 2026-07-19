@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { COLORS } from '../../styles';
 import { StorageService, ScanRecord } from '../services/storage';
+import { OverrideStore } from '../services/overrideStore';
 import { ReceiptItemList } from '../../components/ReceiptItemList';
 import { FoodItem } from '../types';
 
@@ -26,8 +27,12 @@ export default function ReceiptDetailScreen() {
     if (!scan) return;
     
     const newItems = [...scan.items];
-    newItems[index] = { ...newItems[index], matchedFood: newFood, confidence: 1.0 };
-    
+    const correctedItem = newItems[index];
+    newItems[index] = { ...correctedItem, matchedFood: newFood, confidence: 1.0 };
+
+    // Learn this correction so the same product resolves correctly on future receipts.
+    OverrideStore.set(correctedItem.rawText, newFood.id);
+
     let totalScore = 0;
     let matchedCount = 0;
     for (const item of newItems) {

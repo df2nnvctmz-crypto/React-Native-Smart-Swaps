@@ -7,12 +7,33 @@ import * as ImagePicker from 'expo-image-picker';
 import TextRecognition from '../modules/native-ocr';
 import { COLORS, globalStyles } from '../styles';
 import { parseReceipt, parseReceiptLine, ParsedReceiptItem } from './engine/receiptParser';
-import { useFoods } from './useFoods';
+import { useFoods, FoodIndexData } from './useFoods';
 import { useProfile } from './context/ProfileContext';
 import { findBestSwaps } from './engine/swapAlgorithm';
 import { StorageService } from './services/storage';
+import { OverrideStore } from './services/overrideStore';
 import { ReceiptItemList } from '../components/ReceiptItemList';
 import { FoodItem } from './types';
+
+/**
+ * Resolve one OCR line, honouring a saved user correction before falling back to the matcher.
+ * OverrideStore.load() must have completed before this is called (the lookup is synchronous).
+ * NOTE: superseded by app/engine/resolveProduct.ts in the next step.
+ */
+function resolveProductLine(
+  line: string,
+  allFoods: FoodItem[],
+  foodIndexData: FoodIndexData
+): ParsedReceiptItem | null {
+  const overrideId = OverrideStore.get(line);
+  if (overrideId) {
+    const food = allFoods.find(f => f.id === overrideId);
+    if (food) {
+      return { rawText: line, matchedFood: food, confidence: 1.0 };
+    }
+  }
+  return parseReceiptLine(line, allFoods, foodIndexData);
+}
 
 export default function ScanReceiptScreen() {
   const router = useRouter();
@@ -35,17 +56,20 @@ export default function ScanReceiptScreen() {
     try {
       const recognitionResult = await TextRecognition.recognize(imageUri);
       const lines = recognitionResult.blocks.flatMap(b => b.lines.map(l => l.text));
-      
+
+      // Load the user's saved corrections once, so the per-line loop can consult them synchronously.
+      await OverrideStore.load();
+
       setProgressStatus('matching');
       setProgressStats({ current: 0, total: lines.length });
-      
+
       const parsedItems: ParsedReceiptItem[] = [];
       const CHUNK_SIZE = 4;
-      
+
       for (let i = 0; i < lines.length; i += CHUNK_SIZE) {
         const chunk = lines.slice(i, i + CHUNK_SIZE);
         for (const line of chunk) {
-          const parsed = parseReceiptLine(line, allFoods, foodIndexData);
+          const parsed = resolveProductLine(line, allFoods, foodIndexData);
           if (parsed) {
             parsedItems.push(parsed);
           }
@@ -144,10 +168,14 @@ export default function ScanReceiptScreen() {
 
   const handleUpdateItem = async (index: number, newFood: FoodItem) => {
     if (!results || !currentScanId || !currentScanDate) return;
-    
+
     const newResults = [...results];
-    newResults[index] = { ...newResults[index], matchedFood: newFood, confidence: 1.0 };
+    const correctedItem = newResults[index];
+    newResults[index] = { ...correctedItem, matchedFood: newFood, confidence: 1.0 };
     setResults(newResults);
+
+    // Learn this correction so the same product resolves correctly on future receipts.
+    OverrideStore.set(correctedItem.rawText, newFood.id);
 
     let totalScore = 0;
     let matchedCount = 0;
