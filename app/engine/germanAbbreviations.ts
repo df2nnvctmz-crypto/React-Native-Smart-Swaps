@@ -5,7 +5,8 @@ export const BRAND_STRIP_LIST = [
   'm.i.',
   'm.i',
   'mi',
-  'bistro'
+  'bistro',
+  'ostmann' // spice/herb-only brand; never a hint towards an unrelated food category
 ];
 
 export const CERTIFICATIONS = [
@@ -70,6 +71,7 @@ export const LOANWORD_SYNONYMS: Record<string, string> = {
   'angus': 'rind beef',
   'pfefferkoer': 'pfefferkoerner pfeffer',
   'suppengemuese': 'suppengruen gemuese',
+  'innenfilet': 'filet brustfilet',
 };
 
 /**

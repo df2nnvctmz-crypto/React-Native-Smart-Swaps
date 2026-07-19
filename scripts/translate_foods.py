@@ -1,7 +1,7 @@
 import json
 import time
 import sys
-from deep_translator import GoogleTranslator
+from deep_translator import GoogleTranslator  # type: ignore
 
 def load_foods(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:

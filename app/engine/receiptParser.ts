@@ -104,7 +104,7 @@ function candidateKeysFor(token: string, shingleIndex: Map<string, Set<string>>)
   return keys;
 }
 
-const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber|mozzarella|gouda|parmesan|ricotta|feta|camembert|edamer|pesto|gnocchi|tortelloni|quark|butter|teigwaren|chili|paprika|skyr|baguette|baguett|roggen|ravioli|salat|pfeffer/i.test(t);
+const isCoreNoun = (t: string) => /joghurt|yogurt|milch|milk|kaese|cheese|brot|bread|pudding|flammkuchen|griess|granatapfel|apfel|apple|banane|banana|tomate|tomato|zwiebel|onion|kartoffel|potato|zitrone|lemon|salami|schinken|ham|wurst|sausage|nuss|nuesse|nut|peanut|erdnuss|reis|rice|fisch|fish|fleisch|meat|eier|egg|birne|pear|traube|grape|gurke|cucumber|mozzarella|gouda|parmesan|ricotta|feta|camembert|edamer|pesto|gnocchi|tortelloni|quark|butter|teigwaren|chili|paprika|skyr|baguette|baguett|roggen|ravioli|salat|pfeffer|pizza|sahne|rahm|creme|haehnchen|hähnchen|huhn|chicken|pute|truthahn|ente|gefluegel|geflügel/i.test(t);
 
 function candidateKeysFor4Gram(token: string, fourGramIndex: Map<string, Set<string>>): Set<string> {
   const keys = new Set<string>();
@@ -133,13 +133,17 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   // Fix 1: Lookalike digits
   const lookalikes: Record<string, string> = { '0':'o', '1':'l', '5':'s', '6':'g', '8':'b' };
   const replaceDigits = (w: string) => w.replace(/\d/g, d => lookalikes[d] || d);
+  // Plain quantity/weight tokens (e.g. "400g", "3st") are never a food name mangled by OCR -
+  // running lookalike-digit substitution on them just manufactures garbage tokens (400g -> 4oog).
+  const isPlainQuantityToken = (w: string) => /^\d+([.,]\d+)?(g|kg|mg|ml|cl|l|stk|st|er)?$/i.test(w);
 
   const preExpandStr = caseSplit.replace(/[^\w\säöüßÄÖÜ]/g, ' ');
   const preExpandWords = preExpandStr.split(/\s+/).filter(Boolean);
   const wordsWithVariants: string[] = [];
-  
+
   for (const w of preExpandWords) {
     wordsWithVariants.push(w);
+    if (isPlainQuantityToken(w)) continue;
     if (/^[a-zäöüß]+\d[a-zäöüß]*$/i.test(w)) {
       wordsWithVariants.push(w.replace(/\d/g, ''));
     }
@@ -183,8 +187,11 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   });
 
   const finalOcr = headNounSplit.join(' ');
-  const ocrTokensRaw = normalize(finalOcr).split(/\s+/).filter(t => t.length > 2);
-  const ocrTokensAscii = asciiFold(finalOcr).split(/\s+/).filter(t => t.length > 2);
+  // Quantity/weight/price tokens (e.g. "400g", "500ml", "3st", "250") never appear in a
+  // food's canonical name, so keeping them just dilutes every candidate's confidence equally.
+  const isQuantityNoise = (t: string) => /^\d+([.,]\d+)?(g|kg|mg|ml|cl|l|stk|st|er)?$/i.test(t);
+  const ocrTokensRaw = normalize(finalOcr).split(/\s+/).filter(t => t.length > 2 && !isQuantityNoise(t));
+  const ocrTokensAscii = asciiFold(finalOcr).split(/\s+/).filter(t => t.length > 2 && !isQuantityNoise(t));
 
   if (ocrTokensRaw.length === 0) return null;
 
@@ -413,10 +420,10 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
             coreNounFound = true;
           }
           
+          // A repeated core noun (e.g. a synonym-expansion step that intentionally restates
+          // a word) shouldn't get the 3x/5x boost again, but an exact match is still real
+          // evidence and must not be discarded outright - fall back to normal weight=1.
           let weight = isDescriptorStopword(oToken) ? 0 : (effectiveIsCore ? 3 : 1);
-          if (isCore && !effectiveIsCore) {
-            weight = 0;
-          }
           if (splitHeads.has(oToken) && effectiveIsCore) weight = 5;
           if (isFirstOcrToken && effectiveIsCore) weight *= 1.5;
 
@@ -434,35 +441,24 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           confidence += 0.08;
         }
 
-        // Fix 3: Dough penalty
-        const ocrHasTeig = tSet.ocr.some(t => t.includes('teig') || t.includes('dough'));
-        const dbHasTeig = tSet.food.some(t => t.includes('teig') || t.includes('dough'));
-        if (dbHasTeig && !ocrHasTeig) {
-          confidence -= 0.08;
-        }
-
-        // Fix 2: Fat Percentage tie-breaker logic
-        if (lineFatPct !== null) {
-          const foodNameStr = nameData.isFallback ? food.name : (food.name_de || food.name);
-          const foodFatMatch = foodNameStr.match(/(\d+(?:[.,]\d+)?)\s*(?:%|fat|fett)/i);
-          if (foodFatMatch) {
-            const foodFatPct = parseFloat(foodFatMatch[1].replace(',', '.'));
-            const diff = Math.abs(lineFatPct - foodFatPct);
-            confidence -= (diff * 0.01);
-          } else {
-            // Give a slight penalty to foods that don't specify fat when OCR text does
-            confidence -= 0.05;
-          }
-        }
-
         // Compute food token coverage (penalize if OCR is missing lots of food words)
         const IMPLICIT_QUALIFIERS = new Set(['roh','raw','natur','plain','frisch','fresh','min','mind','fat','fett',
         'dry','matter','schwein','rind','pute','kalb','haehnchen','huhn','lamm','pork',
         'beef','veal','kochpoekelware','poekelware','konserve','dose','dosenschinken',
-        'cured','canned','geroestet','roasted','gesalzen','salted']);
+        'cured','canned','geroestet','roasted','gesalzen','salted',
+        'getrocknet','dried']); // default/assumed prep state for spices & herbs, rarely restated on a receipt
         const coverageRelevantFoodTokens = tSet.food.filter(t => !IMPLICIT_QUALIFIERS.has(t) && !parenTokens.has(t));
+        // Weight coverage by how central each food-name token is (core noun vs. minor
+        // descriptor). Otherwise a terse single-word DB name (e.g. "Pfefferkuchen") gets an
+        // unfair 100%-coverage advantage over an equally-correct but more descriptive
+        // multi-word name (e.g. "Pfeffer schwarz, getrocknet") purely for having fewer words -
+        // missing a minor adjective like "schwarz" shouldn't cost as much as missing the noun.
         let matchedFoodTokens = 0;
+        let matchedCoverageWeight = 0;
+        let totalCoverageWeight = 0;
         for (const nToken of coverageRelevantFoodTokens) {
+          const tokenWeight = isCoreNoun(nToken) ? 3 : 1;
+          totalCoverageWeight += tokenWeight;
           let hasMatch = false;
           for (const oToken of tSet.ocr) {
             if (nToken === oToken) { hasMatch = true; break; }
@@ -472,9 +468,9 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
               hasMatch = true; break;
             }
           }
-          if (hasMatch) matchedFoodTokens++;
+          if (hasMatch) { matchedFoodTokens++; matchedCoverageWeight += tokenWeight; }
         }
-        const foodTokenCoverage = coverageRelevantFoodTokens.length > 0 ? (matchedFoodTokens / coverageRelevantFoodTokens.length) : 1;
+        const foodTokenCoverage = totalCoverageWeight > 0 ? (matchedCoverageWeight / totalCoverageWeight) : 1;
         confidence = (confidence * 0.65) + (foodTokenCoverage * 0.35);
 
         // Full string similarity
@@ -497,6 +493,28 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           confidence *= 0.6; // Heavy penalty
         }
 
+        // Special-diet descriptor penalty: "gluten-free"/"lactose-free" etc. are niche variants;
+        // don't prefer them over the ordinary product unless the receipt actually says so
+        // (e.g. "Knoblauchbaguett" should match plain "Weizenbaguette", not "Baguette glutenfrei").
+        // Same shape as the plant-based penalty above.
+        const dietKeywords = ['glutenfrei', 'glutenfree', 'laktosefrei', 'lactosefree', 'zuckerfrei', 'sugarfree'];
+        const ocrHasDiet = tSet.ocr.some(t => dietKeywords.some(kw => t.includes(kw)));
+        const dbHasDiet = tSet.food.some(t => dietKeywords.some(kw => t.includes(kw)));
+        if (!ocrHasDiet && dbHasDiet) {
+          confidence *= 0.7;
+        }
+
+        // Dough/batter category-mismatch penalty: raw dough ("...teig") is a different product
+        // from the finished item. If the OCR line doesn't mention dough, strongly deprioritize
+        // "Pizzateig"/"Hefeteig"/"Blätterteig" candidates so an actual pizza/pastry wins.
+        // Match tokens ending in "teig" (or "dough") but NOT "teigwaren" (that's pasta).
+        const isDoughToken = (t: string) => t === 'dough' || (t.endsWith('teig') && !t.includes('waren'));
+        const ocrHasDough = tSet.ocr.some(isDoughToken);
+        const dbHasDough = tSet.food.some(isDoughToken);
+        if (dbHasDough && !ocrHasDough) {
+          confidence *= 0.65;
+        }
+
         // Composite dish penalty: prefer PLAIN base nouns over composite/filled dishes (e.g. donuts filled with pudding)
         const compositeKeywords = ['gefüllt', 'mit', 'dessert', 'sauce', 'aromatisiert'];
         const dbIsComposite = tSet.food.some(t => compositeKeywords.some(kw => t.includes(kw)));
@@ -505,7 +523,13 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
         }
 
         // Implausible categories deprioritization (e.g. Additives, Potash)
-        const isAdditive = /E\s?\d{3}|additive|chemical|curing salt|ingredient/i.test(food.name + ' ' + food.swiss_category);
+        // Check the food's own name only, not its BLS category label - broad category
+        // buckets like "Seasonings and condiments/Salt and curing salts" also contain
+        // ordinary spices (pepper, basil) and condiments (mustard, ketchup), and checking
+        // the category text was deprioritizing all of them as if they were the actual
+        // additives (nitrite curing salt, potash, E-numbers) that also live in that bucket.
+        // "\bE" (word boundary) avoids false positives like "Type 1700" matching "e 170".
+        const isAdditive = /\bE[-\s]?\d{3}\b|additive|chemical|curing salt/i.test(food.name);
         if (isAdditive && confidence < 0.95) {
            confidence *= 0.4;
         }
@@ -527,11 +551,20 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
         }
         confidence = Math.min(0.95, confidence + coreNounFloor * 0.2);
 
-        // Removed debug log
-
-        if (ocrText === 'STEINOFEN PIZZA' && food.name_de?.includes('Pizza')) {
-           console.log(`\nPizza Candidate: ${food.name_de}`);
-           console.log(`  Confidence: ${confidence.toFixed(3)} (Overlap: ${overlapScore.toFixed(3)}, Total Weight: ${totalWeight.toFixed(3)}, Cov: ${foodTokenCoverage.toFixed(3)})`);
+        // Fix 2: Fat Percentage tie-breaker logic. Applied last (after the confidence cap
+        // above) so it always separates two otherwise-identical candidates (e.g. 30% vs 36%
+        // cream) instead of the cap saturating both to the same score first.
+        if (lineFatPct !== null) {
+          const foodNameStr = nameData.isFallback ? food.name : (food.name_de || food.name);
+          const foodFatMatch = foodNameStr.match(/(\d+(?:[.,]\d+)?)\s*(?:%|fat|fett)/i);
+          if (foodFatMatch) {
+            const foodFatPct = parseFloat(foodFatMatch[1].replace(',', '.'));
+            const diff = Math.abs(lineFatPct - foodFatPct);
+            confidence -= (diff * 0.01);
+          } else {
+            // Give a slight penalty to foods that don't specify fat when OCR text does
+            confidence -= 0.05;
+          }
         }
 
         const unmatchedCount = coverageRelevantFoodTokens.length - matchedFoodTokens;
@@ -548,15 +581,10 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
         allMatches.push({ food, confidence, hasStrongHit: candidateStrongHit, unmatchedCount });
       }
     }
-    
-    // DEBUG:
-    if (ocrText.includes('Mix') || ocrText.includes('Grop')) {
-       // console.log(`[DEBUG] ${food.name_de || food.name} -> score: ${confidence}`);
-    }
   }
 
   if (allMatches.length === 0) return null;
-  
+
   allMatches.sort((a, b) => {
     if (Math.abs(b.confidence - a.confidence) <= 0.03) {
       return a.unmatchedCount - b.unmatchedCount;
@@ -567,7 +595,6 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   const bestMatch = allMatches[0];
 
   // Return matches even with low confidence so UI can flag them
-  if (ocrText.includes('Mix') || ocrText.includes('Grop')) console.log(`[DEBUG WINNER] ${bestMatch.food.name_de || bestMatch.food.name} with score ${bestMatch.confidence}`);
   return { food: bestMatch.food, confidence: bestMatch.confidence, hasStrongHit: lineHasRecognizedToken };
 }
 
@@ -624,6 +651,17 @@ export function isLikelyProductLine(line: string): boolean {
   const hasPriceForAddr = /\d[.,]\d{2}/.test(low);
   if (hasAddrWord && hasNumberPattern && !hasPriceForAddr && !hasPriceSuffix) {
     return false;
+  }
+
+  // Reject postal-code + place-name lines (e.g. "10247 Berlin", "13353 Berlin."): a leading
+  // 4-5 digit number followed only by plain word tokens, with no price anywhere on the line.
+  // Strip surrounding punctuation from each token first so a trailing "." (e.g. "Berlin.")
+  // still counts as a plain place name.
+  if (/^\d{4,5}\b/.test(asciiLowStr) && !hasPrice1) {
+    const restTokens = tokens1.slice(1).map(t => t.replace(/[^a-z]/g, '')).filter(Boolean);
+    if (restTokens.length > 0 && restTokens.every(t => /^[a-z]+$/.test(t))) {
+      return false;
+    }
   }
   
   if (((line.match(/-/g)||[]).length >= 3) && !/\d[.,]\d{2}/.test(line)) return false;
