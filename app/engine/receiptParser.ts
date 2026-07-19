@@ -1,5 +1,5 @@
 import { FoodItem } from '../types';
-import type { FoodIndexData } from '../useFoods';
+import type { FoodIndexData } from './foodIndex';
 
 export interface ParsedReceiptItem {
   rawText: string;

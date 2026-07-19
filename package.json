@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "tsx scripts/regression.test.ts"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@types/react": "~19.1.0",
     "@types/xlsx": "^0.0.35",
+    "tsx": "^4.23.1",
     "typescript": "~5.9.2",
     "xlsx": "^0.18.5"
   },
