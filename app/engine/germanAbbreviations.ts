@@ -66,7 +66,9 @@ export const LOANWORD_SYNONYMS: Record<string, string> = {
   'pestu': 'pesto',   // common OCR misread
   'diavolo': 'pizza scharfe salami',
   'reggiano': 'parmesan hartkaese',
-  'pringles': 'chips kartoffel',
+  // NOTE: deliberately no brand->product mappings for snack brands (e.g. Pringles).
+  // The database has no crisps/chips entry, so such a mapping only ever resolves to a
+  // misleading raw ingredient ("Kartoffel geschält, roh"); better to report no match.
   'ravioli': 'teigwaren pasta',
   'angus': 'rind beef',
   'pfefferkoer': 'pfefferkoerner pfeffer',
@@ -88,7 +90,11 @@ export function expandGermanAbbreviations(line: string): string {
 
   // Split common compound prefixes so they tokenize separately
   // This helps "Proteinjogh" become "Protein" "jogh", or "BistroFlammk" become "Bistro" "Flammk"
-  const prefixesToSplit = ['protein', 'schoko', 'bistro', 'mini', 'bio', 'vegan', 'veggie', 'chili'];
+  // Only non-food qualifiers belong here. An actual ingredient noun must NOT be listed: in a
+  // German compound the LAST element is the head noun, so splitting e.g. "Chiliflocken" would
+  // expose "chili" as a standalone exact match while the real head ("flocken") goes unmatched,
+  // letting chili flakes match the dish "Chili sin carne".
+  const prefixesToSplit = ['protein', 'schoko', 'bistro', 'mini', 'bio', 'vegan', 'veggie'];
   prefixesToSplit.forEach(prefix => {
     const regex = new RegExp(`\\b(${prefix})`, 'gi');
     cleanLine = cleanLine.replace(regex, '$1 ');

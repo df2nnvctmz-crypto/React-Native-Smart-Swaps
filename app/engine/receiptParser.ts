@@ -215,7 +215,7 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
         const st = indexData.stemIndex.get(stem) ?? indexData.stemIndex.get(token);
         if (st) { st.forEach(f => { addCand(f); addCand(f); }); if (!isStop) lineHasRecognizedToken = true; }
       }
-      
+
       if (token.length >= 4 && indexData.shingleIndex) {
         let found5 = false;
         for (const key of candidateKeysFor(token, indexData.shingleIndex)) {
@@ -285,13 +285,19 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   }
 
   if (!lineHasRecognizedToken || candidateHits.size === 0) return null;
-  const MAX_CANDIDATES = 80;
+  // A very common word ("tomaten") hits hundreds of foods, and the hit count that ranks them
+  // here is a coarse retrieval prior, not a quality score - so a correct short entry
+  // ("Tomate roh", reached only via the stem index) could be evicted before it was ever scored,
+  // in favour of long composite dishes that merely mention the word. 120 keeps those entries in
+  // play; raising it further starts admitting marginal candidates that win saturated ties.
+  const MAX_CANDIDATES = 120;
   let candidatesToScore: FoodItem[];
   if (candidateHits.size <= MAX_CANDIDATES) {
     candidatesToScore = Array.from(candidateHits.keys());
   } else {
     candidatesToScore = Array.from(candidateHits.entries())
-      .sort((a, b) => b[1] - a[1]).slice(0, MAX_CANDIDATES).map(e => e[0]);
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, MAX_CANDIDATES).map(e => e[0]);
   }
 
   for (const food of candidatesToScore) {
@@ -370,8 +376,18 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
 
             let simScore = 0;
             if (oToken === nToken || nToken.startsWith(oToken) || oToken.startsWith(nToken)) {
-              let lenRatio = minLen / Math.max(oToken.length, nToken.length);
-              simScore = oToken === nToken ? 1.0 : 0.5 + (0.35 * lenRatio);
+              const lenRatio = minLen / Math.max(oToken.length, nToken.length);
+              if (oToken === nToken) {
+                simScore = 1.0;
+              } else if (oS === nS) {
+                // Pure German inflection (Tomate/Tomaten, Banane/Bananen): same word, so
+                // treat as effectively exact. Without this a plural receipt line ("Tomaten")
+                // scores higher against an unrelated entry that happens to be spelled
+                // plural ("Tomaten passiert") than against its own singular ("Tomate roh").
+                simScore = 0.97;
+              } else {
+                simScore = 0.5 + (0.35 * lenRatio);
+              }
             } else {
               const dist = levenshtein(oToken, nToken);
               const maxLen = Math.max(oToken.length, nToken.length);
@@ -504,14 +520,19 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
           confidence *= 0.7;
         }
 
-        // Dough/batter category-mismatch penalty: raw dough ("...teig") is a different product
-        // from the finished item. If the OCR line doesn't mention dough, strongly deprioritize
-        // "Pizzateig"/"Hefeteig"/"Blätterteig" candidates so an actual pizza/pastry wins.
-        // Match tokens ending in "teig" (or "dough") but NOT "teigwaren" (that's pasta).
-        const isDoughToken = (t: string) => t === 'dough' || (t.endsWith('teig') && !t.includes('waren'));
-        const ocrHasDough = tSet.ocr.some(isDoughToken);
-        const dbHasDough = tSet.food.some(isDoughToken);
-        if (dbHasDough && !ocrHasDough) {
+        // Processed-form mismatch penalty. In a German compound the LAST element says what the
+        // product actually IS, and some heads denote a wholly different product from the base
+        // ingredient. If the receipt line doesn't carry that head, deprioritize such candidates:
+        //   "...teig"  -> raw dough, not the baked item  ("Pizzateig" for "Steinofen Pizza")
+        //   "...eis"   -> ice cream, not the base food   ("Joghurteis" for "Proteinjoghurt")
+        // Guards: "teigwaren" is pasta, not dough; "...reis" is rice, not ice ("Milchreis").
+        const isProcessedFormToken = (t: string) =>
+          t === 'dough' ||
+          (t.endsWith('teig') && !t.includes('waren')) ||
+          (t.length >= 6 && t.endsWith('eis') && !t.endsWith('reis'));
+        const ocrHasForm = tSet.ocr.some(isProcessedFormToken);
+        const dbHasForm = tSet.food.some(isProcessedFormToken);
+        if (dbHasForm && !ocrHasForm) {
           confidence *= 0.65;
         }
 
