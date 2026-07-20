@@ -1,11 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, globalStyles } from '../../styles';
 import { useFoods } from '../useFoods';
-import { findBestSwaps } from '../engine/swapAlgorithm';
+import { findBestSwapsPersonalized, SwapResult } from '../engine/swapAlgorithm';
+import { recordSwapAccepted, recordSwapRejected } from '../engine/personalSwapPreferences';
 import { useProfile } from '../context/ProfileContext';
 import { useFavorites } from '../context/FavoritesContext';
 
@@ -47,10 +48,32 @@ export default function FoodDetailsScreen() {
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const food = useMemo(() => allFoods.find(f => f.id === id) || allFoods[0], [id, allFoods]);
-  
-  const recommendedSwaps = useMemo(() => {
-    return findBestSwaps(food, foods, 2, profile.dietaryPreference);
+
+  const [recommendedSwaps, setRecommendedSwaps] = useState<SwapResult[]>([]);
+  const [dismissedSwapIds, setDismissedSwapIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    let isActive = true;
+    findBestSwapsPersonalized(food, foods, 2, profile.dietaryPreference).then(swaps => {
+      if (isActive) setRecommendedSwaps(swaps);
+    });
+    return () => { isActive = false; };
   }, [food, foods, profile.dietaryPreference]);
+
+  const visibleSwaps = useMemo(
+    () => recommendedSwaps.filter(swap => !dismissedSwapIds.has(swap.candidate.id)),
+    [recommendedSwaps, dismissedSwapIds]
+  );
+
+  const handleAcceptSwap = (swap: SwapResult) => {
+    recordSwapAccepted(swap.candidate.swiss_category, swap.candidate.id);
+    router.replace(`/food/${swap.candidate.id}`);
+  };
+
+  const handleRejectSwap = (swap: SwapResult) => {
+    recordSwapRejected(swap.candidate.swiss_category, swap.candidate.id);
+    setDismissedSwapIds(prev => new Set(prev).add(swap.candidate.id));
+  };
 
   // Color code based on score
   const getScoreColor = (val: number) => {
@@ -148,14 +171,14 @@ export default function FoodDetailsScreen() {
         </View>
 
         {/* Smarter Swaps */}
-        {recommendedSwaps.length > 0 && (
+        {visibleSwaps.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Smarter Swaps</Text>
-            {recommendedSwaps.map((swap, index) => (
-              <TouchableOpacity 
-                key={index} 
+            {visibleSwaps.map((swap, index) => (
+              <TouchableOpacity
+                key={index}
                 style={styles.swapCard}
-                onPress={() => router.replace(`/food/${swap.candidate.id}`)}
+                onPress={() => handleAcceptSwap(swap)}
                 activeOpacity={0.8}
               >
                 <View style={styles.swapIconContainer}>
@@ -169,6 +192,13 @@ export default function FoodDetailsScreen() {
                 <View style={styles.swapScorePill}>
                   <Text style={styles.swapScoreText}>{swap.candidate.health_score} / 100</Text>
                 </View>
+                <TouchableOpacity
+                  style={styles.swapDismissButton}
+                  onPress={(e) => { e.stopPropagation(); handleRejectSwap(swap); }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="close" size={16} color={COLORS.textSecondary} />
+                </TouchableOpacity>
               </TouchableOpacity>
             ))}
           </View>
@@ -352,6 +382,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: COLORS.primaryGreen,
+  },
+  swapDismissButton: {
+    marginLeft: 10,
+    padding: 4,
   },
   card: {
     backgroundColor: COLORS.white,

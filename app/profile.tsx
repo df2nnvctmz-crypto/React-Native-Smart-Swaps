@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, Switch, Modal, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, Switch, Modal, KeyboardAvoidingView, Alert } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import { useProfile, Sex, ActivityLevel, WeightGoal, DietaryPreference } from './context/ProfileContext';
 import { useSettings } from './context/SettingsContext';
+import { resetPersonalPreferences } from './engine/personalSwapPreferences';
 import { COLORS, globalStyles } from '../styles';
 
 const isIOS = Platform.OS === 'ios';
@@ -116,6 +117,17 @@ export default function ProfileScreen() {
     updateProfile({ dietaryPreference: current });
   };
 
+  const handleResetSwapPreferences = () => {
+    Alert.alert(
+      'Reset Swap Preferences',
+      "This forgets which swap suggestions you've liked or dismissed. It won't affect your profile or scan history.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Reset', style: 'destructive', onPress: () => { resetPersonalPreferences(); } },
+      ]
+    );
+  };
+
   return (
     <View style={styles.safeArea}>
       
@@ -221,6 +233,24 @@ export default function ProfileScreen() {
             network and is still being tuned - occasionally it may pick the wrong item.
           </Text>
         )}
+
+        {/* Personalization */}
+        <SettingsGroup title="Personalization">
+          <SettingsRow
+            icon="refresh-outline"
+            sfSymbol="arrow.counterclockwise"
+            iconBg={COLORS.systemGray}
+            title="Reset Swap Preferences"
+            isLast={true}
+            onPress={handleResetSwapPreferences}
+          >
+            <Ionicons name="chevron-forward" size={16} color={COLORS.systemGray2} />
+          </SettingsRow>
+        </SettingsGroup>
+        <Text style={styles.settingsHint}>
+          Swap suggestions quietly adapt on this device as you like or dismiss them. This never
+          leaves your phone - resetting just forgets that local learning.
+        </Text>
 
       </ScrollView>
 

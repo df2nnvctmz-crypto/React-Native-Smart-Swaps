@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, globalStyles } from '../../styles';
 import { useFoods } from '../useFoods';
-import { findBestSwaps } from '../engine/swapAlgorithm';
+import { findBestSwapsPersonalized } from '../engine/swapAlgorithm';
+import { recordSwapAccepted, recordSwapRejected } from '../engine/personalSwapPreferences';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useProfile, DietaryPreference } from '../context/ProfileContext';
 import { SearchModal } from '../../components/SearchModal';
@@ -90,41 +91,74 @@ export default function SwapsTab() {
     return Array.from(foodMap.values());
   }, [scans]);
 
-  const { topSwapObjects } = useMemo(() => {
-    if (uniquePurchasedFoods.length === 0) return { topSwapObjects: [] };
-    
-    const safeFoods = foods.length > 0 ? foods : allFoods;
-    const allSwaps: any[] = [];
-    
-    for (const badFood of uniquePurchasedFoods) {
-      const bestSwaps = findBestSwaps(badFood, safeFoods, 3, profile.dietaryPreference);
-      for (const swap of bestSwaps) {
-        const improvement = swap.candidate.health_score - badFood.health_score;
-        if (improvement > 0) {
-          allSwaps.push({
-            id: `${badFood.id}-${swap.candidate.id}`,
-            from: badFood,
-            to: swap.candidate,
-            improvement: improvement,
-            details: `Smart Swap Match (${Math.round(swap.score)} logic points)`,
-          });
+  const [topSwapObjects, setTopSwapObjects] = useState<any[]>([]);
+  const [swapsLoading, setSwapsLoading] = useState(false);
+  const [dismissedSwapIds, setDismissedSwapIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function computeSwaps() {
+      if (uniquePurchasedFoods.length === 0) {
+        if (isActive) setTopSwapObjects([]);
+        return;
+      }
+
+      setSwapsLoading(true);
+      const safeFoods = foods.length > 0 ? foods : allFoods;
+      const allSwaps: any[] = [];
+
+      for (const badFood of uniquePurchasedFoods) {
+        const bestSwaps = await findBestSwapsPersonalized(badFood, safeFoods, 3, profile.dietaryPreference);
+        for (const swap of bestSwaps) {
+          const improvement = swap.candidate.health_score - badFood.health_score;
+          if (improvement > 0) {
+            allSwaps.push({
+              id: `${badFood.id}-${swap.candidate.id}`,
+              from: badFood,
+              to: swap.candidate,
+              improvement: improvement,
+              details: `Smart Swap Match (${Math.round(swap.score)} logic points)`,
+            });
+          }
         }
       }
-    }
 
-    // Deduplicate by swap ID
-    const uniqueSwapsMap = new Map<string, any>();
-    for (const swap of allSwaps) {
-      if (!uniqueSwapsMap.has(swap.id) || swap.improvement > uniqueSwapsMap.get(swap.id).improvement) {
-        uniqueSwapsMap.set(swap.id, swap);
+      // Deduplicate by swap ID
+      const uniqueSwapsMap = new Map<string, any>();
+      for (const swap of allSwaps) {
+        if (!uniqueSwapsMap.has(swap.id) || swap.improvement > uniqueSwapsMap.get(swap.id).improvement) {
+          uniqueSwapsMap.set(swap.id, swap);
+        }
+      }
+
+      const finalSwaps = Array.from(uniqueSwapsMap.values());
+      finalSwaps.sort((a, b) => b.improvement - a.improvement);
+
+      if (isActive) {
+        setTopSwapObjects(finalSwaps.slice(0, 5));
+        setSwapsLoading(false);
       }
     }
-    
-    const finalSwaps = Array.from(uniqueSwapsMap.values());
-    finalSwaps.sort((a, b) => b.improvement - a.improvement);
 
-    return { topSwapObjects: finalSwaps.slice(0, 5) };
+    computeSwaps();
+    return () => { isActive = false; };
   }, [uniquePurchasedFoods, foods, profile.dietaryPreference, allFoods]);
+
+  const visibleTopSwapObjects = useMemo(
+    () => topSwapObjects.filter(swap => !dismissedSwapIds.has(swap.id)),
+    [topSwapObjects, dismissedSwapIds]
+  );
+
+  const handleAcceptSwap = (item: any) => {
+    recordSwapAccepted(item.to.swiss_category, item.to.id);
+    router.push(`/food/${item.to.id}`);
+  };
+
+  const handleRejectSwap = (item: any) => {
+    recordSwapRejected(item.to.swiss_category, item.to.id);
+    setDismissedSwapIds(prev => new Set(prev).add(item.id));
+  };
 
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
@@ -153,10 +187,10 @@ export default function SwapsTab() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerHeight = insets.top + HEADER_CONTENT_HEIGHT;
 
-  const renderSwapCard = (item: any, isCarousel: boolean = false) => {
+  const renderSwapCard = (item: any, isCarousel: boolean = false, trackable: boolean = false) => {
     const isExpanded = expandedItem === item.id;
     const isFav = isFavorite('swap', item.id);
-    
+
     return (
       <View key={item.id} style={[globalStyles.card, { marginBottom: 12 }, isCarousel && { width: '100%', marginBottom: 8 }]}>
         <View style={[globalStyles.rowBetween, { alignItems: 'center' }]}>
@@ -167,15 +201,15 @@ export default function SwapsTab() {
                  <Text style={styles.foodListKcal}>{Math.round(item.from.nutrients_per_100.kcal)} kcal</Text>
               </View>
            </TouchableOpacity>
-           
-           <TouchableOpacity 
+
+           <TouchableOpacity
              style={styles.arrowCircle}
              onPress={() => toggleItem(item.id)}
            >
              <Ionicons name="arrow-forward" size={16} color={COLORS.primaryGreen} />
            </TouchableOpacity>
-           
-           <TouchableOpacity style={styles.swapColRight} onPress={() => router.push(`/food/${item.to.id}`)}>
+
+           <TouchableOpacity style={styles.swapColRight} onPress={() => trackable ? handleAcceptSwap(item) : router.push(`/food/${item.to.id}`)}>
               <View style={styles.swapTextContainerRight}>
                  <Text style={[styles.foodListName, { textAlign: 'right' }]} numberOfLines={2}>{item.to.name}</Text>
                  <Text style={[styles.foodListKcal, { textAlign: 'right' }]}>{Math.round(item.to.nutrients_per_100.kcal)} kcal</Text>
@@ -189,6 +223,11 @@ export default function SwapsTab() {
         <View style={globalStyles.rowBetween}>
           <Text style={styles.swapDetailsText}>{item.details}</Text>
           <View style={globalStyles.row}>
+            {trackable && (
+              <TouchableOpacity style={styles.smallHeartButton} onPress={() => handleRejectSwap(item)}>
+                <Ionicons name="close-circle-outline" size={18} color={COLORS.textMuted} />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={styles.smallHeartButton} onPress={() => toggleFavorite('swap', item.id)}>
               <Ionicons name={isFav ? "heart" : "heart-outline"} size={18} color={isFav ? "#FF3B30" : COLORS.textMuted} />
             </TouchableOpacity>
@@ -269,16 +308,16 @@ export default function SwapsTab() {
           <>
             <Text style={[globalStyles.subtitle, { marginBottom: 16, marginTop: 4 }]}>Smart Swaps for You</Text>
             <View style={{ marginBottom: 24, marginHorizontal: -20 }}>
-              {topSwapObjects.length > 0 ? (
+              {visibleTopSwapObjects.length > 0 ? (
                 <CoverFlowCarousel
-                  data={topSwapObjects}
+                  data={visibleTopSwapObjects}
                   keyExtractor={(item) => item.id}
-                  renderItem={(item) => renderSwapCard(item, true)}
+                  renderItem={(item) => renderSwapCard(item, true, true)}
                 />
               ) : (
                 <View style={{ padding: 40, alignItems: 'center', backgroundColor: COLORS.white, borderRadius: 16, marginHorizontal: 20 }}>
                   <Text style={{ color: COLORS.textMuted, textAlign: 'center', lineHeight: 22 }}>
-                    We couldn't find any smart swaps for your scanned items yet. Try scanning more receipts!
+                    {swapsLoading ? 'Finding your smart swaps...' : "We couldn't find any smart swaps for your scanned items yet. Try scanning more receipts!"}
                   </Text>
                 </View>
               )}
@@ -308,7 +347,7 @@ export default function SwapsTab() {
               </Text>
             </View>
           ) : (
-            favoritedSwapsList.map((item) => renderSwapCard(item, false))
+            favoritedSwapsList.map((item) => renderSwapCard(item, false, false))
           )}
         </View>
       </Animated.ScrollView>

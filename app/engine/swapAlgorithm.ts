@@ -1,10 +1,12 @@
 import { FoodItem } from '../types';
+import { extractSwapFeatures, predictSwapQuality, combineWithExistingScore } from './swapRanker';
+import { applyPersonalPreference } from './personalSwapPreferences';
 
 const STOP_WORDS = new Set(['and', 'the', 'with', 'organic', 'raw', 'fried', 'without', 'fat', 'pan', 'in', 'of', 'for', 'a']);
 const UNSWEETENED_KEYWORDS = ['zero', 'diet', 'plain', 'unsweetened', 'no sugar'];
 const SWEETENED_KEYWORDS = ['sweet', 'sugar', 'syrup', 'honey', 'sweetened', 'chocolate', 'candy', 'pastry', 'cola', 'cookie', 'cake'];
 
-const LIQUID_KEYWORDS = ['drink', 'juice', 'beverage', 'milk', 'soda', 'water', 'cola', 'liquid', 'tea', 'coffee', 'stock', 'broth'];
+const LIQUID_KEYWORDS = ['drink', 'juice', 'beverage', 'milk', 'soda', 'water', 'cola', 'liquid', 'tea', 'coffee', 'stock', 'broth', 'cream', 'sahne'];
 const RESTRICTED_KEYWORDS = ['alcohol', 'beer', 'wine', 'energy drink', 'liquor', 'vodka', 'rum', 'whiskey', 'spirit'];
 
 function normalizeString(str: string): string[] {
@@ -12,9 +14,16 @@ function normalizeString(str: string): string[] {
 }
 
 function isLiquid(food: FoodItem): boolean {
+  // NOTE: deliberately checks the food's own NAME only, not category/swiss_category text.
+  // Category labels are broad taxonomy umbrellas (e.g. "Milk, cream and cheese" covers
+  // liquid milk, liquid cream, AND solid cheese under one label) - matching keywords
+  // against that shared label text produces false positives for every food in the
+  // bucket, not just the actually-liquid ones. Concretely: Whipping cream and
+  // Mozzarella share the exact swiss_category string "Milk and dairy products/Milk,
+  // cream and cheese" - checking category text made both match "cream" and therefore
+  // both register as liquid, defeating the whole point of this filter.
   const normName = food.name.toLowerCase();
-  const normCat = (food.category + ' ' + food.swiss_category).toLowerCase();
-  return LIQUID_KEYWORDS.some(kw => normName.includes(kw) || normCat.includes(kw));
+  return LIQUID_KEYWORDS.some(kw => normName.includes(kw));
 }
 
 function containsKeywords(str: string, keywords: string[]): boolean {
@@ -41,7 +50,7 @@ function getEquivalenceGroup(swissCategory: string, name: string): string {
   if (lowerCat.includes('fruit')) return 'FRUIT';
   if (lowerCat.includes('sweet') || lowerCat.includes('sugar') || lowerCat.includes('chocolate')) return 'SWEETS';
   if (lowerCat.includes('beverage') || lowerCat.includes('drink') || lowerCat.includes('juice')) return 'BEVERAGES';
-  
+
   // Default to the first part of the swiss category string
   return lowerCat.split('/')[0];
 }
@@ -53,7 +62,7 @@ export interface SwapResult {
 
 export function evaluateSwap(currentFood: FoodItem, candidate: FoodItem): number {
   let score = 0;
-  
+
   // 1. Core Health Score Jumps
   const scoreDiff = candidate.health_score - currentFood.health_score;
   if (scoreDiff > 0) {
@@ -93,12 +102,12 @@ export function evaluateSwap(currentFood: FoodItem, candidate: FoodItem): number
     // Oils are judged almost entirely on Saturated Fat profile
     const satFatDiff = currNutrients.saturated_fat_g - candNutrients.saturated_fat_g;
     score += satFatDiff * 15; // heavily reward lower saturated fat
-  } 
+  }
   else if (group === 'DAIRY_ALT') {
     // Dairy/Yogurts are judged on Sugar and Fat
     const sugarDiff = currNutrients.sugars_g - candNutrients.sugars_g;
     const fatDiff = currNutrients.fat_g - candNutrients.fat_g;
-    score += sugarDiff * 8; 
+    score += sugarDiff * 8;
     score += fatDiff * 6;
   }
   else if (group === 'MEAT_ALT') {
@@ -106,7 +115,7 @@ export function evaluateSwap(currentFood: FoodItem, candidate: FoodItem): number
     const proteinDiff = candNutrients.protein_g - currNutrients.protein_g;
     const satFatDiff = currNutrients.saturated_fat_g - candNutrients.saturated_fat_g;
     const saltDiff = currNutrients.salt_g - candNutrients.salt_g;
-    score += proteinDiff * 8; 
+    score += proteinDiff * 8;
     score += satFatDiff * 10;
     score += saltDiff * 20;
   }
@@ -121,12 +130,12 @@ export function evaluateSwap(currentFood: FoodItem, candidate: FoodItem): number
   }
 
   // 5. Calorie Parity constraint
-  const currentKcal = currNutrients.kcal || 1; 
+  const currentKcal = currNutrients.kcal || 1;
   const candKcal = candNutrients.kcal;
   const kcalRatio = candKcal / currentKcal;
 
   if (kcalRatio >= 0.8 && kcalRatio <= 1.2) {
-    score += 40; 
+    score += 40;
   }
   if (kcalRatio > 1.5 || kcalRatio < 0.5) {
     score -= 100; // Penalize wild calorie swings
@@ -150,7 +159,7 @@ export function findBestSwaps(badFood: FoodItem, allFoods: FoodItem[], count: nu
   // Must either share the EXACT same swiss_category or belong to the same equivalence group (e.g. Dairy <-> Soy alternative)
   candidates = candidates.filter(f => {
     if (f.swiss_category === badFood.swiss_category) return true;
-    
+
     const candGroup = getEquivalenceGroup(f.swiss_category, f.name);
     if (candGroup === targetGroup) {
        const broadGroups = ['VEG', 'FRUIT', 'GRAINS', 'SWEETS', 'SNACKS'];
@@ -183,7 +192,42 @@ export function findBestSwaps(badFood: FoodItem, allFoods: FoodItem[], count: nu
     score: evaluateSwap(badFood, candidate)
   }));
 
+  // --- Learned ranker layer (swapRanker.ts) ---
+  // cosineSim is null here because embeddings aren't wired into this synchronous
+  // function's inputs yet - the ranker handles that gracefully (treats it as neutral).
+  // If/when you have precomputed food embeddings available at this call site, pass
+  // the real similarity instead of null for a stronger signal.
+  for (const sc of scoredCandidates) {
+    const features = extractSwapFeatures(badFood, sc.candidate, null);
+    const learnedProbability = predictSwapQuality(features);
+    sc.score = combineWithExistingScore(sc.score, learnedProbability);
+  }
+
   // Sort by score descending and take the top requested amount
   scoredCandidates.sort((a, b) => b.score - a.score);
   return scoredCandidates.slice(0, count);
+}
+
+/**
+ * Async variant that also applies the on-device personal preference layer.
+ * Kept separate from findBestSwaps() (which stays synchronous) since
+ * AsyncStorage reads are inherently async - call this from your UI/screen code
+ * where you're already in an async context (e.g. loading a swap suggestion screen).
+ */
+export async function findBestSwapsPersonalized(
+  badFood: FoodItem,
+  allFoods: FoodItem[],
+  count: number = 3,
+  dietaryPreference: string[] = ['Balanced']
+): Promise<SwapResult[]> {
+  // Pull more candidates than needed since personalization can reorder the ranking -
+  // count*3 is a reasonable starting buffer, tune based on real usage.
+  const base = findBestSwaps(badFood, allFoods, count * 3, dietaryPreference);
+  const personalized: SwapResult[] = [];
+  for (const r of base) {
+    const adjustedScore = await applyPersonalPreference(r.score, r.candidate.swiss_category, r.candidate.id);
+    personalized.push({ ...r, score: adjustedScore });
+  }
+  personalized.sort((a, b) => b.score - a.score);
+  return personalized.slice(0, count);
 }
