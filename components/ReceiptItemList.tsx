@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { COLORS } from '../styles';
@@ -14,9 +14,10 @@ import * as Haptics from 'expo-haptics';
 interface ReceiptItemListProps {
   items: ParsedReceiptItem[];
   onUpdateItem: (index: number, newFood: FoodItem) => void;
+  onDeleteItem: (index: number) => void;
 }
 
-export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdateItem }) => {
+export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdateItem, onDeleteItem }) => {
   const router = useRouter();
   const { allFoods, foods } = useFoods();
   const { profile } = useProfile();
@@ -47,8 +48,20 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
   };
 
   const handleEditPress = (index: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     setEditingIndex(index);
+  };
+
+  const handleDeletePress = (index: number, label: string) => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    Alert.alert(
+      'Remove Item',
+      `Remove "${label}" from this receipt?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Remove', style: 'destructive', onPress: () => onDeleteItem(index) },
+      ]
+    );
   };
 
   const renderItemRow = ({ item, originalIndex }: { item: ParsedReceiptItem; originalIndex: number }) => {
@@ -115,12 +128,20 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
               )}
             </TouchableOpacity>
             
-            <TouchableOpacity 
-              style={styles.editBtn} 
+            <TouchableOpacity
+              style={styles.editBtn}
               onPress={() => handleEditPress(originalIndex)}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Ionicons name="pencil-outline" size={16} color={COLORS.textMuted} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.editBtn}
+              onPress={() => handleDeletePress(originalIndex, item.matchedFood?.name ?? item.rawText)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="trash-outline" size={16} color={COLORS.textMuted} />
             </TouchableOpacity>
           </View>
         </View>

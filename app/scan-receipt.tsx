@@ -82,7 +82,8 @@ export default function ScanReceiptScreen() {
       let totalScore = 0;
       let matchedCount = 0;
 
-      for (const item of enrichedItems) {
+      for (let idx = 0; idx < enrichedItems.length; idx++) {
+        const item = enrichedItems[idx];
         if (item.matchedFood && item.confidence >= 0.45) {
           totalScore += item.matchedFood.health_score;
           matchedCount++;
@@ -98,7 +99,7 @@ export default function ScanReceiptScreen() {
             }
           }
         }
-        if (matchedCount % 5 === 0) {
+        if ((idx + 1) % 5 === 0) {
           await new Promise(resolve => setTimeout(resolve, 0));
         }
       }
@@ -184,7 +185,32 @@ export default function ScanReceiptScreen() {
       date: currentScanDate,
       items: newResults,
       averageScore,
-      interactions: []
+      interactions: [] // Fresh scan — no interactions logged yet at this stage
+    });
+  };
+
+  const handleDeleteItem = async (index: number) => {
+    if (!results || !currentScanId || !currentScanDate) return;
+
+    const newResults = results.filter((_, i) => i !== index);
+    setResults(newResults);
+
+    let totalScore = 0;
+    let matchedCount = 0;
+    for (const item of newResults) {
+      if (item.matchedFood) {
+        totalScore += item.matchedFood.health_score;
+        matchedCount++;
+      }
+    }
+    const averageScore = matchedCount > 0 ? Math.round(totalScore / matchedCount) : 0;
+
+    await StorageService.updateScan(currentScanId, {
+      id: currentScanId,
+      date: currentScanDate,
+      items: newResults,
+      averageScore,
+      interactions: [] // Fresh scan — no interactions logged yet at this stage
     });
   };
 
@@ -203,7 +229,7 @@ export default function ScanReceiptScreen() {
             We found {results.length} items on your receipt.
           </Text>
 
-          <ReceiptItemList items={results} onUpdateItem={handleUpdateItem} />
+          <ReceiptItemList items={results} onUpdateItem={handleUpdateItem} onDeleteItem={handleDeleteItem} />
           
           <TouchableOpacity style={globalStyles.primaryButton} onPress={() => router.push('/receipts')}>
             <Text style={globalStyles.primaryButtonText}>View in Recent Receipts</Text>

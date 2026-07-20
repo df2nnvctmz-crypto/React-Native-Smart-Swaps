@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, Switch, Modal, KeyboardAvoidingView, Alert } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import { Picker } from '@react-native-picker/picker';
 import { useProfile, Sex, ActivityLevel, WeightGoal, DietaryPreference } from './context/ProfileContext';
 import { useSettings } from './context/SettingsContext';
 import { resetPersonalPreferences } from './engine/personalSwapPreferences';
+import { getTrainingLogCount, exportTrainingLog, clearTrainingLog } from './engine/swapTrainingLog';
 import { COLORS, globalStyles } from '../styles';
 
 const isIOS = Platform.OS === 'ios';
@@ -69,6 +70,11 @@ export default function ProfileScreen() {
   const [modalValue, setModalValue] = useState('');
   const [modalUnit, setModalUnit] = useState('');
   const [modalOptions, setModalOptions] = useState<{label: string, value: string}[]>([]);
+  const [trainingLogCount, setTrainingLogCount] = useState(0);
+
+  useEffect(() => {
+    getTrainingLogCount().then(setTrainingLogCount);
+  }, []);
 
   const openInputModal = (key: 'age' | 'weight' | 'height', title: string, unit: string) => {
     setModalKey(key);
@@ -117,6 +123,14 @@ export default function ProfileScreen() {
     updateProfile({ dietaryPreference: current });
   };
 
+  const handleExportTrainingLog = async () => {
+    try {
+      await exportTrainingLog();
+    } catch (e: any) {
+      Alert.alert('Nothing to Export Yet', e?.message ?? 'No local swap decisions recorded yet.');
+    }
+  };
+
   const handleResetSwapPreferences = () => {
     Alert.alert(
       'Reset Swap Preferences',
@@ -124,6 +138,24 @@ export default function ProfileScreen() {
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Reset', style: 'destructive', onPress: () => { resetPersonalPreferences(); } },
+      ]
+    );
+  };
+
+  const handleDeleteTrainingLog = () => {
+    Alert.alert(
+      'Delete Local Swap Data',
+      `This will permanently delete all ${trainingLogCount} locally recorded swap decisions. Your profile and receipt history are not affected.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await clearTrainingLog();
+            setTrainingLogCount(0);
+          },
+        },
       ]
     );
   };
@@ -241,15 +273,35 @@ export default function ProfileScreen() {
             sfSymbol="arrow.counterclockwise"
             iconBg={COLORS.systemGray}
             title="Reset Swap Preferences"
-            isLast={true}
             onPress={handleResetSwapPreferences}
           >
             <Ionicons name="chevron-forward" size={16} color={COLORS.systemGray2} />
           </SettingsRow>
+          <SettingsRow
+            icon="share-outline"
+            sfSymbol="square.and.arrow.up"
+            iconBg={COLORS.systemBlue}
+            title="Export Local Swap Data"
+            onPress={handleExportTrainingLog}
+          >
+            <Text style={styles.rowValue}>{trainingLogCount}</Text>
+            <Ionicons name="chevron-forward" size={16} color={COLORS.systemGray2} style={{ marginLeft: 6 }} />
+          </SettingsRow>
+          <SettingsRow
+            icon="trash-outline"
+            sfSymbol="trash.fill"
+            iconBg={COLORS.systemRed}
+            title="Delete Local Swap Data"
+            isLast={true}
+            onPress={handleDeleteTrainingLog}
+          >
+            <Text style={[styles.rowValue, trainingLogCount > 0 && { color: COLORS.systemRed }]}>{trainingLogCount} entries</Text>
+            <Ionicons name="chevron-forward" size={16} color={COLORS.systemGray2} style={{ marginLeft: 6 }} />
+          </SettingsRow>
         </SettingsGroup>
         <Text style={styles.settingsHint}>
-          Swap suggestions quietly adapt on this device as you like or dismiss them. This never
-          leaves your phone - resetting just forgets that local learning.
+          Swap suggestions adapt on-device as you like or dismiss them. "Reset Swap Preferences" forgets the learned multipliers.
+          "Delete Local Swap Data" removes the anonymized decision log ({trainingLogCount} entries). Neither action affects your profile or receipts.
         </Text>
 
       </ScrollView>

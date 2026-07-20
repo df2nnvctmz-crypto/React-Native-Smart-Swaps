@@ -48,6 +48,26 @@ export default function ReceiptDetailScreen() {
     await StorageService.updateScan(scan.id, updatedScan);
   };
 
+  const handleDeleteItem = async (index: number) => {
+    if (!scan) return;
+
+    const newItems = scan.items.filter((_, i) => i !== index);
+
+    let totalScore = 0;
+    let matchedCount = 0;
+    for (const item of newItems) {
+      if (item.matchedFood) {
+        totalScore += item.matchedFood.health_score;
+        matchedCount++;
+      }
+    }
+    const averageScore = matchedCount > 0 ? Math.round(totalScore / matchedCount) : 0;
+
+    const updatedScan = { ...scan, items: newItems, averageScore };
+    setScan(updatedScan);
+    await StorageService.updateScan(scan.id, updatedScan);
+  };
+
   if (!scan) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -83,7 +103,7 @@ export default function ReceiptDetailScreen() {
         </View>
 
         <Text style={styles.sectionTitle}>Items ({scan.items.length})</Text>
-        <ReceiptItemList items={scan.items} onUpdateItem={handleUpdateItem} />
+        <ReceiptItemList items={scan.items} onUpdateItem={handleUpdateItem} onDeleteItem={handleDeleteItem} />
       </ScrollView>
     </SafeAreaView>
   );

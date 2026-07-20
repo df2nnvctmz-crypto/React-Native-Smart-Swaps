@@ -59,7 +59,7 @@ export default function ReceiptsTab() {
   }, [scans]);
 
   const handleScanPress = (id: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     router.push(`/receipt/${id}`);
   };
 

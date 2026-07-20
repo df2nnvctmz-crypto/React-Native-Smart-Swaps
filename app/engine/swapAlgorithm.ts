@@ -8,12 +8,13 @@ const SWEETENED_KEYWORDS = ['sweet', 'sugar', 'syrup', 'honey', 'sweetened', 'ch
 
 const LIQUID_KEYWORDS = ['drink', 'juice', 'beverage', 'milk', 'soda', 'water', 'cola', 'liquid', 'tea', 'coffee', 'stock', 'broth', 'cream', 'sahne'];
 const RESTRICTED_KEYWORDS = ['alcohol', 'beer', 'wine', 'energy drink', 'liquor', 'vodka', 'rum', 'whiskey', 'spirit'];
+const RAW_INGREDIENT_KEYWORDS = ['flour', 'starch', 'dried', 'powder'];
 
 function normalizeString(str: string): string[] {
   return str.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(word => word.length > 2 && !STOP_WORDS.has(word));
 }
 
-function isLiquid(food: FoodItem): boolean {
+export function isLiquid(food: FoodItem): boolean {
   // NOTE: deliberately checks the food's own NAME only, not category/swiss_category text.
   // Category labels are broad taxonomy umbrellas (e.g. "Milk, cream and cheese" covers
   // liquid milk, liquid cream, AND solid cheese under one label) - matching keywords
@@ -24,6 +25,14 @@ function isLiquid(food: FoodItem): boolean {
   // both register as liquid, defeating the whole point of this filter.
   const normName = food.name.toLowerCase();
   return LIQUID_KEYWORDS.some(kw => normName.includes(kw));
+}
+
+// A "raw cooking ingredient" (flour, starch, dried goods, powders) plays a different
+// role in a meal than a ready-to-eat food - swapping one for the other tends to be a
+// poor match even when the category and nutrients line up on paper.
+export function isRawIngredient(food: FoodItem): boolean {
+  const normName = food.name.toLowerCase();
+  return RAW_INGREDIENT_KEYWORDS.some(kw => normName.includes(kw));
 }
 
 function containsKeywords(str: string, keywords: string[]): boolean {
@@ -86,8 +95,12 @@ export function evaluateSwap(currentFood: FoodItem, candidate: FoodItem): number
     score += (overlap * 150);
   }
 
-  // Sweet-to-Unsweet Bonus
-  const currentIsSweet = containsKeywords(currentFood.name, SWEETENED_KEYWORDS) || !containsKeywords(currentFood.name, UNSWEETENED_KEYWORDS);
+  // Sweet-to-Unsweet Bonus: only reward when swapping away from a genuinely sweet
+  // food toward an unsweetened alternative. The original used
+  // !containsKeywords(UNSWEETENED_KEYWORDS) which is true for almost every food name
+  // (most foods aren't labelled "zero/diet/plain"), giving a spurious +150 to nearly
+  // every pair. Check positive SWEETENED_KEYWORDS instead.
+  const currentIsSweet = containsKeywords(currentFood.name, SWEETENED_KEYWORDS);
   const candidateIsUnsweet = containsKeywords(candidate.name, UNSWEETENED_KEYWORDS);
   if (currentIsSweet && candidateIsUnsweet) {
     score += 150;
@@ -109,25 +122,38 @@ export function evaluateSwap(currentFood: FoodItem, candidate: FoodItem): number
     const fatDiff = currNutrients.fat_g - candNutrients.fat_g;
     score += sugarDiff * 8;
     score += fatDiff * 6;
+
+    // Dairy is a primary calcium source - a plant-based/lower-fat alternative that
+    // quietly drops calcium a lot is a common real downside of this exact swap category.
+    const calciumDiff = candNutrients.micros.calcium_mg - currNutrients.micros.calcium_mg;
+    score += (calciumDiff / 50) * 4;
   }
   else if (group === 'MEAT_ALT') {
-    // Meats judged on Protein retention and lower saturated fat/salt
+    // Meats judged on Protein retention and lower saturated fat
     const proteinDiff = candNutrients.protein_g - currNutrients.protein_g;
     const satFatDiff = currNutrients.saturated_fat_g - candNutrients.saturated_fat_g;
-    const saltDiff = currNutrients.salt_g - candNutrients.salt_g;
     score += proteinDiff * 8;
     score += satFatDiff * 10;
-    score += saltDiff * 20;
+
+    // Meat is a primary iron source - the same "looks healthier but loses a key
+    // micronutrient" risk as the dairy case above.
+    const ironDiff = candNutrients.micros.iron_mg - currNutrients.micros.iron_mg;
+    score += ironDiff * 8;
   }
   else {
     // General heuristics for other categories
     const sugarDiff = currNutrients.sugars_g - candNutrients.sugars_g;
-    const saltDiff = currNutrients.salt_g - candNutrients.salt_g;
-    const fiberDiff = candNutrients.fiber_g - currNutrients.fiber_g;
     score += (sugarDiff > 0 ? sugarDiff * 4 : sugarDiff * 2);
-    score += saltDiff * 20;
-    score += fiberDiff * 5;
   }
+
+  // Salt and fiber matter for every category, not just the ones singled out above -
+  // previously an oil or dairy swap got no credit at all for also being lower-salt or
+  // higher-fiber. Meat/general swaps keep their original (larger) salt weight since
+  // that's the group where salt already mattered most and was tuned/validated.
+  const saltDiff = currNutrients.salt_g - candNutrients.salt_g;
+  const fiberDiff = candNutrients.fiber_g - currNutrients.fiber_g;
+  score += saltDiff * (group === 'OILS_FATS' || group === 'DAIRY_ALT' ? 12 : 20);
+  score += fiberDiff * 5;
 
   // 5. Calorie Parity constraint
   const currentKcal = currNutrients.kcal || 1;
@@ -197,8 +223,15 @@ export function findBestSwaps(badFood: FoodItem, allFoods: FoodItem[], count: nu
   // function's inputs yet - the ranker handles that gracefully (treats it as neutral).
   // If/when you have precomputed food embeddings available at this call site, pass
   // the real similarity instead of null for a stronger signal.
+  //
+  // liquidMismatch will always compute to 0 here since the physical-state filter
+  // above already excludes any candidate where isLiquid() disagrees with badFood -
+  // see the caveat in swapRanker.ts. rawIngredientMismatch has no such upstream
+  // filter, so it's live signal.
   for (const sc of scoredCandidates) {
-    const features = extractSwapFeatures(badFood, sc.candidate, null);
+    const liquidMismatch = isLiquid(badFood) !== isLiquid(sc.candidate) ? 1 : 0;
+    const rawIngredientMismatch = isRawIngredient(badFood) !== isRawIngredient(sc.candidate) ? 1 : 0;
+    const features = extractSwapFeatures(badFood, sc.candidate, null, liquidMismatch, rawIngredientMismatch);
     const learnedProbability = predictSwapQuality(features);
     sc.score = combineWithExistingScore(sc.score, learnedProbability);
   }

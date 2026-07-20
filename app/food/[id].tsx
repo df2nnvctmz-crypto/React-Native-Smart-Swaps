@@ -5,8 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, globalStyles } from '../../styles';
 import { useFoods } from '../useFoods';
-import { findBestSwapsPersonalized, SwapResult } from '../engine/swapAlgorithm';
+import { findBestSwapsPersonalized, SwapResult, isLiquid, isRawIngredient } from '../engine/swapAlgorithm';
 import { recordSwapAccepted, recordSwapRejected } from '../engine/personalSwapPreferences';
+import { logSwapDecision } from '../engine/swapTrainingLog';
 import { useProfile } from '../context/ProfileContext';
 import { useFavorites } from '../context/FavoritesContext';
 
@@ -49,29 +50,40 @@ export default function FoodDetailsScreen() {
 
   const food = useMemo(() => allFoods.find(f => f.id === id) || allFoods[0], [id, allFoods]);
 
-  const [recommendedSwaps, setRecommendedSwaps] = useState<SwapResult[]>([]);
+  const SWAP_DISPLAY_COUNT = 2;
+  const [swapPool, setSwapPool] = useState<SwapResult[]>([]);
+  const [swapsLoaded, setSwapsLoaded] = useState(false);
   const [dismissedSwapIds, setDismissedSwapIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let isActive = true;
-    findBestSwapsPersonalized(food, foods, 2, profile.dietaryPreference).then(swaps => {
-      if (isActive) setRecommendedSwaps(swaps);
+    setSwapsLoaded(false);
+    setDismissedSwapIds(new Set());
+    // Fetch a deeper pool than we display so dismissing a suggestion can reveal the
+    // next-nearest alternative instead of just shrinking the list.
+    findBestSwapsPersonalized(food, foods, 8, profile.dietaryPreference).then(swaps => {
+      if (isActive) {
+        setSwapPool(swaps);
+        setSwapsLoaded(true);
+      }
     });
     return () => { isActive = false; };
   }, [food, foods, profile.dietaryPreference]);
 
   const visibleSwaps = useMemo(
-    () => recommendedSwaps.filter(swap => !dismissedSwapIds.has(swap.candidate.id)),
-    [recommendedSwaps, dismissedSwapIds]
+    () => swapPool.filter(swap => !dismissedSwapIds.has(swap.candidate.id)).slice(0, SWAP_DISPLAY_COUNT),
+    [swapPool, dismissedSwapIds]
   );
 
   const handleAcceptSwap = (swap: SwapResult) => {
     recordSwapAccepted(swap.candidate.swiss_category, swap.candidate.id);
+    logSwapDecision(food, swap.candidate, true, isLiquid(food) !== isLiquid(swap.candidate) ? 1 : 0, isRawIngredient(food) !== isRawIngredient(swap.candidate) ? 1 : 0);
     router.replace(`/food/${swap.candidate.id}`);
   };
 
   const handleRejectSwap = (swap: SwapResult) => {
     recordSwapRejected(swap.candidate.swiss_category, swap.candidate.id);
+    logSwapDecision(food, swap.candidate, false, isLiquid(food) !== isLiquid(swap.candidate) ? 1 : 0, isRawIngredient(food) !== isRawIngredient(swap.candidate) ? 1 : 0);
     setDismissedSwapIds(prev => new Set(prev).add(swap.candidate.id));
   };
 
@@ -171,6 +183,16 @@ export default function FoodDetailsScreen() {
         </View>
 
         {/* Smarter Swaps */}
+        {swapsLoaded && visibleSwaps.length === 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Smarter Swaps</Text>
+            <View style={styles.bestOptionCard}>
+              <Ionicons name="trophy-outline" size={22} color={COLORS.primaryGreen} />
+              <Text style={styles.bestOptionText}>You already have the best option in this category!</Text>
+            </View>
+          </View>
+        )}
+
         {visibleSwaps.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Smarter Swaps</Text>
@@ -386,6 +408,20 @@ const styles = StyleSheet.create({
   swapDismissButton: {
     marginLeft: 10,
     padding: 4,
+  },
+  bestOptionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.lightGreenBg,
+    borderRadius: 20,
+    padding: 16,
+    gap: 10,
+  },
+  bestOptionText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primaryGreen,
   },
   card: {
     backgroundColor: COLORS.white,

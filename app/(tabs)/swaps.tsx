@@ -16,8 +16,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, globalStyles } from '../../styles';
 import { useFoods } from '../useFoods';
-import { findBestSwapsPersonalized } from '../engine/swapAlgorithm';
+import { findBestSwapsPersonalized, SwapResult, isLiquid, isRawIngredient } from '../engine/swapAlgorithm';
 import { recordSwapAccepted, recordSwapRejected } from '../engine/personalSwapPreferences';
+import { logSwapDecision } from '../engine/swapTrainingLog';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useProfile, DietaryPreference } from '../context/ProfileContext';
 import { SearchModal } from '../../components/SearchModal';
@@ -91,72 +92,75 @@ export default function SwapsTab() {
     return Array.from(foodMap.values());
   }, [scans]);
 
-  const [topSwapObjects, setTopSwapObjects] = useState<any[]>([]);
+  const LEADERBOARD_SIZE = 5;
+  const [swapPoolsByFood, setSwapPoolsByFood] = useState<Record<string, { badFood: FoodItem; results: SwapResult[] }>>({});
   const [swapsLoading, setSwapsLoading] = useState(false);
   const [dismissedSwapIds, setDismissedSwapIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let isActive = true;
 
-    async function computeSwaps() {
+    async function computePools() {
       if (uniquePurchasedFoods.length === 0) {
-        if (isActive) setTopSwapObjects([]);
+        if (isActive) setSwapPoolsByFood({});
         return;
       }
 
       setSwapsLoading(true);
       const safeFoods = foods.length > 0 ? foods : allFoods;
-      const allSwaps: any[] = [];
+      const pools: Record<string, { badFood: FoodItem; results: SwapResult[] }> = {};
 
       for (const badFood of uniquePurchasedFoods) {
-        const bestSwaps = await findBestSwapsPersonalized(badFood, safeFoods, 3, profile.dietaryPreference);
-        for (const swap of bestSwaps) {
-          const improvement = swap.candidate.health_score - badFood.health_score;
-          if (improvement > 0) {
-            allSwaps.push({
-              id: `${badFood.id}-${swap.candidate.id}`,
-              from: badFood,
-              to: swap.candidate,
-              improvement: improvement,
-              details: `Smart Swap Match (${Math.round(swap.score)} logic points)`,
-            });
-          }
-        }
+        // Fetch a deeper pool per food than we'll ever show at once, so dismissing
+        // this food's current pick reveals its next-nearest alternative instead of
+        // just losing it a slot in the leaderboard below.
+        const results = await findBestSwapsPersonalized(badFood, safeFoods, 6, profile.dietaryPreference);
+        pools[badFood.id] = { badFood, results };
       }
-
-      // Deduplicate by swap ID
-      const uniqueSwapsMap = new Map<string, any>();
-      for (const swap of allSwaps) {
-        if (!uniqueSwapsMap.has(swap.id) || swap.improvement > uniqueSwapsMap.get(swap.id).improvement) {
-          uniqueSwapsMap.set(swap.id, swap);
-        }
-      }
-
-      const finalSwaps = Array.from(uniqueSwapsMap.values());
-      finalSwaps.sort((a, b) => b.improvement - a.improvement);
 
       if (isActive) {
-        setTopSwapObjects(finalSwaps.slice(0, 5));
+        setSwapPoolsByFood(pools);
         setSwapsLoading(false);
       }
     }
 
-    computeSwaps();
+    computePools();
     return () => { isActive = false; };
   }, [uniquePurchasedFoods, foods, profile.dietaryPreference, allFoods]);
 
-  const visibleTopSwapObjects = useMemo(
-    () => topSwapObjects.filter(swap => !dismissedSwapIds.has(swap.id)),
-    [topSwapObjects, dismissedSwapIds]
-  );
+  // Each food contributes its current best NOT-yet-dismissed candidate to the
+  // leaderboard. Dismissing that candidate just excludes it from the `.find()` below,
+  // so the food's next-best alternative naturally takes its place next render.
+  const visibleTopSwapObjects = useMemo(() => {
+    const picks: any[] = [];
+    for (const { badFood, results } of Object.values(swapPoolsByFood)) {
+      const pick = results.find(r => {
+        const swapId = `${badFood.id}-${r.candidate.id}`;
+        return !dismissedSwapIds.has(swapId) && r.candidate.health_score - badFood.health_score > 0;
+      });
+      if (pick) {
+        picks.push({
+          id: `${badFood.id}-${pick.candidate.id}`,
+          from: badFood,
+          to: pick.candidate,
+          improvement: pick.candidate.health_score - badFood.health_score,
+          details: `Smart Swap Match (${Math.round(pick.score)} logic points)`,
+        });
+      }
+    }
+    picks.sort((a, b) => b.improvement - a.improvement);
+    return picks.slice(0, LEADERBOARD_SIZE);
+  }, [swapPoolsByFood, dismissedSwapIds]);
 
   const handleAcceptSwap = (item: any) => {
     recordSwapAccepted(item.to.swiss_category, item.to.id);
+    logSwapDecision(item.from, item.to, true, isLiquid(item.from) !== isLiquid(item.to) ? 1 : 0, isRawIngredient(item.from) !== isRawIngredient(item.to) ? 1 : 0);
     router.push(`/food/${item.to.id}`);
   };
 
   const handleRejectSwap = (item: any) => {
     recordSwapRejected(item.to.swiss_category, item.to.id);
+    logSwapDecision(item.from, item.to, false, isLiquid(item.from) !== isLiquid(item.to) ? 1 : 0, isRawIngredient(item.from) !== isRawIngredient(item.to) ? 1 : 0);
     setDismissedSwapIds(prev => new Set(prev).add(item.id));
   };
 
@@ -317,7 +321,9 @@ export default function SwapsTab() {
               ) : (
                 <View style={{ padding: 40, alignItems: 'center', backgroundColor: COLORS.white, borderRadius: 16, marginHorizontal: 20 }}>
                   <Text style={{ color: COLORS.textMuted, textAlign: 'center', lineHeight: 22 }}>
-                    {swapsLoading ? 'Finding your smart swaps...' : "We couldn't find any smart swaps for your scanned items yet. Try scanning more receipts!"}
+                    {swapsLoading
+                      ? 'Finding your smart swaps...'
+                      : "You already have the best options for your recent purchases - nothing better to swap in right now!"}
                   </Text>
                 </View>
               )}

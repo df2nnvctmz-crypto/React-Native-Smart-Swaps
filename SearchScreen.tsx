@@ -117,7 +117,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
       category: f.category,
       calories: `${Math.round(f.nutrients_per_100.kcal)} kcal / 100g`,
       score: f.health_score,
-      nutriScore: `NUTRI SCORE ${f.nutri_grade || 'A'}`,
+      nutriScore: f.nutri_grade ? `NUTRI SCORE ${f.nutri_grade}` : 'UNGRADED',
       nutriColor: f.health_score >= 75 ? COLORS.scoreGreen : (f.health_score >= 50 ? '#F5A623' : COLORS.scoreRed),
       nutriBg: f.health_score >= 75 ? COLORS.lightGreenBg : (f.health_score >= 50 ? '#FFF8E1' : '#FFEBEE'),
       iconName: getIconForCategory(f.category),
@@ -211,7 +211,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
               <Ionicons name="search-outline" size={20} color={COLORS.textMuted} />
               <TextInput 
                 style={styles.searchInput}
-                placeholder="Search over 20+ foods..."
+                placeholder="Search thousands of foods..."
                 placeholderTextColor={COLORS.textMuted}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -356,11 +356,11 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
 
                     {/* Right side: Heart and Score ring */}
                     <View style={styles.rightActionsContainer}>
-                      <TouchableOpacity style={styles.heartButton} onPress={() => toggleFavorite('food', food.id)}>
+                      <TouchableOpacity style={styles.heartButton} onPress={() => toggleFavorite('food', food.id.toString())}>
                         <Ionicons 
-                          name={isFavorite('food', food.id) ? "heart" : "heart-outline"} 
+                          name={isFavorite('food', food.id.toString()) ? "heart" : "heart-outline"} 
                           size={20} 
-                          color={isFavorite('food', food.id) ? "#FF3B30" : COLORS.textMuted} 
+                          color={isFavorite('food', food.id.toString()) ? "#FF3B30" : COLORS.textMuted} 
                         />
                       </TouchableOpacity>
                       

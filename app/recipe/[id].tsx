@@ -1,14 +1,14 @@
 import React, { useState, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Animated, Platform, Linking, Switch
+  Animated, Platform, Linking, Switch, LayoutAnimation, UIManager
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, globalStyles } from '../../styles';
 import { allRecipes, findRecipesForFood, scaleNutrients, emptyNutrients, addNutrients, divideNutrients } from '../useRecipes';
-import { findBestSwaps } from '../engine/swapAlgorithm';
+import { findBestRecipeSwap } from '../engine/recipeSwapAlgorithm';
 import { FoodNutrients, Recipe, RecipeIngredient, FoodItem } from '../types';
 import { useProfile } from '../context/ProfileContext';
 
@@ -41,23 +41,78 @@ function fmt(val: number, dec = 1) {
 
 const BAR_COLORS = ['#34C759', '#007AFF', '#FF9500', '#FF3B30', '#AF52DE', '#00C7BE', '#FF6B35', '#5856D6'];
 
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+function getSiteName(url: string): string {
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, '');
+    const knownSites: Record<string, string> = {
+      'bbc.co.uk': 'BBC Good Food',
+      'bbcgoodfood.com': 'BBC Good Food',
+      'allrecipes.com': 'Allrecipes',
+      'food.com': 'Food.com',
+      'epicurious.com': 'Epicurious',
+      'foodnetwork.com': 'Food Network',
+      'bonappetit.com': 'Bon Appétit',
+      'seriouseats.com': 'Serious Eats',
+      'delish.com': 'Delish',
+      'simplyrecipes.com': 'Simply Recipes',
+      'tasty.co': 'Tasty',
+      'recipetineats.com': 'RecipeTin Eats',
+      'jamieoliver.com': 'Jamie Oliver',
+      'nigella.com': 'Nigella',
+      'hellofresh.com': 'Hello Fresh',
+      'chefkoch.de': 'Chefkoch',
+    };
+    if (knownSites[hostname]) return knownSites[hostname];
+    // Capitalise first segment nicely: "tasty.co" → "Tasty"
+    return hostname.split('.')[0].charAt(0).toUpperCase() + hostname.split('.')[0].slice(1);
+  } catch {
+    return 'Original Recipe';
+  }
+}
+
+/**
+ * Colour thresholds for nutrient bars:
+ * - Lower-is-better (calories, fat, sugar, sat-fat, salt, sodium):
+ *     <40% → green (well under limit)
+ *     40-70% → amber (approaching limit)
+ *     >70% → red (over or close to limit)
+ * - Higher-is-better (protein, fiber, vitamins, minerals):
+ *     <35% → red (well short of target)
+ *     35-65% → amber (partial)
+ *     >65% → green (on track)
+ */
+function nutriBarColor(pctVal: number, isLowerBetter: boolean): string {
+  if (isLowerBetter) {
+    if (pctVal <= 40) return COLORS.scoreGreen;
+    if (pctVal <= 70) return '#F59E0B'; // amber
+    return COLORS.scoreRed;
+  } else {
+    if (pctVal >= 65) return COLORS.scoreGreen;
+    if (pctVal >= 35) return '#F59E0B'; // amber
+    return COLORS.scoreRed;
+  }
+}
+
 function NutrientRow({
-  label, value, target, unit,
+  label, value, target, unit, isLowerBetter,
 }: {
-  label: string; value: number; target: number; unit: string;
+  label: string; value: number; target: number; unit: string; isLowerBetter: boolean;
 }) {
   const pctVal = pct(value, target);
-  const barColor = COLORS.primaryGreen; // Uniform bar color
+  const barColor = nutriBarColor(pctVal, isLowerBetter);
   return (
     <View style={styles.nutrientRow}>
       <View style={globalStyles.rowBetween}>
         <View>
           <Text style={styles.nutrientName}>{label}</Text>
-          <Text style={styles.nutrientBase}>Base: {fmt(value)}{unit}</Text>
         </View>
         <View style={{ alignItems: 'flex-end' }}>
           <Text style={styles.nutrientValue}>{fmt(value)} {unit}</Text>
-          <Text style={styles.nutrientPct}>{pctVal}% of target</Text>
+          <Text style={[styles.nutrientPct, { color: barColor }]}>{pctVal}% of target</Text>
         </View>
       </View>
       <View style={styles.barTrack}>
@@ -73,6 +128,10 @@ export default function RecipeDetailScreen() {
   const insets = useSafeAreaInsets();
   const { profile, targetCalories, targetMacros } = useProfile();
   const [swapsEnabled, setSwapsEnabled] = useState(false);
+  const [swapsExpanded, setSwapsExpanded] = useState(false);
+  const [ingredientsExpanded, setIngredientsExpanded] = useState(true);  // open by default
+  const [stepsExpanded, setStepsExpanded] = useState(true);              // open by default
+  const [microsExpanded, setMicrosExpanded] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const recipe = allRecipes.find(r => r.id === id);
@@ -97,13 +156,13 @@ export default function RecipeDetailScreen() {
         swaps[ing.food_id ?? ''] = null;
         return;
       }
-      const candidates = findBestSwaps(ing.food, allFoods, 1, profile.dietaryPreference);
-      if (candidates.length > 0) {
+      const recipeSwap = findBestRecipeSwap(ing.food, allFoods, profile.dietaryPreference);
+      if (recipeSwap) {
         swaps[ing.food_id ?? ''] = {
-          name: candidates[0].candidate.name,
-          improvement: candidates[0].candidate.health_score - ing.food.health_score,
-          swapId: `${ing.food.id}-${candidates[0].candidate.id}`,
-          candidate: candidates[0].candidate,
+          name: recipeSwap.candidate.name,
+          improvement: recipeSwap.candidate.health_score - ing.food.health_score,
+          swapId: `${ing.food.id}-${recipeSwap.candidate.id}`,
+          candidate: recipeSwap.candidate,
         };
       } else {
         swaps[ing.food_id ?? ''] = null;
@@ -180,6 +239,12 @@ export default function RecipeDetailScreen() {
             )}
           </View>
           <Text style={styles.dishType}>{recipe.dish_type}</Text>
+
+          {/* ─── Source Link (top, transparent) ────────────── */}
+          <TouchableOpacity style={styles.sourceLinkTop} onPress={() => Linking.openURL(recipe.url)}>
+            <Ionicons name="open-outline" size={13} color={COLORS.primaryGreen} />
+            <Text style={styles.sourceLinkTopText}>Recipe from <Text style={{ fontWeight: '700' }}>{getSiteName(recipe.url)}</Text></Text>
+          </TouchableOpacity>
         </View>
 
         {/* ─── Health Score Card ────────────────────────────── */}
@@ -198,32 +263,52 @@ export default function RecipeDetailScreen() {
         </View>
 
         {/* ─── Smart Swaps Card ────────────────────────────── */}
-        <View style={styles.swapsCard}>
+        <TouchableOpacity
+          style={styles.swapsCard}
+          activeOpacity={0.85}
+          onPress={() => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            setSwapsExpanded(v => !v);
+          }}
+        >
           <View style={globalStyles.rowBetween}>
             <View style={globalStyles.row}>
               <Ionicons name="sparkles" size={18} color={COLORS.primaryGreen} style={{ marginRight: 8 }} />
               <View>
                 <Text style={styles.swapsTitle}>Smart Swaps</Text>
-                <Text style={styles.swapsSubtitle}>Instantly substitute items to maximize health score</Text>
+                <Text style={styles.swapsSubtitle}>
+                  {activeSwaps.length > 0 ? `${activeSwaps.length} swap${activeSwaps.length !== 1 ? 's' : ''} available` : 'Tap to explore substitutions'}
+                </Text>
               </View>
             </View>
-            <Switch
-              value={swapsEnabled}
-              onValueChange={setSwapsEnabled}
-              trackColor={{ false: COLORS.border, true: COLORS.primaryGreen }}
-              thumbColor={COLORS.white}
-              ios_backgroundColor={COLORS.border}
-            />
+            <View style={globalStyles.row}>
+              {activeSwaps.length > 0 && (
+                <Switch
+                  value={swapsEnabled}
+                  onValueChange={(v) => { setSwapsEnabled(v); }}
+                  trackColor={{ false: COLORS.border, true: COLORS.primaryGreen }}
+                  thumbColor={COLORS.white}
+                  ios_backgroundColor={COLORS.border}
+                  onStartShouldSetResponder={() => true}
+                />
+              )}
+              <Ionicons
+                name={swapsExpanded ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color={COLORS.textMuted}
+                style={{ marginLeft: 10 }}
+              />
+            </View>
           </View>
 
-          {activeSwaps.length > 0 && (
+          {swapsExpanded && activeSwaps.length > 0 && (
             <View style={{ marginTop: 14 }}>
               <Text style={styles.activeSwapsLabel}>Active Swaps in this recipe:</Text>
-              {recipe.ingredients.map(ing => {
+              {recipe.ingredients.map((ing, ingIdx) => {
                 if (!ing.food_id || !ingredientSwaps[ing.food_id]) return null;
                 const swap = ingredientSwaps[ing.food_id]!;
                 return (
-                  <View key={ing.food_id} style={styles.swapRow}>
+                  <View key={`swap-${ingIdx}`} style={styles.swapRow}>
                     <Text style={styles.swapFrom} numberOfLines={1}>{ing.food?.name ?? ing.raw_text}</Text>
                     <Ionicons name="arrow-forward" size={13} color={COLORS.textMuted} style={{ marginHorizontal: 4 }} />
                     <Text style={styles.swapTo} numberOfLines={1}>{swap.name}</Text>
@@ -235,35 +320,60 @@ export default function RecipeDetailScreen() {
               })}
             </View>
           )}
-        </View>
+
+          {swapsExpanded && activeSwaps.length === 0 && (
+            <View style={{ marginTop: 12 }}>
+              <Text style={{ fontSize: 13, color: COLORS.textMuted, fontStyle: 'italic' }}>All ingredients are already high-scoring — no swaps needed!</Text>
+            </View>
+          )}
+        </TouchableOpacity>
 
         {/* ─── Ingredients ─────────────────────────────────── */}
-        <Text style={styles.sectionHeader}>Ingredients</Text>
+        <TouchableOpacity
+          style={styles.sectionToggleRow}
+          activeOpacity={0.7}
+          onPress={() => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            setIngredientsExpanded(v => !v);
+          }}
+        >
+          <Text style={styles.sectionHeader}>Ingredients ({recipe.ingredients.length})</Text>
+          <Ionicons name={ingredientsExpanded ? 'chevron-up' : 'chevron-down'} size={20} color={COLORS.textMuted} />
+        </TouchableOpacity>
+
+        {ingredientsExpanded && (
         <View style={styles.ingredientsCard}>
           {recipe.ingredients.map((ing, idx) => {
             const swap = ing.food_id ? ingredientSwaps[ing.food_id] : null;
-            const kcalRounded = Math.round(ing.kcal);
-            const scoreC = ing.food ? getScoreColors(ing.food.health_score) : null;
+            const isSwappedIn = swapsEnabled && !!swap;
+            const displayFood = isSwappedIn ? swap!.candidate : ing.food;
+            const kcalRounded = Math.round(
+              isSwappedIn ? scaleNutrients(swap!.candidate.nutrients_per_100, ing.grams).kcal : ing.kcal
+            );
+            const scoreC = displayFood ? getScoreColors(displayFood.health_score) : null;
             return (
               <View key={idx}>
                 <TouchableOpacity
                   style={styles.ingredientRow}
-                  onPress={() => ing.food && router.push(`/food/${ing.food.id}`)}
-                  disabled={!ing.food}
+                  onPress={() => displayFood && router.push(`/food/${displayFood.id}`)}
+                  disabled={!displayFood}
                   activeOpacity={0.7}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.ingredientName}>{ing.food?.name ?? ing.raw_text.split(',')[0]}</Text>
+                    <View style={globalStyles.row}>
+                      {isSwappedIn && <Ionicons name="swap-horizontal" size={13} color={COLORS.primaryGreen} style={{ marginRight: 4 }} />}
+                      <Text style={styles.ingredientName}>{displayFood?.name ?? ing.raw_text.split(',')[0]}</Text>
+                    </View>
                     <Text style={styles.ingredientAmount}>{ing.raw_text.match(/[\d½¼¾⅓⅔]+\s*\w+/)?.[0] ?? ing.raw_text.split(' ').slice(0, 2).join(' ')}</Text>
                   </View>
                   {kcalRounded > 0 && <View style={styles.kcalPill}><Text style={styles.kcalPillText}>{kcalRounded} kcal</Text></View>}
                   {scoreC && (
                     <View style={[styles.scorePill, { backgroundColor: scoreC.bg }]}>
-                      <Text style={[styles.scorePillText, { color: scoreC.text }]}>Score: {ing.food!.health_score}</Text>
+                      <Text style={[styles.scorePillText, { color: scoreC.text }]}>Score: {displayFood!.health_score}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
-                {swap && (
+                {swap && !swapsEnabled && (
                   <TouchableOpacity
                     style={styles.swapSuggestionRow}
                     onPress={() => router.push(`/food/${swap.candidate.id}`)}
@@ -278,9 +388,22 @@ export default function RecipeDetailScreen() {
             );
           })}
         </View>
+        )}
 
         {/* ─── Step-by-Step Instructions ────────────────────── */}
-        <Text style={styles.sectionHeader}>Step-by-Step Instructions</Text>
+        <TouchableOpacity
+          style={styles.sectionToggleRow}
+          activeOpacity={0.7}
+          onPress={() => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            setStepsExpanded(v => !v);
+          }}
+        >
+          <Text style={styles.sectionHeader}>Instructions ({recipe.steps.length} steps)</Text>
+          <Ionicons name={stepsExpanded ? 'chevron-up' : 'chevron-down'} size={20} color={COLORS.textMuted} />
+        </TouchableOpacity>
+
+        {stepsExpanded && (
         <View style={styles.stepsCard}>
           {recipe.steps.map((step, idx) => (
             <View key={idx} style={[styles.stepRow, idx < recipe.steps.length - 1 && styles.stepRowBorder]}>
@@ -291,52 +414,67 @@ export default function RecipeDetailScreen() {
             </View>
           ))}
         </View>
+        )}
 
         {/* ─── Nutritional Balance ─────────────────────────── */}
-        <View style={globalStyles.rowBetween}>
-          <Text style={styles.sectionHeader}>Nutritional Balance</Text>
+        <View style={[globalStyles.rowBetween, { marginTop: 8 }]}>
+          <Text style={[styles.sectionHeader, { marginBottom: 0 }]}>Nutrition</Text>
           <Text style={styles.dailyIntakeLabel}>% OF DAILY INTAKE ({Math.round(targetCalories)} KCAL)</Text>
         </View>
 
         <View style={styles.nutriCard}>
           <Text style={styles.nutriSectionHeader}>MACRONUTRIENTS</Text>
-          <NutrientRow label="Calories" value={t.kcal} target={targetCalories} unit=" kcal" />
-          <NutrientRow label="Protein" value={t.protein_g} target={targetMacros.protein} unit="g" />
-          <NutrientRow label="Carbs" value={t.carbs_g} target={targetMacros.carbs} unit="g" />
-          <NutrientRow label="Sugars" value={t.sugars_g} target={targetMacros.sugars} unit="g" />
-          <NutrientRow label="Fat" value={t.fat_g} target={targetMacros.fat} unit="g" />
-          <NutrientRow label="Saturated Fat" value={t.saturated_fat_g} target={targetMacros.satFat} unit="g" />
-          <NutrientRow label="Fiber" value={t.fiber_g} target={targetMacros.fiber} unit="g" />
-          <NutrientRow label="Salt" value={t.salt_g} target={targetMacros.salt} unit="g" />
+          <NutrientRow label="Calories"       value={t.kcal}             target={targetCalories}       unit=" kcal" isLowerBetter={true} />
+          <NutrientRow label="Protein"        value={t.protein_g}        target={targetMacros.protein}  unit="g"     isLowerBetter={false} />
+          <NutrientRow label="Carbs"          value={t.carbs_g}          target={targetMacros.carbs}    unit="g"     isLowerBetter={true} />
+          <NutrientRow label="Sugars"         value={t.sugars_g}         target={targetMacros.sugars}   unit="g"     isLowerBetter={true} />
+          <NutrientRow label="Fat"            value={t.fat_g}            target={targetMacros.fat}      unit="g"     isLowerBetter={true} />
+          <NutrientRow label="Saturated Fat"  value={t.saturated_fat_g}  target={targetMacros.satFat}   unit="g"     isLowerBetter={true} />
+          <NutrientRow label="Fiber"          value={t.fiber_g}          target={targetMacros.fiber}    unit="g"     isLowerBetter={false} />
+          <NutrientRow label="Salt"           value={t.salt_g}           target={targetMacros.salt}     unit="g"     isLowerBetter={true} />
         </View>
 
+        {/* ─── Micronutrients (collapsible) ────────────────── */}
+        <TouchableOpacity
+          style={styles.microsToggleBtn}
+          activeOpacity={0.7}
+          onPress={() => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            setMicrosExpanded(v => !v);
+          }}
+        >
+          <Ionicons name="flask-outline" size={15} color={COLORS.primaryGreen} />
+          <Text style={styles.microsToggleText}>
+            {microsExpanded ? 'Hide Micronutrients' : 'Show Micronutrients'}
+          </Text>
+          <Ionicons name={microsExpanded ? 'chevron-up' : 'chevron-down'} size={15} color={COLORS.primaryGreen} style={{ marginLeft: 'auto' }} />
+        </TouchableOpacity>
+
+        {microsExpanded && (
         <View style={styles.nutriCard}>
           <Text style={styles.nutriSectionHeader}>ESSENTIAL MICRONUTRIENTS</Text>
-          <NutrientRow label="Calcium" value={t.micros.calcium_mg} target={MICRO_TARGETS.calcium_mg} unit="mg" />
-          <NutrientRow label="Iron" value={t.micros.iron_mg} target={MICRO_TARGETS.iron_mg} unit="mg" />
-          <NutrientRow label="Magnesium" value={t.micros.magnesium_mg} target={MICRO_TARGETS.magnesium_mg} unit="mg" />
-          <NutrientRow label="Potassium" value={t.micros.potassium_mg} target={MICRO_TARGETS.potassium_mg} unit="mg" />
-          <NutrientRow label="Zinc" value={t.micros.zinc_mg} target={MICRO_TARGETS.zinc_mg} unit="mg" />
-          <NutrientRow label="Vitamin C" value={t.micros.vitamin_c_mg} target={MICRO_TARGETS.vitamin_c_mg} unit="mg" />
-          <NutrientRow label="Vitamin D" value={t.micros.vitamin_d_ug} target={MICRO_TARGETS.vitamin_d_ug} unit="μg" />
-          <NutrientRow label="Vitamin A" value={t.micros.vitamin_a_ug} target={MICRO_TARGETS.vitamin_a_ug} unit="μg" />
-          <NutrientRow label="Vitamin E" value={t.micros.vitamin_e_mg} target={MICRO_TARGETS.vitamin_e_mg} unit="mg" />
-          <NutrientRow label="Vitamin B1" value={t.micros.vitamin_b1_mg} target={MICRO_TARGETS.vitamin_b1_mg} unit="mg" />
-          <NutrientRow label="Vitamin B2" value={t.micros.vitamin_b2_mg} target={MICRO_TARGETS.vitamin_b2_mg} unit="mg" />
-          <NutrientRow label="Vitamin B6" value={t.micros.vitamin_b6_mg} target={MICRO_TARGETS.vitamin_b6_mg} unit="mg" />
-          <NutrientRow label="Vitamin B12" value={t.micros.vitamin_b12_ug} target={MICRO_TARGETS.vitamin_b12_ug} unit="μg" />
-          <NutrientRow label="Niacin" value={t.micros.niacin_mg} target={MICRO_TARGETS.niacin_mg} unit="mg" />
-          <NutrientRow label="Folate" value={t.micros.folate_ug} target={MICRO_TARGETS.folate_ug} unit="μg" />
-          <NutrientRow label="Phosphorus" value={t.micros.phosphorus_mg} target={MICRO_TARGETS.phosphorus_mg} unit="mg" />
-          <NutrientRow label="Sodium" value={t.micros.sodium_mg} target={MICRO_TARGETS.sodium_mg} unit="mg" />
-          <NutrientRow label="Iodine" value={t.micros.iodide_ug} target={MICRO_TARGETS.iodide_ug} unit="μg" />
+          <NutrientRow label="Calcium"     value={t.micros.calcium_mg}     target={MICRO_TARGETS.calcium_mg}     unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Iron"        value={t.micros.iron_mg}        target={MICRO_TARGETS.iron_mg}        unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Magnesium"   value={t.micros.magnesium_mg}   target={MICRO_TARGETS.magnesium_mg}   unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Potassium"   value={t.micros.potassium_mg}   target={MICRO_TARGETS.potassium_mg}   unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Zinc"        value={t.micros.zinc_mg}        target={MICRO_TARGETS.zinc_mg}        unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Vitamin C"   value={t.micros.vitamin_c_mg}   target={MICRO_TARGETS.vitamin_c_mg}   unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Vitamin D"   value={t.micros.vitamin_d_ug}   target={MICRO_TARGETS.vitamin_d_ug}   unit="μg" isLowerBetter={false} />
+          <NutrientRow label="Vitamin A"   value={t.micros.vitamin_a_ug}   target={MICRO_TARGETS.vitamin_a_ug}   unit="μg" isLowerBetter={false} />
+          <NutrientRow label="Vitamin E"   value={t.micros.vitamin_e_mg}   target={MICRO_TARGETS.vitamin_e_mg}   unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Vitamin B1"  value={t.micros.vitamin_b1_mg}  target={MICRO_TARGETS.vitamin_b1_mg}  unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Vitamin B2"  value={t.micros.vitamin_b2_mg}  target={MICRO_TARGETS.vitamin_b2_mg}  unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Vitamin B6"  value={t.micros.vitamin_b6_mg}  target={MICRO_TARGETS.vitamin_b6_mg}  unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Vitamin B12" value={t.micros.vitamin_b12_ug} target={MICRO_TARGETS.vitamin_b12_ug} unit="μg" isLowerBetter={false} />
+          <NutrientRow label="Niacin"      value={t.micros.niacin_mg}      target={MICRO_TARGETS.niacin_mg}      unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Folate"      value={t.micros.folate_ug}      target={MICRO_TARGETS.folate_ug}      unit="μg" isLowerBetter={false} />
+          <NutrientRow label="Phosphorus"  value={t.micros.phosphorus_mg}  target={MICRO_TARGETS.phosphorus_mg}  unit="mg" isLowerBetter={false} />
+          <NutrientRow label="Sodium"      value={t.micros.sodium_mg}      target={MICRO_TARGETS.sodium_mg}      unit="mg" isLowerBetter={true} />
+          <NutrientRow label="Iodine"      value={t.micros.iodide_ug}      target={MICRO_TARGETS.iodide_ug}      unit="μg" isLowerBetter={false} />
         </View>
+        )}
 
-        {/* ─── Source Link ─────────────────────────────────── */}
-        <TouchableOpacity style={styles.sourceLink} onPress={() => Linking.openURL(recipe.url)}>
-          <Ionicons name="open-outline" size={14} color={COLORS.primaryGreen} />
-          <Text style={styles.sourceLinkText}>View original recipe</Text>
-        </TouchableOpacity>
+        {/* ─── Source Link (removed from bottom — now at top) ── */}
       </Animated.ScrollView>
     </View>
   );
@@ -372,6 +510,21 @@ const styles = StyleSheet.create({
   metaText: { fontSize: 13, color: COLORS.textSecondary, fontWeight: '500', marginLeft: 5 },
   metaSep: { width: 12 },
   dishType: { fontSize: 12, color: COLORS.textMuted, marginTop: 6 },
+  sourceLinkTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    backgroundColor: COLORS.lightGreenBg,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+  sourceLinkTopText: {
+    fontSize: 12,
+    color: COLORS.primaryGreen,
+  },
 
   scoreCard: {
     backgroundColor: COLORS.lightGreenBg,
@@ -414,7 +567,30 @@ const styles = StyleSheet.create({
   swapPtsText: { fontSize: 11, fontWeight: '700', color: COLORS.white },
 
   sectionHeader: { fontSize: 20, fontWeight: '800', color: COLORS.textPrimary, marginBottom: 8, marginTop: 4 },
+  sectionToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    marginBottom: 8,
+    paddingVertical: 2,
+  },
   dailyIntakeLabel: { fontSize: 9, fontWeight: '700', color: COLORS.textMuted, letterSpacing: 0.3, flex: 1, textAlign: 'right' },
+  microsToggleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.lightGreenBg,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  microsToggleText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.primaryGreen,
+  },
 
   ingredientsCard: {
     backgroundColor: COLORS.white,
@@ -499,10 +675,4 @@ const styles = StyleSheet.create({
     marginTop: 6, overflow: 'hidden',
   },
   barFill: { height: 6, borderRadius: 3 },
-
-  sourceLink: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 14, marginBottom: 20,
-  },
-  sourceLinkText: { fontSize: 13, color: COLORS.primaryGreen, fontWeight: '600' },
 });
