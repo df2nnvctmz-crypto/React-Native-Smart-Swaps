@@ -166,17 +166,28 @@ function estimateTimeDifficulty(recipe: any): { time: string; difficulty: string
   return { time, difficulty };
 }
 
+// Cached across every useRecipes() call in the app: hydrating recipes (scaling nutrients,
+// resolving ingredient swaps, etc.) is expensive and only needs to happen once per session.
+let cachedRecipes: Recipe[] | null = null;
+let recipesPromise: Promise<void> | null = null;
+
 export function useRecipes() {
   const { allFoods, isLoaded: foodsLoaded } = useFoods();
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [recipes, setRecipes] = useState<Recipe[]>(cachedRecipes ?? []);
+  const [isLoaded, setIsLoaded] = useState(cachedRecipes !== null);
 
   useEffect(() => {
+    if (cachedRecipes) return;
     if (!foodsLoaded) return;
+    if (recipesPromise) {
+      let isActive = true;
+      recipesPromise.then(() => { if (isActive) { setRecipes(cachedRecipes!); setIsLoaded(true); } });
+      return () => { isActive = false; };
+    }
 
     const foodMap = new Map<string, FoodItem>(allFoods.map(f => [f.id, f]));
 
-    DatabaseService.getAllRecipes().then(recipesRaw => {
+    recipesPromise = DatabaseService.getAllRecipes().then(recipesRaw => {
       const hydratedRecipes = recipesRaw.map((raw): Recipe => {
         const { time, difficulty } = estimateTimeDifficulty(raw);
 
@@ -261,9 +272,17 @@ export function useRecipes() {
         };
       });
 
-      setRecipes(hydratedRecipes);
-      setIsLoaded(true);
+      cachedRecipes = hydratedRecipes;
     });
+
+    let isActive = true;
+    recipesPromise.then(() => {
+      if (isActive) {
+        setRecipes(cachedRecipes!);
+        setIsLoaded(true);
+      }
+    });
+    return () => { isActive = false; };
   }, [foodsLoaded, allFoods]);
 
   const findRecipesForFood = useMemo(() => {

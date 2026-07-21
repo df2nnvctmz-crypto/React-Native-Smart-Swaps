@@ -20,16 +20,37 @@ export const getIconForCategory = (category: string): keyof typeof Ionicons.glyp
   return 'fast-food-outline';
 };
 
+// Cached across every useFoods() call in the app: the SQLite read and the (expensive)
+// search-index build only need to happen once per session, not on every screen mount.
+let cachedFoods: FoodItem[] | null = null;
+let cachedIndex: FoodIndexData | null = null;
+let foodsPromise: Promise<void> | null = null;
+
+function loadFoods(): Promise<void> {
+  if (!foodsPromise) {
+    foodsPromise = DatabaseService.getAllFoods().then(data => {
+      cachedFoods = data;
+      cachedIndex = buildFoodIndex(data);
+    });
+  }
+  return foodsPromise;
+}
+
 export function useFoods() {
   const { profile } = useProfile();
-  const [allFoods, setAllFoods] = useState<FoodItem[]>([]);
-  const [foodIndexData, setFoodIndexData] = useState<FoodIndexData | null>(null);
+  const [allFoods, setAllFoods] = useState<FoodItem[]>(cachedFoods ?? []);
+  const [foodIndexData, setFoodIndexData] = useState<FoodIndexData | null>(cachedIndex);
 
   useEffect(() => {
-    DatabaseService.getAllFoods().then(data => {
-      setAllFoods(data);
-      setFoodIndexData(buildFoodIndex(data));
+    if (cachedFoods && cachedIndex) return;
+    let isActive = true;
+    loadFoods().then(() => {
+      if (isActive) {
+        setAllFoods(cachedFoods!);
+        setFoodIndexData(cachedIndex!);
+      }
     });
+    return () => { isActive = false; };
   }, []);
 
   const foods = useMemo(() => {

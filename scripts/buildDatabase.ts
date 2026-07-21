@@ -99,7 +99,7 @@ async function buildDatabase() {
       food.nutrients_per_100?.saturated_fat_g ?? null,
       food.nutrients_per_100?.fiber_g ?? null,
       food.nutrients_per_100?.salt_g ?? null,
-      JSON.stringify(food.micros || {})
+      JSON.stringify(food.nutrients_per_100?.micros || {})
     ]);
   }
   insertFood.free();

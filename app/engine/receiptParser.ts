@@ -711,7 +711,7 @@ export function parseReceiptLine(line: string, allFoods: FoodItem[], indexData?:
   
   if (!match || !match.hasStrongHit) {
     const wordTokens = asciiLow(line).split(/\s+/).filter(t => /[a-z]{3,}/.test(t));
-    if (wordTokens.length <= 2) {
+    if (wordTokens.length === 0) {
       return null;
     }
   }

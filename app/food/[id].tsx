@@ -56,6 +56,7 @@ export default function FoodDetailsScreen() {
   const [dismissedSwapIds, setDismissedSwapIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    if (!food) return;
     let isActive = true;
     setSwapsLoaded(false);
     setDismissedSwapIds(new Set());
@@ -74,6 +75,14 @@ export default function FoodDetailsScreen() {
     () => swapPool.filter(swap => !dismissedSwapIds.has(swap.candidate.id)).slice(0, SWAP_DISPLAY_COUNT),
     [swapPool, dismissedSwapIds]
   );
+
+  if (!food) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading food details...</Text>
+      </View>
+    );
+  }
 
   const handleAcceptSwap = (swap: SwapResult) => {
     recordSwapAccepted(swap.candidate.swiss_category, swap.candidate.id);

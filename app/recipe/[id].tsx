@@ -139,19 +139,10 @@ export default function RecipeDetailScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const recipe = recipes.find(r => r.id === id);
-  if (!recipe) {
-    return (
-      <View style={[globalStyles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: COLORS.textMuted }}>Recipe not found or loading...</Text>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
-          <Text style={{ color: COLORS.primaryGreen, fontWeight: '600' }}>Go back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   // For each ingredient with a food, try to find best swap
   const ingredientSwaps: Record<string, { name: string; improvement: number; swapId: string; candidate: FoodItem } | null> = useMemo(() => {
+    if (!recipe) return {};
     const swaps: Record<string, any> = {};
     recipe.ingredients.forEach(ing => {
       if (!ing.food || ing.food.health_score >= 70) {
@@ -174,12 +165,13 @@ export default function RecipeDetailScreen() {
   }, [recipe, profile.dietaryPreference]);
 
   const { activeTotals, activeHealthScore } = useMemo(() => {
+    if (!recipe) return { activeTotals: emptyNutrients(), activeHealthScore: 50 };
     if (!swapsEnabled) return { activeTotals: recipe.totals, activeHealthScore: recipe.health_score };
-    
+
     let currentTotal = emptyNutrients();
     let totalKcal = 0;
     let scoreSum = 0;
-    
+
     recipe.ingredients.forEach(ing => {
       const swap = ing.food_id ? ingredientSwaps[ing.food_id] : null;
       if (swap && swap.candidate && ing.grams) {
@@ -193,12 +185,23 @@ export default function RecipeDetailScreen() {
         if (ing.food) scoreSum += ing.food.health_score * ing.nutrients.kcal;
       }
     });
-    
+
     const serves = recipe.serves || 1;
     const finalTotals = divideNutrients(currentTotal, serves);
     const hScore = totalKcal > 0 ? Math.round(scoreSum / totalKcal) : 50;
     return { activeTotals: finalTotals, activeHealthScore: hScore };
   }, [swapsEnabled, recipe, ingredientSwaps]);
+
+  if (!recipe) {
+    return (
+      <View style={[globalStyles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: COLORS.textMuted }}>Recipe not found or loading...</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
+          <Text style={{ color: COLORS.primaryGreen, fontWeight: '600' }}>Go back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const scoreColors = getScoreColors(activeHealthScore);
   const t = activeTotals;
