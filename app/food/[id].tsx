@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, LayoutAnimation, UIManager } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +10,9 @@ import { recordSwapAccepted, recordSwapRejected } from '../engine/personalSwapPr
 import { logSwapDecision } from '../engine/swapTrainingLog';
 import { useProfile } from '../context/ProfileContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { useInventory } from '../context/InventoryContext';
+import { StorageService } from '../services/storage';
+import { SelectShoppingListModal } from '../../components/SelectShoppingListModal';
 
 const MICRONUTRIENT_DV: Record<string, number> = {
   'Vitamin A': 900,
@@ -41,12 +44,17 @@ const MICRONUTRIENT_DV: Record<string, number> = {
   'Sodium': 2300,
 };
 
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 export default function FoodDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { foods, allFoods, getIconForCategory } = useFoods();
   const { profile, targetMacros } = useProfile();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { shoppingLists, refreshInventory } = useInventory();
 
   const food = useMemo(() => allFoods.find(f => f.id === id) || allFoods[0], [id, allFoods]);
 
@@ -54,6 +62,9 @@ export default function FoodDetailsScreen() {
   const [swapPool, setSwapPool] = useState<SwapResult[]>([]);
   const [swapsLoaded, setSwapsLoaded] = useState(false);
   const [dismissedSwapIds, setDismissedSwapIds] = useState<Set<string>>(new Set());
+  const [shoppingListModalVisible, setShoppingListModalVisible] = useState(false);
+  const [macrosExpanded, setMacrosExpanded] = useState(false);
+  const [microsExpanded, setMicrosExpanded] = useState(false);
 
   useEffect(() => {
     if (!food) return;
@@ -75,6 +86,48 @@ export default function FoodDetailsScreen() {
     () => swapPool.filter(swap => !dismissedSwapIds.has(swap.candidate.id)).slice(0, SWAP_DISPLAY_COUNT),
     [swapPool, dismissedSwapIds]
   );
+
+  const handleAddToList = async (listId: string | null, newListName?: string) => {
+    if (!food) return;
+
+    const qty = 100;
+    const newItem = {
+      id: Math.random().toString(36).substring(2, 15),
+      rawText: food.name,
+      matchedFood: food,
+      confidence: 1.0,
+      source: 'local',
+      quantity: qty,
+      unit: 'g'
+    } as any;
+
+    if (listId) {
+      const existingList = shoppingLists.find(l => l.id === listId);
+      if (existingList) {
+        const updatedItems = [...existingList.items, newItem];
+        const validFoods = updatedItems.map(i => i.matchedFood || (i as any).food).filter(Boolean);
+        const avgScore = validFoods.length > 0 
+          ? Math.round(validFoods.reduce((sum, f) => sum + f!.health_score, 0) / validFoods.length) 
+          : 50;
+        
+        const updatedScan = { ...existingList, items: updatedItems, averageScore: avgScore };
+        await StorageService.updateScan(listId, updatedScan);
+      }
+    } else {
+      const record = {
+        id: Math.random().toString(36).substring(2, 15),
+        date: new Date().toISOString(),
+        items: [newItem],
+        averageScore: food.health_score,
+        isShoppingList: true,
+        recipeName: newListName || 'Custom List'
+      };
+      await StorageService.saveScan(record);
+    }
+
+    await refreshInventory();
+    setShoppingListModalVisible(false);
+  };
 
   if (!food) {
     return (
@@ -189,6 +242,11 @@ export default function FoodDetailsScreen() {
               <Text style={[styles.scoreText, { color: scoreColor }]}>{food.health_score}</Text>
             </View>
           </View>
+          
+          <TouchableOpacity style={styles.addToListBtnFull} onPress={() => setShoppingListModalVisible(true)}>
+            <Ionicons name="basket-outline" size={18} color={COLORS.white} />
+            <Text style={styles.addToListBtnFullText}>Add to Shopping List</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Smarter Swaps */}
@@ -237,7 +295,22 @@ export default function FoodDetailsScreen() {
 
         {/* Macronutrients */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Macronutrients</Text>
+          <TouchableOpacity
+            style={[styles.microsToggleBtn, { marginBottom: 14 }]}
+            activeOpacity={0.7}
+            onPress={() => {
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+              setMacrosExpanded(v => !v);
+            }}
+          >
+            <Ionicons name="pie-chart-outline" size={15} color={COLORS.primaryGreen} />
+            <Text style={styles.microsToggleText}>
+              {macrosExpanded ? 'Hide Macronutrients' : 'Show Macronutrients'}
+            </Text>
+            <Ionicons name={macrosExpanded ? 'chevron-up' : 'chevron-down'} size={15} color={COLORS.primaryGreen} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+
+          {macrosExpanded && (
           <View style={styles.card}>
             <View style={[globalStyles.rowBetween, { marginBottom: 16 }]}>
               <Text style={styles.per100Muted}>Per 100g (% of Daily Value)</Text>
@@ -254,10 +327,27 @@ export default function FoodDetailsScreen() {
             {renderNutritionBar('Fiber', nutrients.fiber_g, 'g', targetMacros.fiber, COLORS.primaryGreen)}
             {renderNutritionBar('Salt', nutrients.salt_g, 'g', targetMacros.salt, COLORS.primaryGreen)}
           </View>
+          )}
         </View>
 
         {/* Vitamins & Minerals */}
         <View style={styles.section}>
+          <TouchableOpacity
+            style={[styles.microsToggleBtn, { marginBottom: 14 }]}
+            activeOpacity={0.7}
+            onPress={() => {
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+              setMicrosExpanded(v => !v);
+            }}
+          >
+            <Ionicons name="flask-outline" size={15} color={COLORS.primaryGreen} />
+            <Text style={styles.microsToggleText}>
+              {microsExpanded ? 'Hide Micronutrients' : 'Show Micronutrients'}
+            </Text>
+            <Ionicons name={microsExpanded ? 'chevron-up' : 'chevron-down'} size={15} color={COLORS.primaryGreen} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+
+          {microsExpanded && (
           <View style={styles.card}>
             <Text style={styles.cardSectionTitle}>Vitamins & Minerals (per 100g)</Text>
             {Object.entries(nutrients.micros).map(([key, value]) => {
@@ -265,14 +355,36 @@ export default function FoodDetailsScreen() {
               return renderVitaminRow(formatMicroName(key), value as number, formatMicroUnit(key));
             })}
           </View>
+          )}
         </View>
 
       </ScrollView>
+
+      <SelectShoppingListModal 
+        visible={shoppingListModalVisible}
+        onClose={() => setShoppingListModalVisible(false)}
+        onSelect={handleAddToList}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  microsToggleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.lightGreenBg,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  microsToggleText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.primaryGreenDark,
+  },
   safeArea: {
     flex: 1,
     backgroundColor: '#F7F9F7', // Slightly off-white background matching the screenshot
@@ -356,6 +468,21 @@ const styles = StyleSheet.create({
   scoreText: {
     fontSize: 28,
     fontWeight: '800',
+  },
+  addToListBtnFull: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primaryGreen,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 16,
+  },
+  addToListBtnFullText: {
+    color: COLORS.white,
+    fontWeight: '700',
+    fontSize: 15,
+    marginLeft: 8,
   },
   section: {
     marginTop: 32,

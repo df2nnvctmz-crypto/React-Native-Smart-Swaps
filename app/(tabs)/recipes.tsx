@@ -121,7 +121,7 @@ export default function RecipesTab() {
 
   return (
     <View style={globalStyles.safeArea}>
-      <GlassHeader title="Recipes" scrollY={scrollY} onSearchPress={() => setSearchVisible(true)} />
+      <GlassHeader title="Recipes" scrollY={scrollY} />
       <Animated.ScrollView
         style={globalStyles.container}
         contentInset={{

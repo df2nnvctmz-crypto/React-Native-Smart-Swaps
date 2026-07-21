@@ -11,9 +11,11 @@ import { useRecipes, scaleNutrients, emptyNutrients, addNutrients, divideNutrien
 import { useFoods } from '../useFoods';
 import { findBestRecipeSwap } from '../engine/recipeSwapAlgorithm';
 import { FoodNutrients, Recipe, RecipeIngredient, FoodItem } from '../types';
-import { useProfile } from '../context/ProfileContext';
 import { StorageService } from '../services/storage';
 import { useInventory } from '../context/InventoryContext';
+import { useProfile } from '../context/ProfileContext';
+import { SelectShoppingListModal } from '../../components/SelectShoppingListModal';
+import { NutrientRow } from '../../components/NutrientRow';
 
 // We use dynamic targets from useProfile, but still need standard micro targets
 const MICRO_TARGETS = {
@@ -78,52 +80,8 @@ function getSiteName(url: string): string {
 }
 
 /**
- * Colour thresholds for nutrient bars:
- * - Lower-is-better (calories, fat, sugar, sat-fat, salt, sodium):
- *     <40% → green (well under limit)
- *     40-70% → amber (approaching limit)
- *     >70% → red (over or close to limit)
- * - Higher-is-better (protein, fiber, vitamins, minerals):
- *     <35% → red (well short of target)
- *     35-65% → amber (partial)
- *     >65% → green (on track)
+ * We use dynamic targets from useProfile, but still need standard micro targets
  */
-function nutriBarColor(pctVal: number, isLowerBetter: boolean): string {
-  if (isLowerBetter) {
-    if (pctVal <= 40) return COLORS.scoreGreen;
-    if (pctVal <= 70) return '#F59E0B'; // amber
-    return COLORS.scoreRed;
-  } else {
-    if (pctVal >= 65) return COLORS.scoreGreen;
-    if (pctVal >= 35) return '#F59E0B'; // amber
-    return COLORS.scoreRed;
-  }
-}
-
-function NutrientRow({
-  label, value, target, unit, isLowerBetter,
-}: {
-  label: string; value: number; target: number; unit: string; isLowerBetter: boolean;
-}) {
-  const pctVal = pct(value, target);
-  const barColor = nutriBarColor(pctVal, isLowerBetter);
-  return (
-    <View style={styles.nutrientRow}>
-      <View style={globalStyles.rowBetween}>
-        <View>
-          <Text style={styles.nutrientName}>{label}</Text>
-        </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={styles.nutrientValue}>{fmt(value)} {unit}</Text>
-          <Text style={[styles.nutrientPct, { color: barColor }]}>{pctVal}% of target</Text>
-        </View>
-      </View>
-      <View style={styles.barTrack}>
-        <View style={[styles.barFill, { width: `${pctVal}%`, backgroundColor: barColor }]} />
-      </View>
-    </View>
-  );
-}
 
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -139,6 +97,8 @@ export default function RecipeDetailScreen() {
   const [ingredientsExpanded, setIngredientsExpanded] = useState(true);
   const [stepsExpanded, setStepsExpanded] = useState(true);
   const [microsExpanded, setMicrosExpanded] = useState(false);
+  const [macrosExpanded, setMacrosExpanded] = useState(false);
+  const [shoppingListModalVisible, setShoppingListModalVisible] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const recipe = recipes.find(r => r.id === id);
@@ -196,7 +156,7 @@ export default function RecipeDetailScreen() {
     return { activeTotals: finalTotals, activeHealthScore: hScore };
   }, [swapsEnabled, recipe, ingredientSwaps]);
 
-  const generateShoppingList = async () => {
+  const generateShoppingList = async (listId: string | null, newListName?: string) => {
     if (!recipe) return;
     const scaleFactor = shoppingServings / (recipe.serves || 1);
     
@@ -214,28 +174,48 @@ export default function RecipeDetailScreen() {
       return {
         id: displayFood ? displayFood.id : Math.random().toString(36).substring(2, 15),
         rawText: ing.raw_text,
-        food: displayFood,
+        matchedFood: displayFood,
+        confidence: 1.0,
+        source: 'local',
         quantity: qty,
         unit: qty ? 'g' : undefined
-      };
+      } as any;
     });
 
-    const validFoods = items.map(i => i.food).filter(Boolean) as FoodItem[];
-    const avgScore = validFoods.length > 0
-      ? Math.round(validFoods.reduce((sum, f) => sum + f.health_score, 0) / validFoods.length)
-      : 50;
+    if (listId) {
+      // Append to existing
+      const scans = await StorageService.getScans();
+      const existingList = scans.find((l: any) => l.id === listId);
+      if (existingList) {
+        const updatedItems = [...existingList.items, ...items];
+        const validFoods = updatedItems.map(i => i.matchedFood || (i as any).food).filter(Boolean) as FoodItem[];
+        const avgScore = validFoods.length > 0 
+          ? Math.round(validFoods.reduce((sum, f) => sum + f.health_score, 0) / validFoods.length) 
+          : 50;
+        
+        const updatedScan = { ...existingList, items: updatedItems, averageScore: avgScore };
+        await StorageService.updateScan(listId, updatedScan);
+      }
+    } else {
+      const validFoods = items.map(i => i.matchedFood).filter(Boolean) as FoodItem[];
+      const avgScore = validFoods.length > 0
+        ? Math.round(validFoods.reduce((sum, f) => sum + f.health_score, 0) / validFoods.length)
+        : 50;
 
-    const record = {
-      id: Math.random().toString(36).substring(2, 15),
-      date: new Date().toISOString(),
-      items: items,
-      averageScore: avgScore,
-      isShoppingList: true,
-      recipeName: recipe.name
-    };
+      const record = {
+        id: Math.random().toString(36).substring(2, 15),
+        date: new Date().toISOString(),
+        items: items,
+        averageScore: avgScore,
+        isShoppingList: true,
+        recipeName: newListName || recipe.name
+      };
 
-    await StorageService.saveScan(record);
+      await StorageService.saveScan(record);
+    }
+
     await refreshInventory();
+    setShoppingListModalVisible(false);
     router.push('/receipts');
   };
 
@@ -395,7 +375,7 @@ export default function RecipeDetailScreen() {
               </TouchableOpacity>
               <Text style={{ marginLeft: 8, fontSize: 13, color: COLORS.textMuted }}>servings</Text>
             </View>
-            <TouchableOpacity style={styles.addToListBtn} onPress={generateShoppingList}>
+            <TouchableOpacity style={styles.addToListBtn} onPress={() => setShoppingListModalVisible(true)}>
               <Ionicons name="basket-outline" size={16} color={COLORS.white} />
               <Text style={styles.addToListText}>Add to List</Text>
             </TouchableOpacity>
@@ -496,6 +476,22 @@ export default function RecipeDetailScreen() {
           <Text style={styles.dailyIntakeLabel}>% OF DAILY INTAKE ({Math.round(targetCalories)} KCAL)</Text>
         </View>
 
+        <TouchableOpacity
+          style={[styles.microsToggleBtn, { marginBottom: 14 }]}
+          activeOpacity={0.7}
+          onPress={() => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            setMacrosExpanded(v => !v);
+          }}
+        >
+          <Ionicons name="pie-chart-outline" size={15} color={COLORS.primaryGreen} />
+          <Text style={styles.microsToggleText}>
+            {macrosExpanded ? 'Hide Macronutrients' : 'Show Macronutrients'}
+          </Text>
+          <Ionicons name={macrosExpanded ? 'chevron-up' : 'chevron-down'} size={15} color={COLORS.primaryGreen} style={{ marginLeft: 'auto' }} />
+        </TouchableOpacity>
+
+        {macrosExpanded && (
         <View style={styles.nutriCard}>
           <Text style={styles.nutriSectionHeader}>MACRONUTRIENTS</Text>
           <NutrientRow label="Calories"       value={t.kcal}             target={targetCalories}       unit=" kcal" isLowerBetter={true} />
@@ -507,6 +503,7 @@ export default function RecipeDetailScreen() {
           <NutrientRow label="Fiber"          value={t.fiber_g}          target={targetMacros.fiber}    unit="g"     isLowerBetter={false} />
           <NutrientRow label="Salt"           value={t.salt_g}           target={targetMacros.salt}     unit="g"     isLowerBetter={true} />
         </View>
+        )}
 
         {/* ─── Micronutrients (collapsible) ────────────────── */}
         <TouchableOpacity
@@ -550,6 +547,11 @@ export default function RecipeDetailScreen() {
 
         {/* ─── Source Link (removed from bottom — now at top) ── */}
       </Animated.ScrollView>
+      <SelectShoppingListModal
+        visible={shoppingListModalVisible}
+        onClose={() => setShoppingListModalVisible(false)}
+        onSelect={generateShoppingList}
+      />
     </View>
   );
 }

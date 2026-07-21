@@ -21,12 +21,15 @@ import { COLORS, globalStyles } from './styles';
 import { useFoods } from './app/useFoods';
 import { useFavorites } from './app/context/FavoritesContext';
 import { useProfile } from './app/context/ProfileContext';
+import { useRecipes } from './app/useRecipes';
+import { StorageService, ScanRecord } from './app/services/storage';
+import { useFocusEffect } from 'expo-router';
 import { findBestSwaps } from './app/engine/swapAlgorithm';
 import { LiquidSlider } from './components/LiquidSlider';
 import { SwapComparisonCard } from './components/SwapComparisonCard';
 
 interface SearchScreenProps {
-  onBack: () => void;
+  onBack?: () => void;
   mode?: 'foods' | 'swaps';
   onSelect?: (food: any) => void;
   rawText?: string;
@@ -41,9 +44,18 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
   const insets = useSafeAreaInsets();
   const { isFavorite, toggleFavorite, favorites } = useFavorites();
   const { profile } = useProfile();
+  const { recipes } = useRecipes();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      StorageService.getScans().then(setScans);
+    }, [])
+  );
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchFilter, setSearchFilter] = useState<'all'|'foods'|'recipes'|'lists'|'receipts'>('all');
+  const [scans, setScans] = useState<ScanRecord[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [category, setCategory] = useState('All');
@@ -66,64 +78,94 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
   }, [allFoods]);
 
   // Filtering Engine
+  
   const searchResults = useMemo(() => {
-    let results = allFoods;
+    if (mode === 'swaps') return [];
 
-    if (searchQuery.trim() !== '') {
-      const q = searchQuery.toLowerCase();
-      results = results.filter(f => 
-        f.name.toLowerCase().includes(q) || 
-        f.category.toLowerCase().includes(q) || 
-        f.swiss_category.toLowerCase().includes(q)
-      );
+    let results: any[] = [];
+    const q = searchQuery.toLowerCase();
 
-      // Relevance sort
-      results.sort((a, b) => {
-        const aName = a.name.toLowerCase();
-        const bName = b.name.toLowerCase();
-        
-        const aExact = aName === q ? 1 : 0;
-        const bExact = bName === q ? 1 : 0;
-        if (aExact !== bExact) return bExact - aExact;
-        
-        const aStart = aName.startsWith(q) ? 1 : 0;
-        const bStart = bName.startsWith(q) ? 1 : 0;
-        if (aStart !== bStart) return bStart - aStart;
-        
-        return 0; 
-      });
+    // 1. Foods
+    if (searchFilter === 'all' || searchFilter === 'foods') {
+      let fResults = allFoods;
+      if (q) {
+        fResults = fResults.filter(f => f.name.toLowerCase().includes(q) || f.category.toLowerCase().includes(q));
+      }
+      if (nutriScores.length > 0) {
+        fResults = fResults.filter(f => f.nutri_grade && nutriScores.includes(f.nutri_grade.toUpperCase()));
+      }
+      if (favoritesOnly) {
+        fResults = fResults.filter(f => isFavorite('food', f.id.toString()));
+      }
+      if (maxCalories < 1000) {
+        fResults = fResults.filter(f => f.nutrients_per_100.kcal <= maxCalories);
+      }
+      
+      const mappedFoods = fResults.map(f => ({
+        id: f.id,
+        type: 'food',
+        title: f.name,
+        category: f.category,
+        calories: `${Math.round(f.nutrients_per_100.kcal)} kcal / 100g`,
+        score: f.health_score,
+        nutriScore: f.nutri_grade ? `NUTRI SCORE ${f.nutri_grade}` : 'UNGRADED',
+        nutriColor: f.health_score >= 75 ? COLORS.scoreGreen : (f.health_score >= 50 ? '#F5A623' : COLORS.scoreRed),
+        nutriBg: f.health_score >= 75 ? COLORS.lightGreenBg : (f.health_score >= 50 ? '#FFF8E1' : '#FFEBEE'),
+        iconName: getIconForCategory(f.category),
+        isFavorite: isFavorite('food', f.id.toString()),
+      }));
+      results = [...results, ...mappedFoods];
     }
 
-    if (category !== 'All') {
-      results = results.filter(f => f.category === category);
+    // 2. Recipes
+    if (searchFilter === 'all' || searchFilter === 'recipes') {
+      let rResults = recipes;
+      if (q) {
+        rResults = rResults.filter(r => r.name.toLowerCase().includes(q));
+      }
+      const mappedRecipes = rResults.map(r => ({
+        id: r.id,
+        type: 'recipe',
+        title: r.name,
+        category: 'Recipe',
+        calories: `${Math.round(r.totals?.kcal || 0)} kcal`,
+        score: r.health_score,
+        nutriScore: '',
+        nutriColor: r.health_score >= 75 ? COLORS.scoreGreen : (r.health_score >= 50 ? '#F5A623' : COLORS.scoreRed),
+        nutriBg: r.health_score >= 75 ? COLORS.lightGreenBg : (r.health_score >= 50 ? '#FFF8E1' : '#FFEBEE'),
+        iconName: 'restaurant',
+        isFavorite: false,
+      }));
+      results = [...results, ...mappedRecipes];
     }
 
-    if (nutriScores.length > 0) {
-      results = results.filter(f => f.nutri_grade && nutriScores.includes(f.nutri_grade.toUpperCase()));
+    // 3. Shopping Lists & Receipts
+    if (searchFilter === 'all' || searchFilter === 'lists' || searchFilter === 'receipts') {
+      let sResults = scans;
+      if (searchFilter === 'lists') sResults = sResults.filter(s => s.isShoppingList);
+      if (searchFilter === 'receipts') sResults = sResults.filter(s => !s.isShoppingList);
+      if (q) {
+        sResults = sResults.filter(s => (s.recipeName || s.date).toLowerCase().includes(q));
+      }
+      const mappedScans = sResults.map(s => ({
+        id: s.id,
+        type: s.isShoppingList ? 'list' : 'receipt',
+        title: s.recipeName || (s.isShoppingList ? 'Shopping List' : 'Receipt'),
+        category: s.date,
+        calories: `${s.items.length} items`,
+        score: s.averageScore,
+        nutriScore: '',
+        nutriColor: s.averageScore >= 75 ? COLORS.scoreGreen : (s.averageScore >= 50 ? '#F5A623' : COLORS.scoreRed),
+        nutriBg: s.averageScore >= 75 ? COLORS.lightGreenBg : (s.averageScore >= 50 ? '#FFF8E1' : '#FFEBEE'),
+        iconName: s.isShoppingList ? 'basket' : 'receipt',
+        isFavorite: false,
+      }));
+      results = [...results, ...mappedScans];
     }
 
-    if (favoritesOnly) {
-      results = results.filter(f => isFavorite('food', f.id.toString()));
-    }
+    return results;
+  }, [allFoods, searchQuery, category, nutriScores, maxCalories, favoritesOnly, favorites.foods, searchFilter, recipes, scans]);
 
-    if (maxCalories < 1000) {
-      results = results.filter(f => f.nutrients_per_100.kcal <= maxCalories);
-    }
-
-    // Return mapped UI array, NOT capped here (capped in render for pagination)
-    return results.map(f => ({
-      id: f.id,
-      title: f.name,
-      category: f.category,
-      calories: `${Math.round(f.nutrients_per_100.kcal)} kcal / 100g`,
-      score: f.health_score,
-      nutriScore: f.nutri_grade ? `NUTRI SCORE ${f.nutri_grade}` : 'UNGRADED',
-      nutriColor: f.health_score >= 75 ? COLORS.scoreGreen : (f.health_score >= 50 ? '#F5A623' : COLORS.scoreRed),
-      nutriBg: f.health_score >= 75 ? COLORS.lightGreenBg : (f.health_score >= 50 ? '#FFF8E1' : '#FFEBEE'),
-      iconName: getIconForCategory(f.category),
-      isFavorite: isFavorite('food', f.id.toString()),
-    }));
-  }, [allFoods, searchQuery, category, nutriScores, maxCalories, favoritesOnly, favorites.foods]);
 
   const swapResults = useMemo(() => {
     if (mode !== 'swaps') return [];
@@ -168,22 +210,40 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
     return COLORS.scoreRed;
   };
 
+  
+  const handleItemPress = (item: any) => {
+    if (onSelect) {
+      if (item.type === 'food') {
+        onSelect(allFoods.find(f => f.id === item.id));
+      }
+      return;
+    }
+    
+    if (item.type === 'food') {
+      router.push(`/food/${item.id}`);
+    } else if (item.type === 'recipe') {
+      router.push(`/recipe/${item.id}`);
+    } else if (item.type === 'list' || item.type === 'receipt') {
+      router.push(`/receipt/${item.id}`);
+    }
+  };
+
   const isSearching = searchQuery.length > 0 || showFilters;
 
   return (
     <View style={globalStyles.safeArea}>
       
       {/* Sticky Header */}
-      <BlurView 
-        intensity={80} 
-        tint="light" 
-        style={[styles.headerBlur, { paddingTop: Platform.OS === 'ios' ? 20 : insets.top + 10 }]}
-      >
+      <BlurView intensity={90} tint="light" style={[styles.headerBlur, { paddingTop: insets.top + (Platform.OS === 'ios' ? 20 : 20) }]}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="chevron-down" size={24} color={COLORS.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Search</Text>
+          {onBack && (
+            <TouchableOpacity onPress={onBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Ionicons name="close" size={28} color={COLORS.textPrimary} />
+            </TouchableOpacity>
+          )}
+          <View style={{ flex: 1, alignItems: 'flex-start', marginLeft: onBack ? 0 : 0 }}>
+            <Text style={globalStyles.title}>Search</Text>
+          </View>
           <TouchableOpacity onPress={() => setShowFilters(!showFilters)} style={styles.filterBtn}>
             <Ionicons name={showFilters ? "options" : "options-outline"} size={22} color={showFilters ? COLORS.primaryGreen : COLORS.textPrimary} />
           </TouchableOpacity>
@@ -193,20 +253,38 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
           style={globalStyles.container}
-          contentContainerStyle={[globalStyles.scrollContent, { paddingTop: Platform.OS === 'ios' ? 70 : insets.top + 70, paddingHorizontal: 20 }]}
+          contentContainerStyle={[globalStyles.scrollContent, { paddingTop: insets.top + 90, paddingHorizontal: 0 }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
 
           {rawText && (
-            <View style={{ marginBottom: 16, backgroundColor: COLORS.lightGreenBg, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: COLORS.scoreGreen }}>
+            <View style={{ marginBottom: 16, marginHorizontal: 20, backgroundColor: COLORS.lightGreenBg, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: COLORS.scoreGreen }}>
               <Text style={{ fontSize: 13, color: COLORS.primaryGreenDark, fontWeight: '700', marginBottom: 4 }}>CORRECTING ITEM</Text>
               <Text style={{ fontSize: 16, color: COLORS.textPrimary, fontStyle: 'italic' }}>"{rawText}"</Text>
             </View>
           )}
 
+
+          {/* Quick Filters */}
+          {!rawText && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingBottom: 16 }}>
+              {['all', 'foods', 'recipes', 'lists', 'receipts'].map(f => (
+                <TouchableOpacity 
+                  key={f}
+                  style={[styles.chip, searchFilter === f && styles.chipActive]}
+                  onPress={() => setSearchFilter(f as any)}
+                >
+                  <Text style={[styles.chipText, searchFilter === f && styles.chipTextActive]}>
+                    {f.charAt(0).toUpperCase() + f.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
           {/* Search Bar */}
-          <View style={[globalStyles.rowBetween, { marginTop: rawText ? 0 : 16 }]}>
+          <View style={[globalStyles.rowBetween, { marginTop: rawText ? 0 : 0, paddingHorizontal: 20, marginBottom: 16 }]}>
             <View style={styles.searchBar}>
               <Ionicons name="search-outline" size={20} color={COLORS.textMuted} />
               <TextInput 
@@ -305,8 +383,8 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
                     fromFood={swap.from} 
                     toFood={swap.to} 
                     improvement={swap.improvement}
-                    onPressFrom={() => { onBack(); router.push(`/food/${swap.from.id}`); }}
-                    onPressTo={() => { onBack(); router.push(`/food/${swap.to.id}`); }}
+                    onPressFrom={() => { onBack?.(); router.push(`/food/${swap.from.id}`); }}
+                    onPressTo={() => { onBack?.(); router.push(`/food/${swap.to.id}`); }}
                   />
                 </View>
               ))
@@ -323,10 +401,16 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
                       if (onSelect) {
                         const fullFood = allFoods.find(f => f.id === food.id);
                         if (fullFood) onSelect(fullFood);
-                        onBack();
+                        onBack?.();
                       } else {
-                        onBack(); 
-                        router.push(`/food/${food.id}`); 
+                        onBack?.();
+                        if (food.type === 'receipt' || food.type === 'list') {
+                          router.push(`/receipt/${food.id}`);
+                        } else if (food.type === 'recipe') {
+                          router.push(`/recipe/${food.id}`);
+                        } else {
+                          router.push(`/food/${food.id}`);
+                        }
                       }
                     }}
                   >
@@ -347,11 +431,13 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
                       </View>
 
                       {/* Nutri Score tag */}
-                      <View style={[styles.nutriBadge, { backgroundColor: food.nutriBg }]}>
-                        <Text style={[styles.nutriText, { color: food.nutriColor }]}>
-                          {food.nutriScore}
-                        </Text>
-                      </View>
+                      {food.nutriScore ? (
+                        <View style={[styles.nutriBadge, { backgroundColor: food.nutriBg }]}>
+                          <Text style={[styles.nutriText, { color: food.nutriColor }]}>
+                            {food.nutriScore}
+                          </Text>
+                        </View>
+                      ) : null}
                     </View>
 
                     {/* Right side: Heart and Score ring */}
@@ -399,6 +485,10 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
 };
 
 const styles = StyleSheet.create({
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
@@ -589,6 +679,7 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   listContainer: {
+    paddingHorizontal: 20,
     paddingBottom: 20,
   },
   foodCard: {

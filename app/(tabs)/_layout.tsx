@@ -20,13 +20,13 @@ function NativeTabLayout() {
         <Icon sf={{ default: "fork.knife", selected: "fork.knife" }} />
         <Label>Recipes</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="swaps">
-        <Icon sf={{ default: "arrow.left.arrow.right", selected: "arrow.left.arrow.right" }} />
-        <Label>Swaps</Label>
-      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="receipts">
         <Icon sf={{ default: "list.bullet.rectangle", selected: "list.bullet.rectangle.fill" }} />
         <Label>Receipts</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="search">
+        <Icon sf={{ default: "magnifyingglass", selected: "magnifyingglass" }} />
+        <Label>Search</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -98,18 +98,6 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="swaps"
-        options={{
-          title: "Swaps",
-          tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="arrow.left.arrow.right" tintColor={color} size={22} />
-            ) : (
-              <Feather name="shuffle" size={22} color={color} />
-            ),
-        }}
-      />
-      <Tabs.Screen
         name="receipts"
         options={{
           title: "Receipts",
@@ -122,7 +110,19 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="search"
+        options={{
+          title: "Search",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="magnifyingglass" tintColor={color} size={22} />
+            ) : (
+              <Feather name="search" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
         options={{
           href: null,
         }}

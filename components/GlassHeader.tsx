@@ -7,15 +7,14 @@ import { COLORS, globalStyles } from '../styles';
 
 interface GlassHeaderProps {
   title: string;
-  onSearchPress?: () => void;
-  onProfilePress?: () => void;
+  onSettingsPress?: () => void;
   scrollY?: Animated.Value | ReturnType<typeof Animated.add>;
 }
 
 // Compact iOS-style header height (matches UINavigationBar)
 export const HEADER_CONTENT_HEIGHT = 52;
 
-export const GlassHeader = ({ title, onSearchPress, onProfilePress, scrollY }: GlassHeaderProps) => {
+export const GlassHeader = ({ title, onSearchPress, onSettingsPress, scrollY }: GlassHeaderProps) => {
   const insets = useSafeAreaInsets();
 
   // On iOS, we use contentInset, so initial scrollY is negative. On Android, we use paddingTop, so initial scrollY is 0.
@@ -51,14 +50,10 @@ export const GlassHeader = ({ title, onSearchPress, onProfilePress, scrollY }: G
       <View style={styles.content}>
         <Text style={globalStyles.title}>{title}</Text>
         <View style={globalStyles.row}>
-          {onSearchPress && (
-            <TouchableOpacity style={styles.iconButton} onPress={onSearchPress}>
-              <Ionicons name="search-outline" size={20} color={COLORS.textPrimary} />
-            </TouchableOpacity>
-          )}
-          {onProfilePress && (
-            <TouchableOpacity style={[styles.iconButton, { marginLeft: 8 }]} onPress={onProfilePress}>
-              <Ionicons name="person-outline" size={20} color={COLORS.textPrimary} />
+
+          {onSettingsPress && (
+            <TouchableOpacity style={[styles.iconButton, { marginLeft: 8 }]} onPress={onSettingsPress}>
+              <Ionicons name="settings-outline" size={20} color={COLORS.textPrimary} />
             </TouchableOpacity>
           )}
         </View>

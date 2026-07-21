@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Animated,
   Platform,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, globalStyles } from '../../styles';
@@ -15,12 +17,18 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { StorageService, ScanRecord } from '../services/storage';
 import { CircularScoreRing } from '../../components/CircularScoreRing';
 import * as Haptics from 'expo-haptics';
+import { getIconForCategory } from '../useFoods';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function ReceiptsTab() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const scrollY = useRef(new Animated.Value(0)).current;
   const [scans, setScans] = useState<ScanRecord[]>([]);
+  const [expandedListIds, setExpandedListIds] = useState<Set<string>>(new Set());
 
   useFocusEffect(
     useCallback(() => {
@@ -108,34 +116,85 @@ export default function ReceiptsTab() {
         {shoppingLists.length > 0 && (
           <View style={styles.shoppingListSection}>
             <Text style={styles.sectionTitle}>Current Shopping Lists</Text>
-            {shoppingLists.map(list => (
-              <TouchableOpacity 
-                key={list.id} 
-                style={styles.shoppingListCard}
-                activeOpacity={0.7}
-                onPress={() => handleScanPress(list.id)}
-              >
-                <View style={globalStyles.rowBetween}>
-                  <View style={globalStyles.row}>
-                    <View style={styles.basketIconBox}>
-                      <Ionicons name="basket" size={20} color={'#0084C9'} />
+            {shoppingLists.map(list => {
+              const isExpanded = expandedListIds.has(list.id);
+              const previewFoods = list.items.map(i => i.matchedFood || (i as any).food).filter(Boolean).slice(0, 3);
+              return (
+                <View key={list.id} style={styles.shoppingListCard}>
+                  <TouchableOpacity 
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                      setExpandedListIds(prev => {
+                        const next = new Set(prev);
+                        if (next.has(list.id)) next.delete(list.id);
+                        else next.add(list.id);
+                        return next;
+                      });
+                    }}
+                  >
+                    <View style={globalStyles.rowBetween}>
+                      <View style={globalStyles.row}>
+                        <View style={styles.basketIconBox}>
+                          <Ionicons name="basket" size={24} color={'#0084C9'} />
+                        </View>
+                        <View style={{ marginLeft: 12 }}>
+                          <Text style={styles.shoppingListTitleText} numberOfLines={1}>
+                            {list.recipeName || 'Shopping List'}
+                          </Text>
+                          <View style={[globalStyles.row, { marginTop: 4, gap: 6 }]}>
+                            <Text style={styles.scanItemsCount}>{list.items.length} items</Text>
+                            {!isExpanded && previewFoods.length > 0 && (
+                              <View style={styles.foodIconsRow}>
+                                {previewFoods.map((f, i) => (
+                                  <View key={i} style={styles.miniFoodIconBox}>
+                                    <Ionicons name={getIconForCategory(f!.category)} size={10} color="#0084C9" />
+                                  </View>
+                                ))}
+                                {list.items.length > 3 && (
+                                  <Text style={styles.moreFoodsText}>+{list.items.length - 3}</Text>
+                                )}
+                              </View>
+                            )}
+                          </View>
+                        </View>
+                      </View>
+                      <View style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'center' }}>
+                        <CircularScoreRing percentage={list.averageScore} size={44} strokeWidth={4} />
+                        <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={20} color="#0084C9" style={{ marginLeft: 8 }} />
+                      </View>
                     </View>
-                    <View style={{ marginLeft: 12 }}>
-                      <Text style={styles.shoppingListTitleText} numberOfLines={1}>
-                        Shopping List
-                      </Text>
-                      <Text style={styles.shoppingListRecipeName} numberOfLines={1}>
-                        {list.recipeName || 'Custom List'}
-                      </Text>
-                      <Text style={styles.scanItemsCount}>{list.items.length} items</Text>
+                  </TouchableOpacity>
+
+                  {isExpanded && (
+                    <View style={styles.expandedContent}>
+                      {list.items.slice(0, 10).map((item, idx) => {
+                        const f = item.matchedFood || (item as any).food;
+                        return (
+                          <View key={idx} style={styles.expandedItemRow}>
+                            {f && (
+                              <Ionicons name={getIconForCategory(f.category)} size={14} color={COLORS.primaryGreen} style={{ marginRight: 8 }} />
+                            )}
+                            <Text style={styles.expandedItemText} numberOfLines={1}>
+                              {f ? f.name : item.rawText}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                      {list.items.length > 10 && (
+                        <Text style={styles.expandedMoreText}>...and {list.items.length - 10} more items</Text>
+                      )}
+                      <TouchableOpacity 
+                        style={styles.editListBtn}
+                        onPress={() => handleScanPress(list.id)}
+                      >
+                        <Text style={styles.editListBtnText}>Open List Details</Text>
+                      </TouchableOpacity>
                     </View>
-                  </View>
-                  <View style={{ marginLeft: 'auto' }}>
-                    <CircularScoreRing percentage={list.averageScore} size={44} strokeWidth={4} />
-                  </View>
+                  )}
                 </View>
-              </TouchableOpacity>
-            ))}
+              );
+            })}
           </View>
         )}
 
@@ -304,29 +363,79 @@ const styles = StyleSheet.create({
   shoppingListCard: {
     backgroundColor: '#F0FAFF',
     borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#BFE7FF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.02,
-    shadowRadius: 4,
-    elevation: 1,
+    borderColor: '#D0EFFF',
   },
   basketIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#D9F2FF',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#D0EFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
   shoppingListTitleText: {
-    fontSize: 13,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#005480',
+  },
+  foodIconsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 4,
+    gap: 4,
+  },
+  miniFoodIconBox: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#D0EFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  moreFoodsText: {
+    fontSize: 11,
+    color: '#0084C9',
     fontWeight: '700',
-    color: '#006599',
-    textTransform: 'uppercase',
+    marginLeft: 2,
+  },
+  expandedContent: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#BFE7FF',
+  },
+  expandedItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  expandedItemText: {
+    fontSize: 14,
+    color: COLORS.textPrimary,
+    fontWeight: '500',
+  },
+  expandedMoreText: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    fontStyle: 'italic',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  editListBtn: {
+    backgroundColor: '#0084C9',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  editListBtnText: {
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: '700',
   },
   shoppingListRecipeName: {
     fontSize: 15,

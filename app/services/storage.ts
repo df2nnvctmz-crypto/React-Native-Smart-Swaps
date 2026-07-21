@@ -47,6 +47,16 @@ export const StorageService = {
     }
   },
 
+  async deleteScan(id: string) {
+    try {
+      const existing = await this.getScans();
+      const filtered = existing.filter(s => s.id !== id);
+      await AsyncStorage.setItem(SCANS_KEY, JSON.stringify(filtered));
+    } catch (e) {
+      console.error('Failed to delete scan', e);
+    }
+  },
+
   async getScans(): Promise<ScanRecord[]> {
     try {
       const data = await AsyncStorage.getItem(SCANS_KEY);

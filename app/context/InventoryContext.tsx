@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { StorageService } from '../services/storage';
+import { StorageService, ScanRecord } from '../services/storage';
 
 interface InventoryContextProps {
   ownedFoodIds: Set<string>;
+  shoppingLists: ScanRecord[];
   refreshInventory: () => Promise<void>;
 }
 
@@ -10,14 +11,15 @@ const InventoryContext = createContext<InventoryContextProps | undefined>(undefi
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
   const [ownedFoodIds, setOwnedFoodIds] = useState<Set<string>>(new Set());
+  const [shoppingLists, setShoppingLists] = useState<ScanRecord[]>([]);
 
   const refreshInventory = useCallback(async () => {
     try {
       const scans = await StorageService.getScans();
       const newOwned = new Set<string>();
+      const lists = scans.filter(s => s.isShoppingList).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
       for (const scan of scans) {
-        // We can include shopping lists in our inventory, or just rely on real receipts.
-        // For now, let's include anything in a scan that matched a food.
         if (scan.items) {
           for (const item of scan.items) {
             if (item.food?.id) {
@@ -27,6 +29,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         }
       }
       setOwnedFoodIds(newOwned);
+      setShoppingLists(lists);
     } catch (e) {
       console.error('Failed to load inventory', e);
     }
@@ -37,7 +40,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [refreshInventory]);
 
   return (
-    <InventoryContext.Provider value={{ ownedFoodIds, refreshInventory }}>
+    <InventoryContext.Provider value={{ ownedFoodIds, shoppingLists, refreshInventory }}>
       {children}
     </InventoryContext.Provider>
   );

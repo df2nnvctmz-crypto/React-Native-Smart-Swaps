@@ -25,6 +25,7 @@ import { NutritionModal } from '../../components/NutritionModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFoods } from '../useFoods';
 import { useProfile, DietaryPreference } from '../context/ProfileContext';
+import { useInventory } from '../context/InventoryContext';
 import { StorageService, ScanRecord } from '../services/storage';
 import { findBestSwaps } from '../engine/swapAlgorithm';
 import { FoodItem } from '../types';
@@ -34,6 +35,7 @@ export default function TodayTab() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [nutritionModalVisible, setNutritionModalVisible] = useState(false);
   const { profile, updateProfile, targetCalories } = useProfile();
+  const { shoppingLists } = useInventory();
   const currentPreference = profile.dietaryPreference[0] || 'Balanced';
   const [scans, setScans] = useState<ScanRecord[]>([]);
 
@@ -145,8 +147,7 @@ export default function TodayTab() {
     <View style={globalStyles.safeArea}>
       <GlassHeader 
         title="Groceries" 
-        onSearchPress={() => setSearchVisible(true)} 
-        onProfilePress={() => router.push('/profile')} 
+        onSettingsPress={() => router.push('/settings')} 
         scrollY={scrollY}
       />
       <Animated.ScrollView
@@ -182,7 +183,7 @@ export default function TodayTab() {
           </View>
 
           {/* Personalise Badge */}
-          <TouchableOpacity style={[styles.personaliseButton, { marginBottom: 16 }]} onPress={() => router.push('/profile')}>
+          <TouchableOpacity style={[styles.personaliseButton, { marginBottom: 16 }]} onPress={() => router.push('/settings')}>
             <Ionicons name="options-outline" size={14} color={COLORS.primaryGreen} />
             <Text style={styles.personaliseText}>
               Personalise • {profile.dietaryPreference.includes('Balanced') ? 'Recommended' : profile.dietaryPreference.join(', ')}
@@ -227,6 +228,53 @@ export default function TodayTab() {
             )}
           />
         </View>
+
+        {/* Shopping Lists Section */}
+        {shoppingLists.length > 0 && (
+          <View style={{ marginTop: 24, marginBottom: 12 }}>
+            <Text style={globalStyles.sectionTitle}>Your Shopping Lists</Text>
+            {shoppingLists.slice(0, 1).map(list => {
+              const previewFoods = list.items.map(i => i.matchedFood || (i as any).food).filter(Boolean).slice(0, 3);
+              return (
+                <TouchableOpacity 
+                  key={list.id} 
+                  style={styles.shoppingListCard}
+                  activeOpacity={0.7}
+                  onPress={() => router.push(`/receipt/${list.id}`)}
+                >
+                  <View style={globalStyles.rowBetween}>
+                    <View style={globalStyles.row}>
+                      <View style={styles.basketIconBox}>
+                        <Ionicons name="basket" size={24} color={'#0084C9'} />
+                      </View>
+                      <View style={{ marginLeft: 12 }}>
+                        <Text style={styles.shoppingListTitleText} numberOfLines={1}>
+                          {list.recipeName || 'Shopping List'}
+                        </Text>
+                        <View style={[globalStyles.row, { marginTop: 4, gap: 6 }]}>
+                          <Text style={styles.scanItemsCount}>{list.items.length} items</Text>
+                          {previewFoods.length > 0 && (
+                            <View style={styles.foodIconsRow}>
+                              {previewFoods.map((f, i) => (
+                                <View key={i} style={styles.miniFoodIconBox}>
+                                  <Ionicons name={getIconForCategory(f!.category)} size={10} color="#0084C9" />
+                                </View>
+                              ))}
+                              {list.items.length > 3 && (
+                                <Text style={styles.moreFoodsText}>+{list.items.length - 3}</Text>
+                              )}
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
       </Animated.ScrollView>
 
       <SearchModal visible={searchVisible} onClose={() => setSearchVisible(false)} />
@@ -249,6 +297,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.white,
+    shadowRadius: 8,
+    elevation: 4,
   },
   kcalBadge: {
     flexDirection: 'row',
@@ -296,4 +346,50 @@ const styles = StyleSheet.create({
   horizontalScroll: {
     paddingRight: 20,
   },
+  shoppingListCard: {
+    backgroundColor: '#F0FAFF',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#D0EFFF',
+  },
+  basketIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#D0EFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shoppingListTitleText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#005480',
+  },
+  scanItemsCount: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+  },
+  foodIconsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 4,
+    gap: 4,
+  },
+  miniFoodIconBox: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#D0EFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  moreFoodsText: {
+    fontSize: 11,
+    color: '#0084C9',
+    fontWeight: '700',
+    marginLeft: 2,
+  }
 });
