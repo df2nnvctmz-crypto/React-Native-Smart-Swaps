@@ -39,9 +39,14 @@ export default function ReceiptsTab() {
     return startOfWeek.getTime();
   };
 
+  const shoppingLists = useMemo(() => {
+    return scans.filter(s => s.isShoppingList).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [scans]);
+
   const groupedScans = useMemo(() => {
     const groups: Record<string, ScanRecord[]> = {};
     for (const scan of scans) {
+      if (scan.isShoppingList) continue; // skip shopping lists for history
       const wk = getWeekKey(scan.date);
       if (!groups[wk]) groups[wk] = [];
       groups[wk].push(scan);
@@ -99,6 +104,40 @@ export default function ReceiptsTab() {
           <Ionicons name="camera" size={20} color={COLORS.white} />
           <Text style={styles.bigScanBtnText}>Scan New Receipt</Text>
         </TouchableOpacity>
+
+        {shoppingLists.length > 0 && (
+          <View style={styles.shoppingListSection}>
+            <Text style={styles.sectionTitle}>Current Shopping Lists</Text>
+            {shoppingLists.map(list => (
+              <TouchableOpacity 
+                key={list.id} 
+                style={styles.shoppingListCard}
+                activeOpacity={0.7}
+                onPress={() => handleScanPress(list.id)}
+              >
+                <View style={globalStyles.rowBetween}>
+                  <View style={globalStyles.row}>
+                    <View style={styles.basketIconBox}>
+                      <Ionicons name="basket" size={20} color={'#0084C9'} />
+                    </View>
+                    <View style={{ marginLeft: 12 }}>
+                      <Text style={styles.shoppingListTitleText} numberOfLines={1}>
+                        Shopping List
+                      </Text>
+                      <Text style={styles.shoppingListRecipeName} numberOfLines={1}>
+                        {list.recipeName || 'Custom List'}
+                      </Text>
+                      <Text style={styles.scanItemsCount}>{list.items.length} items</Text>
+                    </View>
+                  </View>
+                  <View style={{ marginLeft: 'auto' }}>
+                    <CircularScoreRing percentage={list.averageScore} size={44} strokeWidth={4} />
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         {groupedScans.length > 0 ? (
           <View style={styles.historyContainer}>
@@ -252,6 +291,49 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textSecondary,
     marginTop: 2,
+  },
+  shoppingListSection: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+    marginBottom: 12,
+  },
+  shoppingListCard: {
+    backgroundColor: '#F0FAFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#BFE7FF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  basketIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#D9F2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shoppingListTitleText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#006599',
+    textTransform: 'uppercase',
+  },
+  shoppingListRecipeName: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+    marginTop: 2,
+    maxWidth: 200,
   },
   emptyContainer: {
     alignItems: 'center',

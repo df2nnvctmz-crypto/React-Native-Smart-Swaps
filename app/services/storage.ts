@@ -15,6 +15,8 @@ export interface ScanRecord {
   items: ParsedReceiptItem[];
   averageScore: number;
   interactions: SwapInteraction[];
+  isShoppingList?: boolean;
+  recipeName?: string;
 }
 
 const SCANS_KEY = '@smart_swaps_scans';

@@ -1,6 +1,7 @@
 import { FoodItem } from '../types';
 import { extractSwapFeatures, predictSwapQuality, combineWithExistingScore } from './swapRanker';
 import { applyPersonalPreference } from './personalSwapPreferences';
+import { computeVectorSimilarity } from './foodVectors';
 
 const STOP_WORDS = new Set(['and', 'the', 'with', 'organic', 'raw', 'fried', 'without', 'fat', 'pan', 'in', 'of', 'for', 'a']);
 const UNSWEETENED_KEYWORDS = ['zero', 'diet', 'plain', 'unsweetened', 'no sugar'];
@@ -219,19 +220,11 @@ export function findBestSwaps(badFood: FoodItem, allFoods: FoodItem[], count: nu
   }));
 
   // --- Learned ranker layer (swapRanker.ts) ---
-  // cosineSim is null here because embeddings aren't wired into this synchronous
-  // function's inputs yet - the ranker handles that gracefully (treats it as neutral).
-  // If/when you have precomputed food embeddings available at this call site, pass
-  // the real similarity instead of null for a stronger signal.
-  //
-  // liquidMismatch will always compute to 0 here since the physical-state filter
-  // above already excludes any candidate where isLiquid() disagrees with badFood -
-  // see the caveat in swapRanker.ts. rawIngredientMismatch has no such upstream
-  // filter, so it's live signal.
   for (const sc of scoredCandidates) {
     const liquidMismatch = isLiquid(badFood) !== isLiquid(sc.candidate) ? 1 : 0;
     const rawIngredientMismatch = isRawIngredient(badFood) !== isRawIngredient(sc.candidate) ? 1 : 0;
-    const features = extractSwapFeatures(badFood, sc.candidate, null, liquidMismatch, rawIngredientMismatch);
+    const cosineSim = computeVectorSimilarity(badFood, sc.candidate);
+    const features = extractSwapFeatures(badFood, sc.candidate, cosineSim, liquidMismatch, rawIngredientMismatch);
     const learnedProbability = predictSwapQuality(features);
     sc.score = combineWithExistingScore(sc.score, learnedProbability);
   }

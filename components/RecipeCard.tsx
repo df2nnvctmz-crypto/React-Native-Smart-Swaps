@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, globalStyles } from '../styles';
 import { Recipe } from '../app/types';
 import { useFavorites } from '../app/context/FavoritesContext';
+import { useInventory } from '../app/context/InventoryContext';
 import { getIconForCategory } from '../app/useFoods';
 
 interface RecipeCardProps {
@@ -47,17 +48,35 @@ function getScoreLabel(score: number): string {
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onPress, variant = 'small' }) => {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { ownedFoodIds } = useInventory();
+  
   const isFav = isFavorite('recipe', recipe.id);
   const iconStyle = getSubcategoryIconColor(recipe.subcategory);
   const scoreColors = getScoreColors(recipe.health_score);
 
+  const ownedCount = recipe.ingredients.reduce((acc, ing) => {
+    if (ing.food_id && ownedFoodIds.has(ing.food_id)) return acc + 1;
+    return acc;
+  }, 0);
+
   if (variant === 'large') {
     return (
       <TouchableOpacity style={styles.largeCard} onPress={onPress} activeOpacity={0.9}>
-        {/* Featured Tag */}
-        <View style={styles.featuredTag}>
-          <Ionicons name="star" size={10} color={COLORS.primaryGreen} />
-          <Text style={styles.featuredTagText}>TODAY'S FEATURED RECIPE</Text>
+        {/* Tags Row */}
+        <View style={[globalStyles.rowBetween, { marginBottom: 14 }]}>
+          <View style={styles.featuredTag}>
+            <Ionicons name="star" size={10} color={COLORS.primaryGreen} />
+            <Text style={styles.featuredTagText}>TODAY'S FEATURED RECIPE</Text>
+          </View>
+          
+          {ownedCount > 0 && (
+            <View style={styles.ownedTag}>
+              <Ionicons name="checkmark-circle-outline" size={12} color={COLORS.white} />
+              <Text style={styles.ownedTagText}>
+                {ownedCount}/{recipe.ingredients.length} INGREDIENTS
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Main row */}
@@ -140,16 +159,24 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onPress, variant
       </View>
 
       <View style={{ alignItems: 'flex-end', gap: 6 }}>
-        <TouchableOpacity
-          onPress={() => toggleFavorite('recipe', recipe.id)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Ionicons
-            name={isFav ? 'heart' : 'heart-outline'}
-            size={17}
-            color={isFav ? '#FF3B30' : COLORS.textMuted}
-          />
-        </TouchableOpacity>
+        <View style={globalStyles.row}>
+          {ownedCount > 0 && (
+            <View style={[styles.ownedTag, { paddingHorizontal: 5, paddingVertical: 2, marginRight: 8 }]}>
+              <Ionicons name="checkmark-circle-outline" size={10} color={COLORS.white} />
+              <Text style={[styles.ownedTagText, { fontSize: 8 }]}>{ownedCount}/{recipe.ingredients.length}</Text>
+            </View>
+          )}
+          <TouchableOpacity
+            onPress={() => toggleFavorite('recipe', recipe.id)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons
+              name={isFav ? 'heart' : 'heart-outline'}
+              size={17}
+              color={isFav ? '#FF3B30' : COLORS.textMuted}
+            />
+          </TouchableOpacity>
+        </View>
         <View style={[styles.scorePill, { backgroundColor: scoreColors.bg }]}>
           <Text style={[styles.scorePillText, { color: scoreColors.text }]}>{recipe.health_score}</Text>
         </View>
@@ -180,6 +207,22 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
     color: COLORS.primaryGreen,
+    marginLeft: 4,
+    letterSpacing: 0.4,
+  },
+  ownedTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryGreen,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  ownedTagText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: COLORS.white,
     marginLeft: 4,
     letterSpacing: 0.4,
   },

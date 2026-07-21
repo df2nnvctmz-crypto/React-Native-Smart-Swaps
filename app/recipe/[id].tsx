@@ -12,6 +12,8 @@ import { useFoods } from '../useFoods';
 import { findBestRecipeSwap } from '../engine/recipeSwapAlgorithm';
 import { FoodNutrients, Recipe, RecipeIngredient, FoodItem } from '../types';
 import { useProfile } from '../context/ProfileContext';
+import { StorageService } from '../services/storage';
+import { useInventory } from '../context/InventoryContext';
 
 // We use dynamic targets from useProfile, but still need standard micro targets
 const MICRO_TARGETS = {
@@ -130,15 +132,17 @@ export default function RecipeDetailScreen() {
   const { profile, targetCalories, targetMacros } = useProfile();
   const { recipes } = useRecipes();
   const { allFoods } = useFoods();
+  const { refreshInventory, ownedFoodIds } = useInventory();
 
   const [swapsEnabled, setSwapsEnabled] = useState(false);
   const [swapsExpanded, setSwapsExpanded] = useState(false);
-  const [ingredientsExpanded, setIngredientsExpanded] = useState(true);  // open by default
-  const [stepsExpanded, setStepsExpanded] = useState(true);              // open by default
+  const [ingredientsExpanded, setIngredientsExpanded] = useState(true);
+  const [stepsExpanded, setStepsExpanded] = useState(true);
   const [microsExpanded, setMicrosExpanded] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const recipe = recipes.find(r => r.id === id);
+  const [shoppingServings, setShoppingServings] = useState(recipe?.serves || 1);
 
   // For each ingredient with a food, try to find best swap
   const ingredientSwaps: Record<string, { name: string; improvement: number; swapId: string; candidate: FoodItem } | null> = useMemo(() => {
@@ -191,6 +195,49 @@ export default function RecipeDetailScreen() {
     const hScore = totalKcal > 0 ? Math.round(scoreSum / totalKcal) : 50;
     return { activeTotals: finalTotals, activeHealthScore: hScore };
   }, [swapsEnabled, recipe, ingredientSwaps]);
+
+  const generateShoppingList = async () => {
+    if (!recipe) return;
+    const scaleFactor = shoppingServings / (recipe.serves || 1);
+    
+    // We filter out ingredients the user already owns
+    const missingIngredients = recipe.ingredients.filter(ing => !ing.food_id || !ownedFoodIds.has(ing.food_id));
+    if (missingIngredients.length === 0) {
+      alert("You already have all the ingredients!");
+      return;
+    }
+
+    const items = missingIngredients.map(ing => {
+      const swap = ing.food_id ? ingredientSwaps[ing.food_id] : null;
+      const displayFood = swapsEnabled && swap ? swap.candidate : ing.food;
+      const qty = ing.grams ? ing.grams * scaleFactor : undefined;
+      return {
+        id: displayFood ? displayFood.id : Math.random().toString(36).substring(2, 15),
+        rawText: ing.raw_text,
+        food: displayFood,
+        quantity: qty,
+        unit: qty ? 'g' : undefined
+      };
+    });
+
+    const validFoods = items.map(i => i.food).filter(Boolean) as FoodItem[];
+    const avgScore = validFoods.length > 0
+      ? Math.round(validFoods.reduce((sum, f) => sum + f.health_score, 0) / validFoods.length)
+      : 50;
+
+    const record = {
+      id: Math.random().toString(36).substring(2, 15),
+      date: new Date().toISOString(),
+      items: items,
+      averageScore: avgScore,
+      isShoppingList: true,
+      recipeName: recipe.name
+    };
+
+    await StorageService.saveScan(record);
+    await refreshInventory();
+    router.push('/receipts');
+  };
 
   if (!recipe) {
     return (
@@ -332,6 +379,28 @@ export default function RecipeDetailScreen() {
             </View>
           )}
         </TouchableOpacity>
+
+        {/* ─── Shopping List Controls ──────────────────────── */}
+        <View style={styles.shoppingListCard}>
+          <Text style={styles.shoppingListTitle}>Build a Shopping List</Text>
+          <Text style={styles.shoppingListSubtitle}>Add missing ingredients to your shopping list</Text>
+          <View style={[globalStyles.rowBetween, { marginTop: 12 }]}>
+            <View style={styles.servingsControl}>
+              <TouchableOpacity onPress={() => setShoppingServings(Math.max(1, shoppingServings - 1))} style={styles.servingBtn}>
+                <Ionicons name="remove" size={16} color={COLORS.textPrimary} />
+              </TouchableOpacity>
+              <Text style={styles.servingNumber}>{shoppingServings}</Text>
+              <TouchableOpacity onPress={() => setShoppingServings(shoppingServings + 1)} style={styles.servingBtn}>
+                <Ionicons name="add" size={16} color={COLORS.textPrimary} />
+              </TouchableOpacity>
+              <Text style={{ marginLeft: 8, fontSize: 13, color: COLORS.textMuted }}>servings</Text>
+            </View>
+            <TouchableOpacity style={styles.addToListBtn} onPress={generateShoppingList}>
+              <Ionicons name="basket-outline" size={16} color={COLORS.white} />
+              <Text style={styles.addToListText}>Add to List</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* ─── Ingredients ─────────────────────────────────── */}
         <TouchableOpacity
@@ -596,6 +665,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.primaryGreen,
   },
+
+  shoppingListCard: {
+    backgroundColor: '#F0FAFF', // Light blue to distinguish
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#BFE7FF',
+  },
+  shoppingListTitle: { fontSize: 15, fontWeight: '700', color: '#006599' },
+  shoppingListSubtitle: { fontSize: 12, color: '#0084C9', marginTop: 2 },
+  servingsControl: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: '#BFE7FF',
+  },
+  servingBtn: {
+    width: 28, height: 28, borderRadius: 8,
+    backgroundColor: '#F0FAFF',
+    justifyContent: 'center', alignItems: 'center'
+  },
+  servingNumber: { fontSize: 14, fontWeight: '700', marginHorizontal: 12 },
+  addToListBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0084C9',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  addToListText: { color: COLORS.white, fontWeight: '700', fontSize: 13, marginLeft: 6 },
 
   ingredientsCard: {
     backgroundColor: COLORS.white,

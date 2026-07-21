@@ -80,9 +80,10 @@ const CATEGORY_EXCLUDE_FOR_ROLE: Partial<Record<PreciseRole, string[]>> = {
   DAIRY_LIQUID: ['Vegetables', 'Fruit', 'Soups and stocks', 'Prepared dishes', 'Potatoes and starches'],
 };
 
-function hasWord(name: string, phrase: string): boolean {
-  const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`\\b${escaped}\\b`).test(name);
+const ROLE_REGEXES: Record<string, RegExp> = {} as any;
+for (const role of Object.keys(ROLE_KEYWORDS) as PreciseRole[]) {
+  const kws = ROLE_KEYWORDS[role].map(kw => kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  ROLE_REGEXES[role] = new RegExp(`\\b(?:${kws.join('|')})\\b`);
 }
 
 /**
@@ -95,11 +96,11 @@ export function getCulinaryRole(food: FoodItem): CulinaryRole {
   const topCategory = food.swiss_category.split('/')[0];
 
   for (const role of Object.keys(ROLE_KEYWORDS) as PreciseRole[]) {
-    const matches = ROLE_KEYWORDS[role].some(kw => hasWord(name, kw));
-    if (!matches) continue;
-    const excluded = CATEGORY_EXCLUDE_FOR_ROLE[role];
-    if (excluded?.includes(topCategory)) continue; // name matched, but category disagrees - keep looking
-    return role;
+    if (ROLE_REGEXES[role].test(name)) {
+      const excluded = CATEGORY_EXCLUDE_FOR_ROLE[role];
+      if (excluded?.includes(topCategory)) continue; // name matched, but category disagrees - keep looking
+      return role;
+    }
   }
 
   if (topCategory === 'Vegetables') return 'VEGETABLE';
