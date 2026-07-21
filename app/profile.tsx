@@ -10,6 +10,7 @@ import { useProfile, Sex, ActivityLevel, WeightGoal, DietaryPreference } from '.
 import { useSettings } from './context/SettingsContext';
 import { resetPersonalPreferences } from './engine/personalSwapPreferences';
 import { getTrainingLogCount, exportTrainingLog, clearTrainingLog } from './engine/swapTrainingLog';
+import { getMatchLogCount, exportMatchLog, clearMatchLog } from './services/matchLog';
 import { COLORS, globalStyles } from '../styles';
 
 const isIOS = Platform.OS === 'ios';
@@ -71,9 +72,11 @@ export default function ProfileScreen() {
   const [modalUnit, setModalUnit] = useState('');
   const [modalOptions, setModalOptions] = useState<{label: string, value: string}[]>([]);
   const [trainingLogCount, setTrainingLogCount] = useState(0);
+  const [matchLogCount, setMatchLogCount] = useState(0);
 
   useEffect(() => {
     getTrainingLogCount().then(setTrainingLogCount);
+    getMatchLogCount().then(setMatchLogCount);
   }, []);
 
   const openInputModal = (key: 'age' | 'weight' | 'height', title: string, unit: string) => {
@@ -154,6 +157,32 @@ export default function ProfileScreen() {
           onPress: async () => {
             await clearTrainingLog();
             setTrainingLogCount(0);
+          },
+        },
+      ]
+    );
+  };
+
+  const handleExportMatchLog = async () => {
+    try {
+      await exportMatchLog();
+    } catch (e: any) {
+      Alert.alert('Nothing to Export Yet', e?.message ?? 'No weak matches logged yet.');
+    }
+  };
+
+  const handleDeleteMatchLog = () => {
+    Alert.alert(
+      'Delete Match Diagnostics',
+      `This will permanently delete all ${matchLogCount} locally logged low-confidence scan lines. Your profile and receipt history are not affected.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await clearMatchLog();
+            setMatchLogCount(0);
           },
         },
       ]
@@ -302,6 +331,36 @@ export default function ProfileScreen() {
         <Text style={styles.settingsHint}>
           Swap suggestions adapt on-device as you like or dismiss them. "Reset Swap Preferences" forgets the learned multipliers.
           "Delete Local Swap Data" removes the anonymized decision log ({trainingLogCount} entries). Neither action affects your profile or receipts.
+        </Text>
+
+        {/* Matcher Diagnostics */}
+        <SettingsGroup title="Matcher Diagnostics">
+          <SettingsRow
+            icon="share-outline"
+            sfSymbol="square.and.arrow.up"
+            iconBg={COLORS.systemBlue}
+            title="Export Match Diagnostics"
+            onPress={handleExportMatchLog}
+          >
+            <Text style={styles.rowValue}>{matchLogCount}</Text>
+            <Ionicons name="chevron-forward" size={16} color={COLORS.systemGray2} style={{ marginLeft: 6 }} />
+          </SettingsRow>
+          <SettingsRow
+            icon="trash-outline"
+            sfSymbol="trash.fill"
+            iconBg={COLORS.systemRed}
+            title="Delete Match Diagnostics"
+            isLast={true}
+            onPress={handleDeleteMatchLog}
+          >
+            <Text style={[styles.rowValue, matchLogCount > 0 && { color: COLORS.systemRed }]}>{matchLogCount} entries</Text>
+            <Ionicons name="chevron-forward" size={16} color={COLORS.systemGray2} style={{ marginLeft: 6 }} />
+          </SettingsRow>
+        </SettingsGroup>
+        <Text style={styles.settingsHint}>
+          Every scan line the matcher wasn't confident about ("Potential Match" or "Not Found") is logged locally
+          with its raw receipt text, so it can be shared as a precise bug report. Confident matches aren't logged.
+          Nothing here is sent anywhere unless you tap Export.
         </Text>
 
       </ScrollView>

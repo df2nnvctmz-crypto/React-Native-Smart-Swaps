@@ -7,10 +7,12 @@ export interface ParsedReceiptItem {
   confidence: number;
   /**
    * How this line was resolved. Absent/'bls' for the offline matcher (the default), 'override'
-   * for a saved user correction, 'off' when OpenFoodFacts identified the product and its
-   * category was mapped onto a BLS food. Optional so existing data and callers are unaffected.
+   * for a saved user correction, 'exact_lookup' for the pre-seeded verified exact-string
+   * dictionary, 'brand_dict' for the pre-seeded verified brand/bare-noun dictionary, 'off'
+   * when OpenFoodFacts identified the product and its category was mapped onto a BLS food.
+   * Optional so existing data and callers are unaffected.
    */
-  source?: 'bls' | 'override' | 'off';
+  source?: 'bls' | 'override' | 'exact_lookup' | 'brand_dict' | 'off';
   /** OpenFoodFacts product name, shown as the title when source === 'off'. */
   displayName?: string;
 }

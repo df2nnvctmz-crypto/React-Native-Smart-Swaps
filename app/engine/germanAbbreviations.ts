@@ -39,6 +39,24 @@ export const ABBREVIATIONS: Record<string, string> = {
   'himbe': 'himbeere',
   'geflueg': 'gefluegel',
   'put': 'pute',
+  'gem': 'gemischt', // e.g. "Hackfleisch gem." - dots are stripped before this lookup runs
+  // Added from frequency analysis of the 568-row labeled receipt dataset - each verified
+  // against real receipt context, not invented. Keys are dot-free since dots are stripped
+  // before this lookup runs (e.g. "Hähn." -> token "hähn").
+  'hähn': 'hähnchen', // 4 occurrences; already partially resolved via fuzzy fallback but not
+                       // always above the "confident" display threshold (e.g. "Hähn. Schenkel"
+                       // alone scored 0.65, "Potential Match" not "Confident") - worth first-class.
+  'tom': 'tomate',
+  'rogg': 'roggen',
+  'koff': 'koffein',
+  'prot': 'protein',
+  'norweg': 'norwegisch',
+  'leberw': 'leberwurst',
+  'schlagsa': 'schlagsahne',
+  // NOTE: 'jogh' -> 'joghurt' was also requested but already exists above (line 19) - not
+  // duplicated. Deliberately NOT adding standalone 'fr' - ambiguous across "gefr." (gefroren)
+  // and "alk. fr." (alkoholfrei) fragments in this same dataset; only safe as part of the
+  // specific longer tokens it appears in, not as its own stem.
 };
 
 export const LOANWORD_SYNONYMS: Record<string, string> = {

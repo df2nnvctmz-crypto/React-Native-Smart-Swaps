@@ -14,6 +14,7 @@ import { useSettings } from './context/SettingsContext';
 import { findBestSwaps } from './engine/swapAlgorithm';
 import { StorageService } from './services/storage';
 import { OverrideStore } from './services/overrideStore';
+import { logWeakMatches } from './services/matchLog';
 import { ReceiptItemList } from '../components/ReceiptItemList';
 import { FoodItem } from './types';
 
@@ -72,6 +73,11 @@ export default function ScanReceiptScreen() {
         setProgressStatus('enriching');
       }
       const enrichedItems = await enrichWithOff(parsedItems, { allFoods, foodIndexData }, settings.offLookupEnabled);
+
+      // Best-effort local diagnostic log of whatever the matcher was NOT confident about,
+      // so a future bug report comes with the exact raw text instead of being reconstructed
+      // from memory or screenshots. Never blocks the scan on failure.
+      logWeakMatches(enrichedItems).catch(() => {});
 
       setProgressStatus('calculating');
       setResults(enrichedItems);

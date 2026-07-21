@@ -4,23 +4,36 @@ import { ParsedReceiptItem, parseReceiptLine } from './receiptParser';
 import { OverrideStore } from '../services/overrideStore';
 import { lookupOffProduct, OffProduct, OffLookupOptions } from '../services/offClient';
 import { normalizeOverrideKey } from './overrideKey';
+import { matchBrandDict } from './brandDict';
+import { matchExactLookup } from './exactLookup';
+import { isKnownNonMatch } from './knownNonMatches';
 
 /**
  * Product resolution. A line is resolved to a BLS food through a fixed priority of sources:
  *
- *   1. override   - the user's saved manual corrections (offline, authoritative)
- *   2. bls-direct - the existing offline fuzzy matcher
- *   3. off         - OpenFoodFacts, on demand, for lines the above left weak (OPT-IN, gated)
+ *   1. override     - the user's saved manual corrections (offline, authoritative)
+ *   2. exact_lookup - pre-seeded verified exact-string dictionary (offline, highest-trust automated tier)
+ *   3. brand_dict   - the pre-seeded verified brand/bare-noun dictionary (offline, high-trust).
+ *                      Entries that are just a common ingredient's generic raw form (value
+ *                      ends in " roh") defer to a confident bls-direct answer instead of
+ *                      overriding it - see isGenericRawEntry below.
+ *   4. bls-direct   - the existing offline fuzzy matcher
+ *   5. off          - OpenFoodFacts, on demand, for lines the above left weak (OPT-IN, gated)
  *
  * Nutrition ALWAYS comes from BLS: OFF is used only to turn a branded receipt line into a
  * generic product description (its category tags), which is then matched against BLS. So a
  * health score is comparable no matter which source identified the product.
  *
- * Tiers 1-2 are synchronous (resolveProductLine) and run in the per-line loop. Tier 3 is a
+ * Tiers 1-4 are synchronous (resolveProductLine) and run in the per-line loop. Tier 5 is a
  * network call, so it runs as an async SECOND PASS (enrichWithOff) over only the lines the
- * offline path could not place - keeping OFF traffic minimal and the hot path fast. Tier 3
+ * offline path could not place - keeping OFF traffic minimal and the hot path fast. Tier 5
  * is also gated behind a user setting defaulting to OFF (see enrichWithOff's `enabled` arg):
- * with it disabled, resolution is exactly tiers 1-2, the fully-offline path.
+ * with it disabled, resolution is exactly tiers 1-4, the fully-offline path.
+ *
+ * After tiers 2-4 produce a candidate (but before it's returned), a known-non-match safety
+ * gate can force the result to "not found" regardless of confidence - see
+ * app/data/knownNonMatches.json. It does not apply to tier 1: a user's own saved correction
+ * is never second-guessed.
  */
 
 /** Below this confidence a BLS-direct result is considered "weak" and worth an OFF lookup. */
@@ -33,8 +46,33 @@ export interface ResolveDeps {
   foodIndexData?: FoodIndexData;
 }
 
+/** Confidence assigned to an exact_lookup hit: a known-correct answer for that literal string. */
+export const EXACT_LOOKUP_CONFIDENCE = 0.99;
+/** Confidence assigned to a brand_dict hit: pre-verified, but not as authoritative as a user override. */
+export const BRAND_DICT_CONFIDENCE = 0.95;
+
 /**
- * Tiers 1-2. Returns null only when the line is receipt noise the matcher rejects (so the
+ * A brand_dict value ending in " roh" is just the generic/default raw form of a common
+ * ingredient (851 of the dictionary's 978 entries are shaped this way: apfel -> Apfel roh,
+ * tomate/tomaten -> Tomate roh, spinat -> Spinat roh, etc). These exist to catch compound
+ * words bls-direct's own tokenizer doesn't split ("Strauchtomaten", "Cherrytomaten") - but a
+ * bare single/double-word key can ALSO win as a whole-word substring match inside a longer,
+ * more specific product name that bls-direct would have resolved correctly on its own
+ * ("Tomaten ganz, geschält" -> canned peeled tomato, not raw; "Spinat Ricotta Tortelloni" ->
+ * a pasta, not raw spinach). Ties don't exist between two different products the same way
+ * short vs. long dictionary keys did (that's what the whole-word-preference fix in
+ * brandDict.ts handles) - here it's the dictionary vs. bls-direct's OWN correct answer.
+ * So: only accept a "roh"-shaped brand_dict match if bls-direct itself has nothing confident
+ * to say (null, or below this bar) - if bls-direct is already confident, trust its more
+ * context-aware, multi-word-capable scoring over a context-free bare-noun substring hit.
+ * Threshold matches ReceiptItemList.tsx's own "confident" bucket cutoff (> 0.72), so this
+ * reuses an existing, already-meaningful confidence line rather than a new arbitrary number.
+ */
+const GENERIC_BRAND_ENTRY_DEFER_THRESHOLD = 0.72;
+const isGenericRawEntry = (value: string) => / roh$/.test(value);
+
+/**
+ * Tiers 1-4. Returns null only when the line is receipt noise the matcher rejects (so the
  * caller drops it). A weak-but-non-null result is still returned; enrichWithOff may upgrade it.
  */
 export function resolveProductLine(line: string, deps: ResolveDeps): ParsedReceiptItem | null {
@@ -49,10 +87,56 @@ export function resolveProductLine(line: string, deps: ResolveDeps): ParsedRecei
     // Override points at a food that no longer exists; fall through to matching.
   }
 
-  // Tier 2: existing offline BLS matcher.
-  const direct = parseReceiptLine(line, deps.allFoods, deps.foodIndexData);
-  if (direct) return { ...direct, source: 'bls' };
-  return null;
+  let result: ParsedReceiptItem | null = null;
+
+  // Tier 2: pre-seeded verified exact-string dictionary (direct lowercase-trimmed match).
+  const exactName = matchExactLookup(line);
+  if (exactName) {
+    const food = deps.allFoods.find(f => f.name_de === exactName || f.name === exactName);
+    if (food) {
+      result = { rawText: line, matchedFood: food, confidence: EXACT_LOOKUP_CONFIDENCE, source: 'exact_lookup' };
+    }
+    // Lookup points at a food name no longer in the DB; fall through to matching.
+  }
+
+  // Tier 3: pre-seeded verified brand/bare-noun dictionary (substring match, high trust).
+  if (!result) {
+    const brandName = matchBrandDict(line);
+    if (brandName) {
+      const food = deps.allFoods.find(f => f.name_de === brandName || f.name === brandName);
+      if (food) {
+        if (isGenericRawEntry(brandName)) {
+          const direct = parseReceiptLine(line, deps.allFoods, deps.foodIndexData);
+          if (direct && direct.matchedFood && direct.confidence >= GENERIC_BRAND_ENTRY_DEFER_THRESHOLD) {
+            result = { ...direct, source: 'bls' };
+          } else {
+            result = { rawText: line, matchedFood: food, confidence: BRAND_DICT_CONFIDENCE, source: 'brand_dict' };
+          }
+        } else {
+          result = { rawText: line, matchedFood: food, confidence: BRAND_DICT_CONFIDENCE, source: 'brand_dict' };
+        }
+      }
+      // Dictionary points at a food name no longer in the DB; fall through to matching.
+    }
+  }
+
+  // Tier 4: existing offline BLS matcher.
+  if (!result) {
+    const direct = parseReceiptLine(line, deps.allFoods, deps.foodIndexData);
+    if (direct) result = { ...direct, source: 'bls' };
+  }
+
+  if (!result) return null; // genuine receipt noise - no tier produced anything to gate
+
+  // Safety gate: a query known to make every automated tier confidently wrong is forced back
+  // to "not found" rather than returned as-is - a confident wrong nutrition match can be
+  // actively misleading (e.g. "vegan bacon" resolving to literal pork), which is worse than
+  // an honest miss the user can correct by hand. Never applies to tier 1 (checked above).
+  if (isKnownNonMatch(line)) {
+    return { rawText: line, matchedFood: null, confidence: 0 };
+  }
+
+  return result;
 }
 
 const cleanCategoryTag = (tag: string) => tag.replace(/^[a-z]{2}:/, '').replace(/[-_]/g, ' ').trim();

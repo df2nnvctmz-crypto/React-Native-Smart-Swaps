@@ -36,6 +36,9 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# local-only validation fixtures (may contain real receipt data - never commit)
+scripts/fixtures/
+
 # generated native folders
 /ios
 /android

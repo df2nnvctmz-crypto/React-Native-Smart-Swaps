@@ -65,10 +65,20 @@ export const REGRESSION_CASES: RegressionCase[] = [
   { line: 'Zitronen 500g VKE 1.00 B', expected: 'bls1031', note: 'lemons' },
   { line: 'GURKE MINI', expected: 'bls0524', note: 'mini cucumber' },
   { line: 'SALATBEUTEL REWE', expected: 'bls0274', note: 'bagged lettuce' },
-  { line: 'Suppengemuese 500g', expected: 'bls2399', note: 'soup vegetables' },
+  // KNOWN BUG, not a correct expectation: bls-direct's own token-overlap scoring confidently
+  // (0.95) prefers bls2399 "Gemüsesuppe" (a prepared soup DISH) over the actually-correct
+  // bls1544 "Suppengrün/Suppenkraut, roh" (the raw vegetable MIX "Suppengemüse" refers to) -
+  // even the fully de-garbled, unabbreviated text scores this way, so it isn't an OCR/
+  // abbreviation issue. This is deep inside the core scorer and judged too risky to patch
+  // broadly this session (regression.test.ts only exercises parseReceiptLine/bls-direct in
+  // isolation - it never sees exact_lookup/brand_dict). The real app gets this line right via
+  // a targeted exact_lookup pin instead (see "suppengemuese 500g" in app/data/exactLookup.json).
+  // This case is kept (expectation = the actual, if wrong, bls-direct answer) so a future
+  // change to the scorer that makes this line resolve to something even worse still gets caught.
+  { line: 'Suppengemuese 500g', expected: 'bls2399', note: 'KNOWN BUG: matches the soup dish, not the raw vegetable mix - see comment above' },
 
   // ---- meat ----
-  { line: 'Hackfleisch gem. 500g', expected: 'bls0453', note: 'pork mince' },
+  { line: 'Hackfleisch gem. 500g', expected: 'bls5105', note: 'mixed beef/pork mince - "gem." is an abbreviation of "gemischt" (mixed), confirmed against a real receipt where the unabbreviated "Hackfleisch gemischt" on the same receipt already matched correctly; this expectation was bls0453 (plain pork mince) before that abbreviation was recognized' },
   { line: 'BIO HACK SW RO', expected: 'bls0453', note: 'raw pork mince, abbreviated' },
   { line: 'Hackfleisch gemischt 400g', expected: 'bls5105', note: 'mixed beef/pork mince' },
   { line: 'Haehnchen-Innenfilet 400g', expected: 'bls0951', note: 'chicken inner fillet' },
