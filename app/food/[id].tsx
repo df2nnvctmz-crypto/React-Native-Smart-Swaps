@@ -261,7 +261,7 @@ export default function FoodDetailsScreen() {
           <View style={styles.card}>
             <Text style={styles.cardSectionTitle}>Vitamins & Minerals (per 100g)</Text>
             {Object.entries(nutrients.micros).map(([key, value]) => {
-              if (value === undefined || value === null) return null;
+              if (value === undefined || value === null || value === 0) return null;
               return renderVitaminRow(formatMicroName(key), value as number, formatMicroUnit(key));
             })}
           </View>

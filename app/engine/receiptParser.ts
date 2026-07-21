@@ -649,6 +649,9 @@ export function isLikelyProductLine(line: string): boolean {
   // Reject street names (e.g., "Müllerstraße 141")
   if (/[a-z]+strasse(\s+\d+)?$/.test(asciiLowStr)) return false;
 
+  // Ignore UI text if the user accidentally scans a screenshot of the app's scan results screen
+  if (low.startsWith('swap: ') || low.startsWith('scanned: ') || low.includes('b swap:')) return false;
+
   const tokens1 = asciiLowStr.split(/\s+/);
   const wordTokens1 = tokens1.filter(t => /[a-z]{3,}/.test(t) && !UNIT.has(t));
   if (wordTokens1.length === 0) return false;

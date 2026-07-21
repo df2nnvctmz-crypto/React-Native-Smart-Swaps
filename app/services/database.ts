@@ -16,23 +16,24 @@ async function initDatabase(): Promise<void> {
   
   // For simplicity during development, we'll overwrite it to ensure we have the latest version.
   // In a real app, you'd version this and only copy if the asset version is newer.
-  // Here, we check if it exists, if not we create the SQLite dir and download/copy.
-  if (!fileInfo.exists) {
-    const sqliteDir = `${FileSystem.documentDirectory}SQLite`;
-    const dirInfo = await FileSystem.getInfoAsync(sqliteDir);
-    if (!dirInfo.exists) {
-      await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
-    }
-    
-    // Download or copy the asset to the local file system
-    if (dbUri.startsWith('http')) {
-      await FileSystem.downloadAsync(dbUri, dbFilePath);
-    } else {
-      await FileSystem.copyAsync({
-        from: dbUri,
-        to: dbFilePath
-      });
-    }
+  if (fileInfo.exists) {
+    await FileSystem.deleteAsync(dbFilePath);
+  }
+  
+  const sqliteDir = `${FileSystem.documentDirectory}SQLite`;
+  const dirInfo = await FileSystem.getInfoAsync(sqliteDir);
+  if (!dirInfo.exists) {
+    await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
+  }
+  
+  // Download or copy the asset to the local file system
+  if (dbUri.startsWith('http')) {
+    await FileSystem.downloadAsync(dbUri, dbFilePath);
+  } else {
+    await FileSystem.copyAsync({
+      from: dbUri,
+      to: dbFilePath
+    });
   }
 
   // expo-sqlite API (v54+)
