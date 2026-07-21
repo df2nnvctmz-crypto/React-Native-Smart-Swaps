@@ -8,7 +8,9 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "tsx scripts/regression.test.ts",
-    "validate:matcher": "tsx scripts/validateMatcher.ts"
+    "validate:matcher": "tsx scripts/validateMatcher.ts",
+    "eval:baseline": "tsx scripts/baseline-eval.ts",
+    "eval:groundtruth": "tsx scripts/ground-truth-eval.ts"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",

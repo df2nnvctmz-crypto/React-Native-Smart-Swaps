@@ -85,8 +85,11 @@ export const LOANWORD_SYNONYMS: Record<string, string> = {
   'diavolo': 'pizza scharfe salami',
   'reggiano': 'parmesan hartkaese',
   // NOTE: deliberately no brand->product mappings for snack brands (e.g. Pringles).
-  // The database has no crisps/chips entry, so such a mapping only ever resolves to a
-  // misleading raw ingredient ("Kartoffel geschält, roh"); better to report no match.
+  // Correction to an earlier version of this note: bls0327 "Kartoffelchips/Stapelchips"
+  // DOES exist, so the target is not the problem. The mapping is still wrong: expanding to
+  // "chips kartoffel" lets the bare "kartoffel" token match bls0326 "Kartoffel geschält, roh"
+  // at conf 0.75, which outscores the chips entry. Measured - adding it turns the Pringles
+  // case from a silent MISS into a confident WRONG. Needs head-noun weighting, not an alias.
   'ravioli': 'teigwaren pasta',
   'angus': 'rind beef',
   'pfefferkoer': 'pfefferkoerner pfeffer',
@@ -105,6 +108,13 @@ export function expandGermanAbbreviations(line: string): string {
   // We want to operate on tokens so we don't accidentally replace substrings of real words.
   // First, let's replace dots and hyphens with spaces for tokenization, as done in receiptParser.
   let cleanLine = line.replace(/[\.\-]/g, ' ');
+
+  // Receipts frequently glue the pack size straight onto the product word with no separator
+  // ("Penne500g", "Spaghetti500g"). Without a boundary the whole thing stays a single token,
+  // so an entry that exists in the tables below - 'penne' - can never match it. Split on the
+  // letter->digit boundary only: the reverse direction would tear "500g" into "500 g" and
+  // strand a bare unit token for no gain.
+  cleanLine = cleanLine.replace(/([a-zäöüßA-ZÄÖÜ])(\d)/g, '$1 $2');
 
   // Split common compound prefixes so they tokenize separately
   // This helps "Proteinjogh" become "Protein" "jogh", or "BistroFlammk" become "Bistro" "Flammk"

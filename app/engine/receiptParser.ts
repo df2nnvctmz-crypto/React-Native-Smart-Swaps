@@ -130,7 +130,17 @@ function candidateKeysFor4Gram(token: string, fourGramIndex: Map<string, Set<str
   return keys;
 }
 
-function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: FoodIndexData): { food: FoodItem, confidence: number, hasStrongHit: boolean } | null {
+/**
+ * Optional out-parameter used by offline evaluation scripts to inspect the ranked
+ * candidate list, not just the winner. Exists so experiments can measure the retrieval
+ * stage against the REAL candidate generation instead of a reimplementation that would
+ * drift from it. Never passed by app code; has no effect on matching behaviour.
+ */
+export interface MatchDebug {
+  ranked?: { food: FoodItem, confidence: number }[];
+}
+
+export function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: FoodIndexData, debug?: MatchDebug): { food: FoodItem, confidence: number, hasStrongHit: boolean } | null {
   let lineFatPct: number | null = null;
   const fatMatch = ocrText.match(/(\d+(?:[.,]\d+)?)\s*(?:%|fat|fett)/i);
   if (fatMatch) {
@@ -626,6 +636,8 @@ function matchFoodToOcrText(ocrText: string, allFoods: FoodItem[], indexData?: F
   });
 
   const bestMatch = allMatches[0];
+
+  if (debug) debug.ranked = allMatches.map(m => ({ food: m.food, confidence: m.confidence }));
 
   // Return matches even with low confidence so UI can flag them
   return { food: bestMatch.food, confidence: bestMatch.confidence, hasStrongHit: lineHasRecognizedToken };
