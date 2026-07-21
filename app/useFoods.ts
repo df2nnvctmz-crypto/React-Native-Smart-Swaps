@@ -1,13 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useProfile } from './context/ProfileContext';
 import { FoodItem } from './types';
 import { Ionicons } from '@expo/vector-icons';
-import { buildFoodIndex } from './engine/foodIndex';
+import { buildFoodIndex, FoodIndexData } from './engine/foodIndex';
+import { DatabaseService } from './services/database';
 
-const foodsData = require('../foods.json') as FoodItem[];
-
-// Index construction lives in engine/foodIndex.ts so it can be built without React
-// (scripts + regression suite). Re-exported here to keep existing import sites working.
 export { buildFoodIndex } from './engine/foodIndex';
 export type { FoodTokensCache, FoodIndexData } from './engine/foodIndex';
 
@@ -25,9 +22,18 @@ export const getIconForCategory = (category: string): keyof typeof Ionicons.glyp
 
 export function useFoods() {
   const { profile } = useProfile();
+  const [allFoods, setAllFoods] = useState<FoodItem[]>([]);
+  const [foodIndexData, setFoodIndexData] = useState<FoodIndexData | null>(null);
+
+  useEffect(() => {
+    DatabaseService.getAllFoods().then(data => {
+      setAllFoods(data);
+      setFoodIndexData(buildFoodIndex(data));
+    });
+  }, []);
 
   const foods = useMemo(() => {
-    let filtered = foodsData;
+    let filtered = allFoods;
     if (profile) {
       const prefs = profile.dietaryPreference;
       if (prefs.includes('Vegetarian')) {
@@ -44,14 +50,13 @@ export function useFoods() {
       }
     }
     return filtered;
-  }, [profile?.dietaryPreference]);
-
-  const foodIndexData = useMemo(() => buildFoodIndex(foodsData), []); // Only runs once at startup
+  }, [allFoods, profile?.dietaryPreference]);
 
   return {
     foods,
-    allFoods: foodsData,
+    allFoods,
     foodIndexData,
-    getIconForCategory
+    getIconForCategory,
+    isLoaded: allFoods.length > 0
   };
 }

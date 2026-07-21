@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { COLORS, globalStyles } from '../styles';
-import { allRecipes } from '../app/useRecipes';
+import { useRecipes } from '../app/useRecipes';
 import { useProfile } from '../app/context/ProfileContext';
 import { RecipeCard } from './RecipeCard';
 import { LiquidSlider } from './LiquidSlider';
@@ -18,18 +18,20 @@ import { useFavorites } from '../app/context/FavoritesContext';
 interface RecipeSearchModalProps {
   visible: boolean;
   onClose: () => void;
+  initialQuery?: string;
 }
 
 const CATEGORIES = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert'];
 
-export const RecipeSearchModal: React.FC<RecipeSearchModalProps> = ({ visible, onClose }) => {
+export const RecipeSearchModal: React.FC<RecipeSearchModalProps> = ({ visible, onClose, initialQuery = '' }) => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { profile } = useProfile();
   const { isFavorite, favorites } = useFavorites();
+  const { recipes } = useRecipes();
 
   // Search state
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [category, setCategory] = useState('All');
   const [maxCalories, setMaxCalories] = useState(1500);
   const [minScore, setMinScore] = useState(0);
@@ -50,7 +52,7 @@ export const RecipeSearchModal: React.FC<RecipeSearchModalProps> = ({ visible, o
   };
 
   const searchResults = useMemo(() => {
-    let results = allRecipes;
+    let results = recipes;
 
     // 1. Dietary preferences filter (always active)
     if (profile.dietaryPreference.includes('Vegetarian')) {

@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, globalStyles } from '../styles';
 import { FoodItem } from '../app/types';
 import { useFavorites } from '../app/context/FavoritesContext';
-import { findRecipesForFood } from '../app/useRecipes';
+import { useRecipes } from '../app/useRecipes';
 import { useRouter } from 'expo-router';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -22,6 +22,7 @@ interface SwapComparisonCardProps {
 export function SwapComparisonCard({ fromFood, toFood, onPressFrom, onPressTo, improvement }: SwapComparisonCardProps) {
   const [expanded, setExpanded] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { findRecipesForFood } = useRecipes();
   const router = useRouter();
   
   const swapId = `${fromFood.id}-${toFood.id}`;

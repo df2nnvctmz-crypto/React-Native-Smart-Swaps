@@ -7,7 +7,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, globalStyles } from '../../styles';
-import { allRecipes, findRecipesForFood, scaleNutrients, emptyNutrients, addNutrients, divideNutrients } from '../useRecipes';
+import { useRecipes, scaleNutrients, emptyNutrients, addNutrients, divideNutrients } from '../useRecipes';
+import { useFoods } from '../useFoods';
 import { findBestRecipeSwap } from '../engine/recipeSwapAlgorithm';
 import { FoodNutrients, Recipe, RecipeIngredient, FoodItem } from '../types';
 import { useProfile } from '../context/ProfileContext';
@@ -127,6 +128,9 @@ export default function RecipeDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { profile, targetCalories, targetMacros } = useProfile();
+  const { recipes } = useRecipes();
+  const { allFoods } = useFoods();
+
   const [swapsEnabled, setSwapsEnabled] = useState(false);
   const [swapsExpanded, setSwapsExpanded] = useState(false);
   const [ingredientsExpanded, setIngredientsExpanded] = useState(true);  // open by default
@@ -134,19 +138,17 @@ export default function RecipeDetailScreen() {
   const [microsExpanded, setMicrosExpanded] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  const recipe = allRecipes.find(r => r.id === id);
+  const recipe = recipes.find(r => r.id === id);
   if (!recipe) {
     return (
       <View style={[globalStyles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: COLORS.textMuted }}>Recipe not found.</Text>
+        <Text style={{ color: COLORS.textMuted }}>Recipe not found or loading...</Text>
         <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
           <Text style={{ color: COLORS.primaryGreen, fontWeight: '600' }}>Go back</Text>
         </TouchableOpacity>
       </View>
     );
   }
-
-  const allFoods = require('../../foods.json') as FoodItem[];
 
   // For each ingredient with a food, try to find best swap
   const ingredientSwaps: Record<string, { name: string; improvement: number; swapId: string; candidate: FoodItem } | null> = useMemo(() => {

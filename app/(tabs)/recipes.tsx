@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 import { COLORS, globalStyles } from '../../styles';
 import { GlassHeader, HEADER_CONTENT_HEIGHT } from '../../components/GlassHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { allRecipes } from '../useRecipes';
+import { useRecipes } from '../useRecipes';
 import { RecipeCard } from '../../components/RecipeCard';
 import { useProfile } from '../context/ProfileContext';
 import { useFavorites } from '../context/FavoritesContext';
@@ -32,6 +32,7 @@ export default function RecipesTab() {
   const { profile } = useProfile();
   const { isFavorite } = useFavorites();
   const { allFoods, foods } = useFoods();
+  const { recipes } = useRecipes();
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerHeight = insets.top + HEADER_CONTENT_HEIGHT;
   
@@ -71,27 +72,27 @@ export default function RecipesTab() {
   };
 
   const filtered = useMemo(() => {
-    let recipes = allRecipes;
+    let currentRecipes = recipes;
     
     // Apply dietary preferences
     if (profile.dietaryPreference.includes('Vegetarian')) {
-      recipes = recipes.filter(r => 
+      currentRecipes = currentRecipes.filter(r => 
         !r.ingredients.some(ing => ing.food?.category === 'Meat' || ing.food?.category === 'Fish')
       );
     }
     if (profile.dietaryPreference.includes('Vegan')) {
-      recipes = recipes.filter(r => 
+      currentRecipes = currentRecipes.filter(r => 
         !r.ingredients.some(ing => ing.food?.category === 'Meat' || ing.food?.category === 'Fish' || ing.food?.category === 'Dairy' || ing.food?.swiss_category?.toLowerCase().includes('egg'))
       );
     }
     
     if (selectedCategory !== 'All') {
-      recipes = recipes.filter(r =>
+      currentRecipes = currentRecipes.filter(r =>
         r.subcategory.toLowerCase().includes(selectedCategory.toLowerCase())
       );
     }
     
-    const scoredRecipes = recipes.map(r => {
+    const scoredRecipes = currentRecipes.map(r => {
       let relevance = 0;
       for (const ing of r.ingredients) {
         if (ing.food && relevantFoodIds.has(ing.food.id)) {
@@ -107,7 +108,7 @@ export default function RecipesTab() {
       }
       return b.health_score - a.health_score;
     });
-  }, [selectedCategory, profile.dietaryPreference, relevantFoodIds]);
+  }, [recipes, profile.dietaryPreference, selectedCategory, relevantFoodIds]);
 
   const featured = filtered[0];
   const rest = filtered.slice(1);
@@ -115,7 +116,7 @@ export default function RecipesTab() {
   const hasMore = rest.length > limit;
 
   const likedRecipes = useMemo(() => {
-    return allRecipes.filter(r => isFavorite('recipe', r.id));
+    return recipes.filter(r => isFavorite('recipe', r.id));
   }, [isFavorite]);
 
   return (
@@ -148,7 +149,7 @@ export default function RecipesTab() {
         <View style={[styles.headerContainer, { marginBottom: 16 }]}>
           <View style={styles.engineBadge}>
             <Ionicons name="sparkles-sharp" size={12} color={COLORS.primaryGreen} />
-            <Text style={styles.engineText}>SMART RECIPE ENGINE · {allRecipes.length} RECIPES</Text>
+            <Text style={styles.engineText}>SMART RECIPE ENGINE · {recipes.length} RECIPES</Text>
           </View>
           <Text style={globalStyles.subtitle}>
             Personalized recipes matched to your dietary goals. Tap any to see full nutrition & smart swaps.

@@ -21,6 +21,7 @@ import { FoodItem } from './types';
 export default function ScanReceiptScreen() {
   const router = useRouter();
   const { allFoods, foods, foodIndexData } = useFoods();
+  const safeFoodIndexData = foodIndexData || undefined;
   const { profile } = useProfile();
   const { settings } = useSettings();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -53,7 +54,7 @@ export default function ScanReceiptScreen() {
       for (let i = 0; i < lines.length; i += CHUNK_SIZE) {
         const chunk = lines.slice(i, i + CHUNK_SIZE);
         for (const line of chunk) {
-          const parsed = resolveProductLine(line, { allFoods, foodIndexData });
+          const parsed = resolveProductLine(line, { allFoods, foodIndexData: safeFoodIndexData });
           if (parsed) {
             parsedItems.push(parsed);
           }
@@ -72,7 +73,7 @@ export default function ScanReceiptScreen() {
       if (settings.offLookupEnabled) {
         setProgressStatus('enriching');
       }
-      const enrichedItems = await enrichWithOff(parsedItems, { allFoods, foodIndexData }, settings.offLookupEnabled);
+      const enrichedItems = await enrichWithOff(parsedItems, { allFoods, foodIndexData: safeFoodIndexData }, settings.offLookupEnabled);
 
       // Best-effort local diagnostic log of whatever the matcher was NOT confident about,
       // so a future bug report comes with the exact raw text instead of being reconstructed

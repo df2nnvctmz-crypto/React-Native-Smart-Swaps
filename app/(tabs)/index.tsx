@@ -10,6 +10,7 @@ import {
   UIManager,
   ActionSheetIOS,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -70,7 +71,7 @@ export default function TodayTab() {
       ], { cancelable: true });
     }
   };
-  const { foods, allFoods, getIconForCategory } = useFoods();
+  const { foods, allFoods, getIconForCategory, isLoaded } = useFoods();
 
   const uniquePurchasedFoods = useMemo(() => {
     const foodMap = new Map<string, FoodItem>();
@@ -131,6 +132,14 @@ export default function TodayTab() {
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const headerHeight = insets.top + HEADER_CONTENT_HEIGHT;
+
+  if (!isLoaded) {
+    return (
+      <View style={[globalStyles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={COLORS.primaryGreen} />
+      </View>
+    );
+  }
 
   return (
     <View style={globalStyles.safeArea}>

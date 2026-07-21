@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { FoodItem, FoodNutrients, Recipe, RecipeIngredient, RecipeRaw } from './types';
-
-const recipesRaw = require('../recipes.json') as RecipeRaw[];
-const foodsData = require('../foods.json') as FoodItem[];
+import { DatabaseService } from './services/database';
+import { useFoods } from './useFoods';
 
 // ─── Unit Conversion Table (to grams) ───────────────────────────────────────
 const UNIT_TO_GRAMS: Record<string, number> = {
@@ -29,6 +28,7 @@ const UNIT_TO_GRAMS: Record<string, number> = {
 
 /** Parse grams from a raw_text ingredient string like "200g spinach", "1 tbsp olive oil", "2 eggs" */
 export function parseGrams(raw: string): number {
+  if (!raw) return 50;
   const text = raw.toLowerCase().trim();
 
   // Handle fractions like "½", "¼", "¾"
@@ -154,14 +154,11 @@ export const divideNutrients = (n: FoodNutrients, divisor: number): FoodNutrient
   return scaleNutrients(n, 100 / divisor); // divide by scaling to 1/divisor
 };
 
-// ─── Pre-compute all recipes once at module load ────────────────────────────
-const foodMap = new Map<string, FoodItem>(foodsData.map(f => [f.id, f]));
-
 // Simple estimated time and difficulty from step count / length
-function estimateTimeDifficulty(recipe: RecipeRaw): { time: string; difficulty: string } {
-  const stepCount = recipe.steps.length;
-  const totalLength = recipe.steps.join('').length;
-  const ingredientCount = recipe.ingredients.filter(i => i.food_id).length;
+function estimateTimeDifficulty(recipe: any): { time: string; difficulty: string } {
+  const stepCount = recipe.steps ? recipe.steps.length : 0;
+  const totalLength = recipe.steps ? recipe.steps.join('').length : 0;
+  const ingredientCount = recipe.ingredients ? recipe.ingredients.filter((i: any) => i.food_id).length : 0;
 
   const difficulty = ingredientCount >= 7 || totalLength > 600 ? 'Medium' : 'Easy';
   const minutes = 10 + stepCount * 5 + ingredientCount * 2;
@@ -169,100 +166,111 @@ function estimateTimeDifficulty(recipe: RecipeRaw): { time: string; difficulty: 
   return { time, difficulty };
 }
 
-export const allRecipes: Recipe[] = recipesRaw.map((raw): Recipe => {
-  const { time, difficulty } = estimateTimeDifficulty(raw);
-
-  const ingredients: RecipeIngredient[] = raw.ingredients.map(ing => {
-    const grams = parseGrams(ing.raw_text);
-    const food = ing.food_id ? foodMap.get(ing.food_id) : undefined;
-    const scaledNutrients = food ? scaleNutrients(food.nutrients_per_100, grams) : undefined;
-    return {
-      raw_text: ing.raw_text,
-      food_id: ing.food_id,
-      food,
-      grams,
-      kcal: scaledNutrients?.kcal ?? 0,
-      nutrients: scaledNutrients,
-    };
-  });
-
-  // Sum totals across all ingredients with known food
-  const totalRaw = ingredients.reduce((acc, ing) => {
-    if (ing.nutrients) return addNutrients(acc, ing.nutrients);
-    return acc;
-  }, emptyNutrients());
-
-  // Per-serving totals
-  const serves = raw.serves || 1;
-  const totals: FoodNutrients = {
-    kcal: totalRaw.kcal / serves,
-    protein_g: totalRaw.protein_g / serves,
-    carbs_g: totalRaw.carbs_g / serves,
-    sugars_g: totalRaw.sugars_g / serves,
-    fat_g: totalRaw.fat_g / serves,
-    saturated_fat_g: totalRaw.saturated_fat_g / serves,
-    fiber_g: totalRaw.fiber_g / serves,
-    salt_g: totalRaw.salt_g / serves,
-    micros: {
-      vitamin_a_ug:        totalRaw.micros.vitamin_a_ug / serves,
-      betacarotene_ug:     totalRaw.micros.betacarotene_ug / serves,
-      vitamin_b1_mg:       totalRaw.micros.vitamin_b1_mg / serves,
-      vitamin_b2_mg:       totalRaw.micros.vitamin_b2_mg / serves,
-      vitamin_b6_mg:       totalRaw.micros.vitamin_b6_mg / serves,
-      vitamin_b12_ug:      totalRaw.micros.vitamin_b12_ug / serves,
-      niacin_mg:           totalRaw.micros.niacin_mg / serves,
-      folate_ug:           totalRaw.micros.folate_ug / serves,
-      pantothenic_acid_mg: totalRaw.micros.pantothenic_acid_mg / serves,
-      vitamin_c_mg:        totalRaw.micros.vitamin_c_mg / serves,
-      vitamin_d_ug:        totalRaw.micros.vitamin_d_ug / serves,
-      vitamin_e_mg:        totalRaw.micros.vitamin_e_mg / serves,
-      sodium_mg:           totalRaw.micros.sodium_mg / serves,
-      potassium_mg:        totalRaw.micros.potassium_mg / serves,
-      chloride_mg:         totalRaw.micros.chloride_mg / serves,
-      calcium_mg:          totalRaw.micros.calcium_mg / serves,
-      magnesium_mg:        totalRaw.micros.magnesium_mg / serves,
-      phosphorus_mg:       totalRaw.micros.phosphorus_mg / serves,
-      iron_mg:             totalRaw.micros.iron_mg / serves,
-      iodide_ug:           totalRaw.micros.iodide_ug / serves,
-      zinc_mg:             totalRaw.micros.zinc_mg / serves,
-    }
-  };
-
-  // Weighted health score: weighted by kcal contribution
-  const linkedIngredients = ingredients.filter(i => i.food && i.kcal > 0);
-  const totalKcal = linkedIngredients.reduce((sum, i) => sum + i.kcal, 0);
-  const health_score = totalKcal > 0
-    ? Math.round(linkedIngredients.reduce((sum, i) => sum + (i.food!.health_score * i.kcal), 0) / totalKcal)
-    : 50;
-
-  return {
-    id: raw.recipe_id,
-    name: raw.name,
-    url: raw.url,
-    image: raw.image,
-    serves: raw.serves,
-    subcategory: raw.subcategory,
-    dish_type: raw.dish_type,
-    ingredients,
-    steps: raw.steps,
-    totals,
-    health_score,
-    kcal_total: totals.kcal,
-    time,
-    difficulty,
-  };
-});
-
-/** Find recipes that contain a given food_id as an ingredient */
-export function findRecipesForFood(foodId: string): Recipe[] {
-  return allRecipes.filter(r =>
-    r.ingredients.some(ing => ing.food_id === foodId)
-  );
-}
-
 export function useRecipes() {
-  return useMemo(() => ({
-    recipes: allRecipes,
-    findRecipesForFood,
-  }), []);
+  const { allFoods, isLoaded: foodsLoaded } = useFoods();
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!foodsLoaded) return;
+
+    const foodMap = new Map<string, FoodItem>(allFoods.map(f => [f.id, f]));
+
+    DatabaseService.getAllRecipes().then(recipesRaw => {
+      const hydratedRecipes = recipesRaw.map((raw): Recipe => {
+        const { time, difficulty } = estimateTimeDifficulty(raw);
+
+        const ingredients: RecipeIngredient[] = (raw.ingredients || []).map((ing: any) => {
+          const grams = parseGrams(ing.raw_text);
+          const food = ing.food_id ? foodMap.get(ing.food_id) : undefined;
+          const scaledNutrients = food ? scaleNutrients(food.nutrients_per_100, grams) : undefined;
+          return {
+            raw_text: ing.raw_text,
+            food_id: ing.food_id,
+            food,
+            grams,
+            kcal: scaledNutrients?.kcal ?? 0,
+            nutrients: scaledNutrients,
+          };
+        });
+
+        // Sum totals across all ingredients with known food
+        const totalRaw = ingredients.reduce((acc, ing) => {
+          if (ing.nutrients) return addNutrients(acc, ing.nutrients);
+          return acc;
+        }, emptyNutrients());
+
+        // Per-serving totals
+        const serves = raw.serves || 1;
+        const totals: FoodNutrients = {
+          kcal: totalRaw.kcal / serves,
+          protein_g: totalRaw.protein_g / serves,
+          carbs_g: totalRaw.carbs_g / serves,
+          sugars_g: totalRaw.sugars_g / serves,
+          fat_g: totalRaw.fat_g / serves,
+          saturated_fat_g: totalRaw.saturated_fat_g / serves,
+          fiber_g: totalRaw.fiber_g / serves,
+          salt_g: totalRaw.salt_g / serves,
+          micros: {
+            vitamin_a_ug:        totalRaw.micros.vitamin_a_ug / serves,
+            betacarotene_ug:     totalRaw.micros.betacarotene_ug / serves,
+            vitamin_b1_mg:       totalRaw.micros.vitamin_b1_mg / serves,
+            vitamin_b2_mg:       totalRaw.micros.vitamin_b2_mg / serves,
+            vitamin_b6_mg:       totalRaw.micros.vitamin_b6_mg / serves,
+            vitamin_b12_ug:      totalRaw.micros.vitamin_b12_ug / serves,
+            niacin_mg:           totalRaw.micros.niacin_mg / serves,
+            folate_ug:           totalRaw.micros.folate_ug / serves,
+            pantothenic_acid_mg: totalRaw.micros.pantothenic_acid_mg / serves,
+            vitamin_c_mg:        totalRaw.micros.vitamin_c_mg / serves,
+            vitamin_d_ug:        totalRaw.micros.vitamin_d_ug / serves,
+            vitamin_e_mg:        totalRaw.micros.vitamin_e_mg / serves,
+            sodium_mg:           totalRaw.micros.sodium_mg / serves,
+            potassium_mg:        totalRaw.micros.potassium_mg / serves,
+            chloride_mg:         totalRaw.micros.chloride_mg / serves,
+            calcium_mg:          totalRaw.micros.calcium_mg / serves,
+            magnesium_mg:        totalRaw.micros.magnesium_mg / serves,
+            phosphorus_mg:       totalRaw.micros.phosphorus_mg / serves,
+            iron_mg:             totalRaw.micros.iron_mg / serves,
+            iodide_ug:           totalRaw.micros.iodide_ug / serves,
+            zinc_mg:             totalRaw.micros.zinc_mg / serves,
+          }
+        };
+
+        // Weighted health score: weighted by kcal contribution
+        const linkedIngredients = ingredients.filter(i => i.food && i.kcal > 0);
+        const totalKcal = linkedIngredients.reduce((sum, i) => sum + i.kcal, 0);
+        const health_score = totalKcal > 0
+          ? Math.round(linkedIngredients.reduce((sum, i) => sum + (i.food!.health_score * i.kcal), 0) / totalKcal)
+          : 50;
+
+        return {
+          id: raw.id,
+          name: raw.name,
+          url: raw.url,
+          image: raw.image,
+          serves: raw.serves,
+          subcategory: raw.subcategory,
+          dish_type: raw.dish_type,
+          ingredients,
+          steps: raw.steps || [],
+          totals,
+          health_score,
+          kcal_total: totals.kcal,
+          time,
+          difficulty,
+        };
+      });
+
+      setRecipes(hydratedRecipes);
+      setIsLoaded(true);
+    });
+  }, [foodsLoaded, allFoods]);
+
+  const findRecipesForFood = useMemo(() => {
+    return (foodId: string): Recipe[] => {
+      return recipes.filter(r => r.ingredients.some(ing => ing.food_id === foodId));
+    };
+  }, [recipes]);
+
+  return { recipes, findRecipesForFood, isLoaded };
 }
