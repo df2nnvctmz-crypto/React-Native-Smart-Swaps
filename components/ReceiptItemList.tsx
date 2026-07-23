@@ -127,7 +127,13 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
                   Nutrition based on: {f.name}
                 </Text>
               )}
-            <Text style={styles.rawTextScan} numberOfLines={1}>Scanned: "{item.rawText}"</Text>
+            {isShoppingList ? (
+              <Text style={styles.rawTextScan} numberOfLines={1}>
+                {item.quantity ? `${Math.round(item.quantity)}${item.unit || 'g'}` : 'per 100g'}
+              </Text>
+            ) : (
+              <Text style={styles.rawTextScan} numberOfLines={1}>Scanned: "{item.rawText}"</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.actionsContainer}>
@@ -185,13 +191,44 @@ export const ReceiptItemList: React.FC<ReceiptItemListProps> = ({ items, onUpdat
 
   return (
     <View style={styles.container}>
-      {isShoppingList ? (
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionList}>
-            {items.map((item, index) => renderItemRow({ item, originalIndex: index }))}
-          </View>
-        </View>
-      ) : (
+      {isShoppingList ? (() => {
+        const groupedItems: Record<string, typeof confident> = {};
+        const standaloneItems: typeof confident = [];
+
+        items.forEach((item, index) => {
+          const itemWithOriginalIndex = { item, originalIndex: index };
+          const recipeName = (item as any).recipeName;
+          if (recipeName) {
+            if (!groupedItems[recipeName]) groupedItems[recipeName] = [];
+            groupedItems[recipeName].push(itemWithOriginalIndex as any);
+          } else {
+            standaloneItems.push(itemWithOriginalIndex as any);
+          }
+        });
+
+        return (
+          <>
+            {Object.entries(groupedItems).map(([recipeName, groupItems]) => (
+              <View key={recipeName} style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>{recipeName}</Text>
+                <View style={styles.sectionList}>
+                  {groupItems.map(renderItemRow)}
+                </View>
+              </View>
+            ))}
+            {standaloneItems.length > 0 && (
+              <View style={styles.sectionContainer}>
+                {Object.keys(groupedItems).length > 0 && (
+                  <Text style={styles.sectionTitle}>Other Items</Text>
+                )}
+                <View style={styles.sectionList}>
+                  {standaloneItems.map(renderItemRow)}
+                </View>
+              </View>
+            )}
+          </>
+        );
+      })() : (
         <>
           {renderSection('Confident Matches', confident)}
           {renderSection('Potential Matches', potential)}

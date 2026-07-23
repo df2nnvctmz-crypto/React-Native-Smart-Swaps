@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
+import { useHeaderHeight } from '@react-navigation/elements';
 import * as ImagePicker from 'expo-image-picker';
 import TextRecognition from '../modules/native-ocr';
 import { COLORS, globalStyles } from '../styles';
@@ -15,6 +16,7 @@ import { findBestSwaps } from './engine/swapAlgorithm';
 import { StorageService } from './services/storage';
 import { OverrideStore } from './services/overrideStore';
 import { logWeakMatches } from './services/matchLog';
+import { useInventory } from './context/InventoryContext';
 import { ReceiptItemList } from '../components/ReceiptItemList';
 import { FoodItem } from './types';
 
@@ -24,6 +26,8 @@ export default function ScanReceiptScreen() {
   const safeFoodIndexData = foodIndexData || undefined;
   const { profile } = useProfile();
   const { settings } = useSettings();
+  const { refreshInventory } = useInventory();
+  const headerHeight = useHeaderHeight();
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<ParsedReceiptItem[] | null>(null);
   const [swaps, setSwaps] = useState<any[]>([]);
@@ -124,6 +128,7 @@ export default function ScanReceiptScreen() {
         items: enrichedItems,
         averageScore: matchedCount > 0 ? Math.round(totalScore / matchedCount) : 0
       });
+      await refreshInventory();
 
       setProgressStatus('done');
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -194,6 +199,7 @@ export default function ScanReceiptScreen() {
       averageScore,
       interactions: [] // Fresh scan — no interactions logged yet at this stage
     });
+    await refreshInventory();
   };
 
   const handleDeleteItem = async (index: number) => {
@@ -219,19 +225,15 @@ export default function ScanReceiptScreen() {
       averageScore,
       interactions: [] // Fresh scan — no interactions logged yet at this stage
     });
+    await refreshInventory();
   };
 
   if (results) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => setResults(null)}>
-            <Ionicons name="close" size={28} color={COLORS.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Scan Results</Text>
-        </View>
+      <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+        <Stack.Screen options={{ title: 'Scan Results' }} />
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: headerHeight + 16 }]} showsVerticalScrollIndicator={false}>
           <Text style={styles.subtitle}>
             We found {results.length} items on your receipt.
           </Text>
@@ -247,16 +249,10 @@ export default function ScanReceiptScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'} size={28} color={COLORS.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Scan Receipt</Text>
-        </View>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+      <Stack.Screen options={{ title: 'Scan Receipt' }} />
+
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: headerHeight + 16 }]} showsVerticalScrollIndicator={false}>
 
         <Text style={styles.subtitle}>
           Take a picture of your grocery bill to check the health score of your purchases.

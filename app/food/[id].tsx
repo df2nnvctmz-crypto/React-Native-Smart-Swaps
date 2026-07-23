@@ -1,9 +1,11 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, LayoutAnimation, UIManager } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { SymbolView } from 'expo-symbols';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, globalStyles } from '../../styles';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { useFoods } from '../useFoods';
 import { findBestSwapsPersonalized, SwapResult, isLiquid, isRawIngredient } from '../engine/swapAlgorithm';
 import { recordSwapAccepted, recordSwapRejected } from '../engine/personalSwapPreferences';
@@ -63,8 +65,11 @@ export default function FoodDetailsScreen() {
   const [swapsLoaded, setSwapsLoaded] = useState(false);
   const [dismissedSwapIds, setDismissedSwapIds] = useState<Set<string>>(new Set());
   const [shoppingListModalVisible, setShoppingListModalVisible] = useState(false);
-  const [macrosExpanded, setMacrosExpanded] = useState(false);
+  const [macrosExpanded, setMacrosExpanded] = useState(true);
   const [microsExpanded, setMicrosExpanded] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
+  
+  const headerHeight = useHeaderHeight();
 
   useEffect(() => {
     if (!food) return;
@@ -127,6 +132,11 @@ export default function FoodDetailsScreen() {
 
     await refreshInventory();
     setShoppingListModalVisible(false);
+    
+    // Show success state without layout animation
+    setTimeout(() => {
+      setIsAdded(true);
+    }, 250);
   };
 
   if (!food) {
@@ -206,23 +216,31 @@ export default function FoodDetailsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      {/* Floating Header Actions */}
-      <View style={styles.headerActionsAbsolute}>
-        <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
-          <Ionicons name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'} size={24} color={COLORS.textPrimary} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }} />
-        <TouchableOpacity style={styles.iconButton} onPress={() => toggleFavorite('food', food.id)}>
-          <Ionicons 
-            name={isFavorite('food', food.id) ? "heart" : "heart-outline"} 
-            size={20} 
-            color={isFavorite('food', food.id) ? "#FF3B30" : COLORS.scoreRed} 
-          />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+      <Stack.Screen options={{
+        title: '',
+        headerBackVisible: true,
+        headerRight: () => (
+          <TouchableOpacity onPress={() => toggleFavorite('food', food.id)} activeOpacity={0.35} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}>
+            {Platform.OS === 'ios' ? (
+              <SymbolView
+                name={isFavorite('food', food.id) ? 'heart.fill' : 'heart'}
+                size={21}
+                tintColor={isFavorite('food', food.id) ? '#FF3B30' : COLORS.textSecondary}
+                fallback={<Ionicons name={isFavorite('food', food.id) ? 'heart' : 'heart-outline'} size={24} color={isFavorite('food', food.id) ? '#FF3B30' : COLORS.textSecondary} />}
+              />
+            ) : (
+              <Ionicons
+                name={isFavorite('food', food.id) ? 'heart' : 'heart-outline'}
+                size={24}
+                color={isFavorite('food', food.id) ? '#FF3B30' : COLORS.textSecondary}
+              />
+            )}
+          </TouchableOpacity>
+        )
+      }} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: headerHeight }]} showsVerticalScrollIndicator={false}>
         {/* Top Information Area */}
         <View style={styles.topSection}>
           <View style={styles.badge}>
@@ -243,9 +261,15 @@ export default function FoodDetailsScreen() {
             </View>
           </View>
           
-          <TouchableOpacity style={styles.addToListBtnFull} onPress={() => setShoppingListModalVisible(true)}>
-            <Ionicons name="basket-outline" size={18} color={COLORS.white} />
-            <Text style={styles.addToListBtnFullText}>Add to Shopping List</Text>
+          <TouchableOpacity 
+            style={[styles.addToListBtnFull, isAdded && { backgroundColor: COLORS.primaryGreen }]} 
+            onPress={() => {
+              if (!isAdded) setShoppingListModalVisible(true);
+            }}
+            activeOpacity={isAdded ? 1 : 0.7}
+          >
+            <Ionicons name={isAdded ? "checkmark-circle" : "basket-outline"} size={18} color={COLORS.white} />
+            <Text style={styles.addToListBtnFullText}>{isAdded ? "Added to Shopping List!" : "Add to Shopping List"}</Text>
           </TouchableOpacity>
         </View>
 
@@ -255,7 +279,11 @@ export default function FoodDetailsScreen() {
             <Text style={styles.sectionTitle}>Smarter Swaps</Text>
             <View style={styles.bestOptionCard}>
               <Ionicons name="trophy-outline" size={22} color={COLORS.primaryGreen} />
-              <Text style={styles.bestOptionText}>You already have the best option in this category!</Text>
+              <Text style={styles.bestOptionText}>
+                {food.health_score >= 80 
+                  ? "You already have the best option in this category!" 
+                  : "No healthier swaps found in our database."}
+              </Text>
             </View>
           </View>
         )}
@@ -293,10 +321,11 @@ export default function FoodDetailsScreen() {
           </View>
         )}
 
-        {/* Macronutrients */}
+        {/* Nutrition */}
         <View style={styles.section}>
+          {/* Macronutrients */}
           <TouchableOpacity
-            style={[styles.microsToggleBtn, { marginBottom: 14 }]}
+            style={[styles.microsToggleBtn, { marginBottom: macrosExpanded ? 14 : 0 }]}
             activeOpacity={0.7}
             onPress={() => {
               LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -311,7 +340,7 @@ export default function FoodDetailsScreen() {
           </TouchableOpacity>
 
           {macrosExpanded && (
-          <View style={styles.card}>
+          <View style={[styles.card, { marginBottom: 16 }]}>
             <View style={[globalStyles.rowBetween, { marginBottom: 16 }]}>
               <Text style={styles.per100Muted}>Per 100g (% of Daily Value)</Text>
               <View style={styles.sourceBadge}>
@@ -328,12 +357,10 @@ export default function FoodDetailsScreen() {
             {renderNutritionBar('Salt', nutrients.salt_g, 'g', targetMacros.salt, COLORS.primaryGreen)}
           </View>
           )}
-        </View>
 
-        {/* Vitamins & Minerals */}
-        <View style={styles.section}>
+          {/* Vitamins & Minerals */}
           <TouchableOpacity
-            style={[styles.microsToggleBtn, { marginBottom: 14 }]}
+            style={[styles.microsToggleBtn, { marginTop: macrosExpanded ? 0 : 12, marginBottom: microsExpanded ? 14 : 0 }]}
             activeOpacity={0.7}
             onPress={() => {
               LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);

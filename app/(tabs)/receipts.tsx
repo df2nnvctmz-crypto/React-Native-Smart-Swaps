@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, globalStyles } from '../../styles';
-import { GlassHeader, HEADER_CONTENT_HEIGHT } from '../../components/GlassHeader';
+import { GlassHeader, LargeTitle, HEADER_CONTENT_HEIGHT } from '../../components/GlassHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { StorageService, ScanRecord } from '../services/storage';
@@ -81,18 +81,10 @@ export default function ReceiptsTab() {
       <GlassHeader title="Receipts" scrollY={scrollY} />
       <Animated.ScrollView
         style={globalStyles.container}
-        contentInset={{ 
-          top: Platform.OS === 'ios' ? headerHeight : 0,
-          bottom: Platform.OS === 'ios' ? 100 : 0
-        }}
-        contentOffset={{ 
-          x: 0, 
-          y: Platform.OS === 'ios' ? -headerHeight : 0 
-        }}
-        contentContainerStyle={{ 
-          paddingHorizontal: 20, 
-          paddingBottom: Platform.OS === 'android' ? 100 : 0, 
-          paddingTop: Platform.OS === 'android' ? headerHeight + 12 : 12 
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: 120,
+          paddingTop: headerHeight + 8
         }}
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="never"
@@ -102,6 +94,8 @@ export default function ReceiptsTab() {
         )}
         scrollEventThrottle={16}
       >
+        <LargeTitle title="Receipts" scrollY={scrollY} />
+
         <Text style={[globalStyles.subtitle, { marginBottom: 24, marginTop: 4 }]}>Track your receipts and health points</Text>
 
         <TouchableOpacity 
@@ -362,7 +356,6 @@ const styles = StyleSheet.create({
   },
   shoppingListCard: {
     backgroundColor: '#F0FAFF',
-    borderRadius: 16,
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,

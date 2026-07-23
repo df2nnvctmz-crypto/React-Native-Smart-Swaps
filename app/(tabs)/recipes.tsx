@@ -11,7 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { COLORS, globalStyles } from '../../styles';
-import { GlassHeader, HEADER_CONTENT_HEIGHT } from '../../components/GlassHeader';
+import { GlassHeader, LargeTitle, HEADER_CONTENT_HEIGHT } from '../../components/GlassHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRecipes } from '../useRecipes';
 import { RecipeCard } from '../../components/RecipeCard';
@@ -23,6 +23,7 @@ import { findBestSwaps } from '../engine/swapAlgorithm';
 import { FoodItem } from '../types';
 import { useFocusEffect } from 'expo-router';
 import { useFoods } from '../useFoods';
+import { useInventory } from '../context/InventoryContext';
 
 const CATEGORIES = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert'];
 
@@ -33,19 +34,13 @@ export default function RecipesTab() {
   const { isFavorite } = useFavorites();
   const { allFoods, foods } = useFoods();
   const { recipes } = useRecipes();
+  const { scans } = useInventory();
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerHeight = insets.top + HEADER_CONTENT_HEIGHT;
-  
+
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchVisible, setSearchVisible] = useState(false);
   const [limit, setLimit] = useState(10);
-  const [scans, setScans] = useState<ScanRecord[]>([]);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      StorageService.getScans().then(setScans);
-    }, [])
-  );
 
   const relevantFoodIds = useMemo(() => {
     const ids = new Set<string>();
@@ -124,18 +119,10 @@ export default function RecipesTab() {
       <GlassHeader title="Recipes" scrollY={scrollY} />
       <Animated.ScrollView
         style={globalStyles.container}
-        contentInset={{
-          top: Platform.OS === 'ios' ? headerHeight : 0,
-          bottom: Platform.OS === 'ios' ? 100 : 0,
-        }}
-        contentOffset={{
-          x: 0,
-          y: Platform.OS === 'ios' ? -headerHeight : 0,
-        }}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingBottom: Platform.OS === 'android' ? 100 : 0,
-          paddingTop: Platform.OS === 'android' ? headerHeight + 12 : 12,
+          paddingBottom: 120,
+          paddingTop: headerHeight + 8,
         }}
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="never"
@@ -145,6 +132,8 @@ export default function RecipesTab() {
         )}
         scrollEventThrottle={16}
       >
+        <LargeTitle title="Recipes" scrollY={scrollY} />
+
         {/* Header Section */}
         <View style={[styles.headerContainer, { marginBottom: 16 }]}>
           <View style={styles.engineBadge}>

@@ -4,7 +4,8 @@ import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { SymbolView } from 'expo-symbols';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { Picker } from '@react-native-picker/picker';
 import { useProfile, Sex, ActivityLevel, WeightGoal, DietaryPreference } from './context/ProfileContext';
 import { useSettings } from './context/SettingsContext';
@@ -65,6 +66,7 @@ const SettingsRow = ({
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
   const { profile, updateProfile, targetCalories } = useProfile();
   const { settings, updateSettings } = useSettings();
 
@@ -262,21 +264,13 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.safeArea}>
-      
-      {/* Sticky Header */}
-      <BlurView 
-        intensity={80} 
-        tint="light" 
-        style={[styles.headerBlur, { paddingTop: insets.top + 10 }]}
-      >
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'} size={28} color={COLORS.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Settings</Text>
-          <View style={{ width: 40 }} />
-        </View>
+      <Stack.Screen options={{ title: 'Settings' }} />
 
+      <ScrollView 
+        contentContainerStyle={[styles.scrollContent, { paddingTop: headerHeight + 16 }]} 
+        showsVerticalScrollIndicator={false}
+      >
+        
         <View style={styles.tabContainer}>
           <TouchableOpacity 
             style={[styles.tabBtn, activeTab === 'profile' && styles.tabBtnActive]}
@@ -292,13 +286,6 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-      </BlurView>
-
-      <ScrollView 
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 110 }]} 
-        showsVerticalScrollIndicator={false}
-      >
-        
         {activeTab === 'profile' ? (
           <>
             {/* Calorie Target */}

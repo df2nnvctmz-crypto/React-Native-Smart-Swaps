@@ -3,8 +3,10 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Animated, Platform, Linking, Switch, LayoutAnimation, UIManager
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { Ionicons } from '@expo/vector-icons';
+import { SymbolView } from 'expo-symbols';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, globalStyles } from '../../styles';
 import { useRecipes, scaleNutrients, emptyNutrients, addNutrients, divideNutrients } from '../useRecipes';
@@ -14,6 +16,7 @@ import { FoodNutrients, Recipe, RecipeIngredient, FoodItem } from '../types';
 import { StorageService } from '../services/storage';
 import { useInventory } from '../context/InventoryContext';
 import { useProfile } from '../context/ProfileContext';
+import { useFavorites } from '../context/FavoritesContext';
 import { SelectShoppingListModal } from '../../components/SelectShoppingListModal';
 import { NutrientRow } from '../../components/NutrientRow';
 
@@ -88,6 +91,7 @@ export default function RecipeDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { profile, targetCalories, targetMacros } = useProfile();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const { recipes } = useRecipes();
   const { allFoods } = useFoods();
   const { refreshInventory, ownedFoodIds } = useInventory();
@@ -99,7 +103,9 @@ export default function RecipeDetailScreen() {
   const [microsExpanded, setMicrosExpanded] = useState(false);
   const [macrosExpanded, setMacrosExpanded] = useState(false);
   const [shoppingListModalVisible, setShoppingListModalVisible] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const headerHeight = useHeaderHeight();
 
   const recipe = recipes.find(r => r.id === id);
   const [shoppingServings, setShoppingServings] = useState(recipe?.serves || 1);
@@ -160,10 +166,9 @@ export default function RecipeDetailScreen() {
     if (!recipe) return;
     const scaleFactor = shoppingServings / (recipe.serves || 1);
     
-    // We filter out ingredients the user already owns
-    const missingIngredients = recipe.ingredients.filter(ing => !ing.food_id || !ownedFoodIds.has(ing.food_id));
+    const missingIngredients = recipe.ingredients; // We no longer filter out owned ingredients here
     if (missingIngredients.length === 0) {
-      alert("You already have all the ingredients!");
+      alert("This recipe has no ingredients to add!");
       return;
     }
 
@@ -176,9 +181,10 @@ export default function RecipeDetailScreen() {
         rawText: ing.raw_text,
         matchedFood: displayFood,
         confidence: 1.0,
-        source: 'local',
+        source: 'recipe',
         quantity: qty,
-        unit: qty ? 'g' : undefined
+        unit: qty ? 'g' : undefined,
+        recipeName: recipe.name
       } as any;
     });
 
@@ -197,7 +203,7 @@ export default function RecipeDetailScreen() {
         await StorageService.updateScan(listId, updatedScan);
       }
     } else {
-      const validFoods = items.map(i => i.matchedFood).filter(Boolean) as FoodItem[];
+      const validFoods = items.map(i => i.matchedFood || (i as any).food).filter(Boolean) as FoodItem[];
       const avgScore = validFoods.length > 0
         ? Math.round(validFoods.reduce((sum, f) => sum + f.health_score, 0) / validFoods.length)
         : 50;
@@ -216,7 +222,11 @@ export default function RecipeDetailScreen() {
 
     await refreshInventory();
     setShoppingListModalVisible(false);
-    router.push('/receipts');
+    
+    // Show success state without layout animation
+    setTimeout(() => {
+      setIsAdded(true);
+    }, 250);
   };
 
   if (!recipe) {
@@ -238,17 +248,32 @@ export default function RecipeDetailScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-      {/* Floating Header Actions */}
-      <View style={styles.headerActionsAbsolute}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
-          <Ionicons name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'} size={24} color={COLORS.textPrimary} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }} />
-      </View>
+      <Stack.Screen options={{
+        title: '',
+        headerBackVisible: true,
+        headerRight: () => (
+          <TouchableOpacity onPress={() => toggleFavorite('recipe', recipe.id)} activeOpacity={0.35} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}>
+            {Platform.OS === 'ios' ? (
+              <SymbolView
+                name={isFavorite('recipe', recipe.id) ? 'heart.fill' : 'heart'}
+                size={21}
+                tintColor={isFavorite('recipe', recipe.id) ? '#FF3B30' : COLORS.textSecondary}
+                fallback={<Ionicons name={isFavorite('recipe', recipe.id) ? 'heart' : 'heart-outline'} size={24} color={isFavorite('recipe', recipe.id) ? '#FF3B30' : COLORS.textSecondary} />}
+              />
+            ) : (
+              <Ionicons
+                name={isFavorite('recipe', recipe.id) ? 'heart' : 'heart-outline'}
+                size={24}
+                color={isFavorite('recipe', recipe.id) ? '#FF3B30' : COLORS.textSecondary}
+              />
+            )}
+          </TouchableOpacity>
+        )
+      }} />
 
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 60 : insets.top + 60 }}
+        contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 20, paddingTop: headerHeight }}
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
         scrollEventThrottle={16}
       >
@@ -375,9 +400,15 @@ export default function RecipeDetailScreen() {
               </TouchableOpacity>
               <Text style={{ marginLeft: 8, fontSize: 13, color: COLORS.textMuted }}>servings</Text>
             </View>
-            <TouchableOpacity style={styles.addToListBtn} onPress={() => setShoppingListModalVisible(true)}>
-              <Ionicons name="basket-outline" size={16} color={COLORS.white} />
-              <Text style={styles.addToListText}>Add to List</Text>
+            <TouchableOpacity 
+              style={[styles.addToListBtn, isAdded && { backgroundColor: COLORS.primaryGreen }]} 
+              onPress={() => {
+                if (!isAdded) setShoppingListModalVisible(true);
+              }}
+              activeOpacity={isAdded ? 1 : 0.7}
+            >
+              <Ionicons name={isAdded ? "checkmark-circle" : "basket-outline"} size={16} color={COLORS.white} />
+              <Text style={styles.addToListText}>{isAdded ? "Added!" : "Add to List"}</Text>
             </TouchableOpacity>
           </View>
         </View>

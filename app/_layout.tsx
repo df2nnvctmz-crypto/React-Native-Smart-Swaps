@@ -12,8 +12,13 @@ export default function RootLayout() {
         <SettingsProvider>
           <InventoryProvider>
             <StatusBar style="dark" />
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)" />
+            <Stack screenOptions={{
+              headerTransparent: true,
+              headerBlurEffect: 'regular',
+              headerTitle: '',
+              headerBackButtonDisplayMode: 'minimal'
+            }}>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="profile" options={{ presentation: 'modal' }} />
               <Stack.Screen name="food/[id]" options={{ presentation: 'modal' }} />
               <Stack.Screen name="recipe/[id]" options={{ presentation: 'modal' }} />

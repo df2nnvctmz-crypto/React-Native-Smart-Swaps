@@ -27,6 +27,8 @@ import { useFocusEffect } from 'expo-router';
 import { findBestSwaps } from './app/engine/swapAlgorithm';
 import { LiquidSlider } from './components/LiquidSlider';
 import { SwapComparisonCard } from './components/SwapComparisonCard';
+import { SymbolView } from 'expo-symbols';
+import { GlassHeader, LargeTitle, GlassCircleButton, HEADER_CONTENT_HEIGHT } from './components/GlassHeader';
 
 interface SearchScreenProps {
   onBack?: () => void;
@@ -45,6 +47,9 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
   const { isFavorite, toggleFavorite, favorites } = useFavorites();
   const { profile } = useProfile();
   const { recipes } = useRecipes();
+
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const headerHeight = insets.top + HEADER_CONTENT_HEIGHT;
 
   useFocusEffect(
     React.useCallback(() => {
@@ -232,31 +237,44 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
 
   return (
     <View style={globalStyles.safeArea}>
-      
-      {/* Sticky Header */}
-      <BlurView intensity={90} tint="light" style={[styles.headerBlur, { paddingTop: insets.top + (Platform.OS === 'ios' ? 20 : 20) }]}>
-        <View style={styles.header}>
-          {onBack && (
-            <TouchableOpacity onPress={onBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Ionicons name="close" size={28} color={COLORS.textPrimary} />
-            </TouchableOpacity>
-          )}
-          <View style={{ flex: 1, alignItems: 'flex-start', marginLeft: onBack ? 0 : 0 }}>
-            <Text style={globalStyles.title}>Search</Text>
-          </View>
-          <TouchableOpacity onPress={() => setShowFilters(!showFilters)} style={styles.filterBtn}>
-            <Ionicons name={showFilters ? "options" : "options-outline"} size={22} color={showFilters ? COLORS.primaryGreen : COLORS.textPrimary} />
-          </TouchableOpacity>
-        </View>
-      </BlurView>
+      <GlassHeader
+        title="Search"
+        scrollY={scrollY}
+        leftAccessory={onBack ? (
+          <GlassCircleButton onPress={onBack}>
+            <SymbolView name="xmark" size={18} weight="semibold" tintColor={COLORS.textPrimary} fallback={<Ionicons name="close" size={22} color={COLORS.textPrimary} />} />
+          </GlassCircleButton>
+        ) : undefined}
+        rightAccessory={
+          <GlassCircleButton onPress={() => setShowFilters(!showFilters)}>
+            <SymbolView
+              name="line.3.horizontal.decrease"
+              size={20}
+              weight="semibold"
+              tintColor={showFilters ? COLORS.primaryGreen : COLORS.textPrimary}
+              fallback={<Ionicons name={showFilters ? 'options' : 'options-outline'} size={22} color={showFilters ? COLORS.primaryGreen : COLORS.textPrimary} />}
+            />
+          </GlassCircleButton>
+        }
+      />
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView
+        <Animated.ScrollView
           style={globalStyles.container}
-          contentContainerStyle={[globalStyles.scrollContent, { paddingTop: insets.top + 90, paddingHorizontal: 0 }]}
+          contentContainerStyle={[globalStyles.scrollContent, { paddingHorizontal: 0, paddingTop: headerHeight + 8 }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          contentInsetAdjustmentBehavior="never"
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
         >
+
+          <View style={{ paddingHorizontal: 20 }}>
+            <LargeTitle title="Search" scrollY={scrollY} />
+          </View>
 
           {rawText && (
             <View style={{ marginBottom: 16, marginHorizontal: 20, backgroundColor: COLORS.lightGreenBg, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: COLORS.scoreGreen }}>
@@ -399,8 +417,13 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
                     activeOpacity={0.7} 
                     onPress={() => { 
                       if (onSelect) {
-                        const fullFood = allFoods.find(f => f.id === food.id);
-                        if (fullFood) onSelect(fullFood);
+                        if (food.type === 'food') {
+                          const fullFood = allFoods.find(f => f.id === food.id);
+                          if (fullFood) onSelect(fullFood);
+                        } else if (food.type === 'recipe') {
+                          const fullRecipe = recipes.find(r => r.id === food.id);
+                          if (fullRecipe) onSelect(fullRecipe);
+                        }
                         onBack?.();
                       } else {
                         onBack?.();
@@ -478,45 +501,13 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
             )}
           </View>
       <View style={{ height: 100 }} />
-        </ScrollView>
+        </Animated.ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  headerCenter: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 17,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-  },
-  headerBlur: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  backButton: {
-    marginRight: 16,
-    marginTop: 6,
-    padding: 4,
-  },
   searchBar: {
     flex: 1,
     height: 48,
@@ -652,6 +643,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 10,
     letterSpacing: 0.8,
+    paddingHorizontal: 20,
   },
   quickSearchScroll: {
     flexGrow: 0,

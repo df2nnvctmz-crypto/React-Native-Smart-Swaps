@@ -15,6 +15,8 @@ export interface ParsedReceiptItem {
   source?: 'bls' | 'override' | 'exact_lookup' | 'brand_dict' | 'off';
   /** OpenFoodFacts product name, shown as the title when source === 'off'. */
   displayName?: string;
+  quantity?: number;
+  unit?: string;
 }
 
 export const normalize = (text: string) => {

@@ -2,7 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, TextInput, LayoutAnimation, UIManager } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { COLORS, globalStyles } from '../../styles';
 import { StorageService, ScanRecord } from '../services/storage';
 import { OverrideStore } from '../services/overrideStore';
@@ -38,6 +39,8 @@ export default function ReceiptDetailScreen() {
   
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitleText, setEditTitleText] = useState('');
+  
+  const headerHeight = useHeaderHeight();
 
   useEffect(() => {
     StorageService.getScans().then(scans => {
@@ -70,18 +73,36 @@ export default function ReceiptDetailScreen() {
     await recalculateAndUpdate(newItems);
   };
 
-  const handleAddItem = async (food: FoodItem) => {
+  const handleAddItem = async (item: any) => {
     if (!scan) return;
-    const newItem = {
+
+    let foodsToAdd: any[] = [];
+    if (item.ingredients) {
+      item.ingredients.forEach((ing: any) => {
+        if (ing.food) foodsToAdd.push({ ...ing.food, _recipeName: item.name });
+      });
+    } else {
+      foodsToAdd.push(item as FoodItem);
+    }
+
+    if (foodsToAdd.length === 0) {
+      alert("No valid ingredients found to add.");
+      setSearchModalVisible(false);
+      return;
+    }
+
+    const newItemsToAdd = foodsToAdd.map(food => ({
       id: Math.random().toString(36).substring(2, 15),
       rawText: food.name,
       matchedFood: food,
       confidence: 1.0,
-      source: 'local',
+      source: food._recipeName ? 'recipe' : 'local',
+      recipeName: food._recipeName,
       quantity: 100,
       unit: 'g'
-    } as any;
-    const newItems = [...scan.items, newItem];
+    } as any));
+
+    const newItems = [...scan.items, ...newItemsToAdd];
     await recalculateAndUpdate(newItems);
     setSearchModalVisible(false);
   };
@@ -126,20 +147,22 @@ export default function ReceiptDetailScreen() {
       const f = item.matchedFood || (item as any).food;
       if (f) {
         const factor = (item.quantity || 100) / 100;
-        kcal += f.nutrients_per_100.energy_kcal * factor;
+        kcal += f.nutrients_per_100.kcal * factor;
         protein += f.nutrients_per_100.protein_g * factor;
-        carbs += f.nutrients_per_100.carbohydrates_g * factor;
+        carbs += f.nutrients_per_100.carbs_g * factor;
         sugars += f.nutrients_per_100.sugars_g * factor;
         fat += f.nutrients_per_100.fat_g * factor;
         satFat += f.nutrients_per_100.saturated_fat_g * factor;
         fiber += f.nutrients_per_100.fiber_g * factor;
         salt += f.nutrients_per_100.salt_g * factor;
         
-        Object.entries(f.nutrients_per_100).forEach(([k, v]) => {
-          if (k.endsWith('_mg') || k.endsWith('_ug')) {
-            micros[k] = (micros[k] || 0) + ((v as number) * factor);
-          }
-        });
+        if (f.nutrients_per_100.micros) {
+          Object.entries(f.nutrients_per_100.micros).forEach(([k, v]) => {
+            if ((k.endsWith('_mg') || k.endsWith('_ug')) && typeof v === 'number' && !isNaN(v)) {
+              micros[k] = (micros[k] || 0) + (v * factor);
+            }
+          });
+        }
       }
     });
 
@@ -149,11 +172,7 @@ export default function ReceiptDetailScreen() {
   if (!scan) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'} size={28} color={COLORS.textPrimary} />
-          </TouchableOpacity>
-        </View>
+        <Stack.Screen options={{ title: '' }} />
       </SafeAreaView>
     );
   }
@@ -162,47 +181,52 @@ export default function ReceiptDetailScreen() {
     weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' 
   });
 
+  const isList = scan.isShoppingList;
+  const targetMultiplier = isList ? 7 : 1;
+  const listTargetCalories = targetCalories * targetMultiplier;
+
   const targetMacros = {
-    protein: targetCalories * 0.2 / 4,
-    carbs: targetCalories * 0.5 / 4,
-    sugars: targetCalories * 0.1 / 4,
-    fat: targetCalories * 0.3 / 9,
-    satFat: targetCalories * 0.1 / 9,
-    fiber: 30,
-    salt: 6,
+    protein: (listTargetCalories * 0.2 / 4),
+    carbs: (listTargetCalories * 0.5 / 4),
+    sugars: (listTargetCalories * 0.1 / 4),
+    fat: (listTargetCalories * 0.3 / 9),
+    satFat: (listTargetCalories * 0.1 / 9),
+    fiber: 30 * targetMultiplier,
+    salt: 6 * targetMultiplier,
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'} size={28} color={COLORS.textPrimary} />
-        </TouchableOpacity>
-        {scan.isShoppingList && isEditingTitle ? (
-          <TextInput
-            style={styles.headerTitleEdit}
-            value={editTitleText}
-            onChangeText={setEditTitleText}
-            onBlur={handleTitleSave}
-            onSubmitEditing={handleTitleSave}
-            autoFocus
-            returnKeyType="done"
-          />
-        ) : (
-          <TouchableOpacity 
-            style={globalStyles.row}
-            onPress={() => { if (scan.isShoppingList) setIsEditingTitle(true) }}
-            disabled={!scan.isShoppingList}
-          >
-            <Text style={styles.headerTitle}>{scan.isShoppingList ? (scan.recipeName || 'Shopping List') : 'Receipt Details'}</Text>
-            {scan.isShoppingList && (
-              <Ionicons name="pencil" size={16} color={COLORS.textMuted} style={{ marginLeft: 8 }} />
-            )}
-          </TouchableOpacity>
-        )}
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+      <Stack.Screen options={{
+        headerTitle: () => (
+          scan.isShoppingList && isEditingTitle ? (
+            <TextInput
+              style={[styles.headerTitleEdit, { fontSize: 17, borderBottomWidth: 0, paddingVertical: 0 }]}
+              value={editTitleText}
+              onChangeText={setEditTitleText}
+              onBlur={handleTitleSave}
+              onSubmitEditing={handleTitleSave}
+              autoFocus
+              returnKeyType="done"
+            />
+          ) : (
+            <TouchableOpacity 
+              style={globalStyles.row}
+              onPress={() => { if (scan.isShoppingList) setIsEditingTitle(true) }}
+              disabled={!scan.isShoppingList}
+            >
+              <Text style={{ fontSize: 17, fontWeight: '600', color: COLORS.textPrimary }}>
+                {scan.isShoppingList ? (scan.recipeName || 'Shopping List') : 'Receipt Details'}
+              </Text>
+              {scan.isShoppingList && (
+                <Ionicons name="pencil" size={14} color={COLORS.textMuted} style={{ marginLeft: 6 }} />
+              )}
+            </TouchableOpacity>
+          )
+        )
+      }} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: headerHeight + 16 }]} showsVerticalScrollIndicator={false}>
         <View style={[
           styles.summaryCard, 
           scan.isShoppingList && { backgroundColor: '#F0F8FF', borderColor: '#B3E0FF' }
@@ -224,7 +248,7 @@ export default function ReceiptDetailScreen() {
           </TouchableOpacity>
         )}
 
-        {scan.isShoppingList && totals && (
+        {totals && (
           <View style={{ marginTop: 24 }}>
             <Text style={styles.sectionTitle}>List Nutrition</Text>
             <TouchableOpacity
@@ -244,8 +268,8 @@ export default function ReceiptDetailScreen() {
 
             {macrosExpanded && (
               <View style={styles.nutriCard}>
-                <Text style={styles.nutriSectionHeader}>MACRONUTRIENTS</Text>
-                <NutrientRow label="Calories"       value={totals.kcal}             target={targetCalories}       unit=" kcal" isLowerBetter={true} />
+                <Text style={styles.nutriSectionHeader}>{isList ? 'MACRONUTRIENTS (WEEKLY TARGET)' : 'MACRONUTRIENTS'}</Text>
+                <NutrientRow label="Calories"       value={totals.kcal}             target={listTargetCalories}       unit=" kcal" isLowerBetter={true} />
                 <NutrientRow label="Protein"        value={totals.protein_g}        target={targetMacros.protein}  unit="g"     isLowerBetter={false} />
                 <NutrientRow label="Carbs"          value={totals.carbs_g}          target={targetMacros.carbs}    unit="g"     isLowerBetter={true} />
                 <NutrientRow label="Sugars"         value={totals.sugars_g}         target={targetMacros.sugars}   unit="g"     isLowerBetter={true} />
@@ -273,25 +297,25 @@ export default function ReceiptDetailScreen() {
 
             {microsExpanded && (
             <View style={styles.nutriCard}>
-              <Text style={styles.nutriSectionHeader}>ESSENTIAL MICRONUTRIENTS</Text>
-              <NutrientRow label="Calcium"     value={totals.micros.calcium_mg || 0}     target={MICRO_TARGETS.calcium_mg}     unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Iron"        value={totals.micros.iron_mg || 0}        target={MICRO_TARGETS.iron_mg}        unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Magnesium"   value={totals.micros.magnesium_mg || 0}   target={MICRO_TARGETS.magnesium_mg}   unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Potassium"   value={totals.micros.potassium_mg || 0}   target={MICRO_TARGETS.potassium_mg}   unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Zinc"        value={totals.micros.zinc_mg || 0}        target={MICRO_TARGETS.zinc_mg}        unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Vitamin C"   value={totals.micros.vitamin_c_mg || 0}   target={MICRO_TARGETS.vitamin_c_mg}   unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Vitamin D"   value={totals.micros.vitamin_d_ug || 0}   target={MICRO_TARGETS.vitamin_d_ug}   unit="μg" isLowerBetter={false} />
-              <NutrientRow label="Vitamin A"   value={totals.micros.vitamin_a_ug || 0}   target={MICRO_TARGETS.vitamin_a_ug}   unit="μg" isLowerBetter={false} />
-              <NutrientRow label="Vitamin E"   value={totals.micros.vitamin_e_mg || 0}   target={MICRO_TARGETS.vitamin_e_mg}   unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Vitamin B1"  value={totals.micros.vitamin_b1_mg || 0}  target={MICRO_TARGETS.vitamin_b1_mg}  unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Vitamin B2"  value={totals.micros.vitamin_b2_mg || 0}  target={MICRO_TARGETS.vitamin_b2_mg}  unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Vitamin B6"  value={totals.micros.vitamin_b6_mg || 0}  target={MICRO_TARGETS.vitamin_b6_mg}  unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Vitamin B12" value={totals.micros.vitamin_b12_ug || 0} target={MICRO_TARGETS.vitamin_b12_ug} unit="μg" isLowerBetter={false} />
-              <NutrientRow label="Niacin"      value={totals.micros.niacin_mg || 0}      target={MICRO_TARGETS.niacin_mg}      unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Folate"      value={totals.micros.folate_ug || 0}      target={MICRO_TARGETS.folate_ug}      unit="μg" isLowerBetter={false} />
-              <NutrientRow label="Phosphorus"  value={totals.micros.phosphorus_mg || 0}  target={MICRO_TARGETS.phosphorus_mg}  unit="mg" isLowerBetter={false} />
-              <NutrientRow label="Sodium"      value={totals.micros.sodium_mg || 0}      target={MICRO_TARGETS.sodium_mg}      unit="mg" isLowerBetter={true} />
-              <NutrientRow label="Iodine"      value={totals.micros.iodide_ug || 0}      target={MICRO_TARGETS.iodide_ug}      unit="μg" isLowerBetter={false} />
+              <Text style={styles.nutriSectionHeader}>{isList ? 'ESSENTIAL MICRONUTRIENTS (WEEKLY TARGET)' : 'ESSENTIAL MICRONUTRIENTS'}</Text>
+              <NutrientRow label="Calcium"     value={totals.micros.calcium_mg || 0}     target={MICRO_TARGETS.calcium_mg * targetMultiplier}     unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Iron"        value={totals.micros.iron_mg || 0}        target={MICRO_TARGETS.iron_mg * targetMultiplier}        unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Magnesium"   value={totals.micros.magnesium_mg || 0}   target={MICRO_TARGETS.magnesium_mg * targetMultiplier}   unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Potassium"   value={totals.micros.potassium_mg || 0}   target={MICRO_TARGETS.potassium_mg * targetMultiplier}   unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Zinc"        value={totals.micros.zinc_mg || 0}        target={MICRO_TARGETS.zinc_mg * targetMultiplier}        unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Vitamin C"   value={totals.micros.vitamin_c_mg || 0}   target={MICRO_TARGETS.vitamin_c_mg * targetMultiplier}   unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Vitamin D"   value={totals.micros.vitamin_d_ug || 0}   target={MICRO_TARGETS.vitamin_d_ug * targetMultiplier}   unit="μg" isLowerBetter={false} />
+              <NutrientRow label="Vitamin A"   value={totals.micros.vitamin_a_ug || 0}   target={MICRO_TARGETS.vitamin_a_ug * targetMultiplier}   unit="μg" isLowerBetter={false} />
+              <NutrientRow label="Vitamin E"   value={totals.micros.vitamin_e_mg || 0}   target={MICRO_TARGETS.vitamin_e_mg * targetMultiplier}   unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Vitamin B1"  value={totals.micros.vitamin_b1_mg || 0}  target={MICRO_TARGETS.vitamin_b1_mg * targetMultiplier}  unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Vitamin B2"  value={totals.micros.vitamin_b2_mg || 0}  target={MICRO_TARGETS.vitamin_b2_mg * targetMultiplier}  unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Vitamin B6"  value={totals.micros.vitamin_b6_mg || 0}  target={MICRO_TARGETS.vitamin_b6_mg * targetMultiplier}  unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Vitamin B12" value={totals.micros.vitamin_b12_ug || 0} target={MICRO_TARGETS.vitamin_b12_ug * targetMultiplier} unit="μg" isLowerBetter={false} />
+              <NutrientRow label="Niacin"      value={totals.micros.niacin_mg || 0}      target={MICRO_TARGETS.niacin_mg * targetMultiplier}      unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Folate"      value={totals.micros.folate_ug || 0}      target={MICRO_TARGETS.folate_ug * targetMultiplier}      unit="μg" isLowerBetter={false} />
+              <NutrientRow label="Phosphorus"  value={totals.micros.phosphorus_mg || 0}  target={MICRO_TARGETS.phosphorus_mg * targetMultiplier}  unit="mg" isLowerBetter={false} />
+              <NutrientRow label="Sodium"      value={totals.micros.sodium_mg || 0}      target={MICRO_TARGETS.sodium_mg * targetMultiplier}      unit="mg" isLowerBetter={true} />
+              <NutrientRow label="Iodine"      value={totals.micros.iodide_ug || 0}      target={MICRO_TARGETS.iodide_ug * targetMultiplier}      unit="μg" isLowerBetter={false} />
             </View>
             )}
           </View>

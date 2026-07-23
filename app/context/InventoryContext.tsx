@@ -4,6 +4,7 @@ import { StorageService, ScanRecord } from '../services/storage';
 interface InventoryContextProps {
   ownedFoodIds: Set<string>;
   shoppingLists: ScanRecord[];
+  scans: ScanRecord[];
   refreshInventory: () => Promise<void>;
 }
 
@@ -12,6 +13,7 @@ const InventoryContext = createContext<InventoryContextProps | undefined>(undefi
 export function InventoryProvider({ children }: { children: ReactNode }) {
   const [ownedFoodIds, setOwnedFoodIds] = useState<Set<string>>(new Set());
   const [shoppingLists, setShoppingLists] = useState<ScanRecord[]>([]);
+  const [scans, setScans] = useState<ScanRecord[]>([]);
 
   const refreshInventory = useCallback(async () => {
     try {
@@ -22,14 +24,15 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       for (const scan of scans) {
         if (scan.items) {
           for (const item of scan.items) {
-            if (item.food?.id) {
-              newOwned.add(item.food.id);
+            if (item.matchedFood?.id) {
+              newOwned.add(item.matchedFood.id);
             }
           }
         }
       }
       setOwnedFoodIds(newOwned);
       setShoppingLists(lists);
+      setScans(scans);
     } catch (e) {
       console.error('Failed to load inventory', e);
     }
@@ -40,7 +43,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [refreshInventory]);
 
   return (
-    <InventoryContext.Provider value={{ ownedFoodIds, shoppingLists, refreshInventory }}>
+    <InventoryContext.Provider value={{ ownedFoodIds, shoppingLists, scans, refreshInventory }}>
       {children}
     </InventoryContext.Provider>
   );
