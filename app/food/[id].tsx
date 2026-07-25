@@ -15,6 +15,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useInventory } from '../context/InventoryContext';
 import { StorageService } from '../services/storage';
 import { SelectShoppingListModal } from '../../components/SelectShoppingListModal';
+import { NavBlur } from '../../components/GlassHeader';
 
 const MICRONUTRIENT_DV: Record<string, number> = {
   'Vitamin A': 900,
@@ -220,6 +221,8 @@ export default function FoodDetailsScreen() {
       <Stack.Screen options={{
         title: '',
         headerBackVisible: true,
+        headerBlurEffect: 'none',
+        headerBackground: () => <NavBlur headerHeight={headerHeight} />,
         headerRight: () => (
           <TouchableOpacity onPress={() => toggleFavorite('food', food.id)} activeOpacity={0.35} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}>
             {Platform.OS === 'ios' ? (

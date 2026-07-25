@@ -13,6 +13,7 @@ import { useInventory } from '../context/InventoryContext';
 import { SearchModal } from '../../components/SearchModal';
 import { NutrientRow } from '../../components/NutrientRow';
 import { useProfile } from '../context/ProfileContext';
+import { NavBlur } from '../../components/GlassHeader';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -198,6 +199,8 @@ export default function ReceiptDetailScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <Stack.Screen options={{
+        headerBlurEffect: 'none',
+        headerBackground: () => <NavBlur headerHeight={headerHeight} />,
         headerTitle: () => (
           scan.isShoppingList && isEditingTitle ? (
             <TextInput

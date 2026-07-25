@@ -16,25 +16,37 @@ type ScrollAnim = Animated.Value | ReturnType<typeof Animated.add>;
 // native vertical LinearGradient whose alpha is fully opaque over the bar and ramps to zero in
 // a short band below it. Because the mask is native alpha, the blur itself feathers out with
 // no hard edge and no banding — content becomes progressively visible toward the bottom.
-const FADE_EXTENSION = 24; // px band below the bar over which the blur feathers to nothing
+const FADE_EXTENSION = 44; // px band below the bar over which the blur feathers to nothing
 
-const NavBlur = ({ headerHeight }: { headerHeight: number }) => {
+// Quadratic ease-out (alpha = (1-t)^2) sampled densely so the tail approaches zero gradually
+// instead of visibly cutting off. Skips t=0 since `solidStop` already covers the fully-opaque point.
+const FADE_STEPS = 10;
+const FADE_COLORS = Array.from({ length: FADE_STEPS }, (_, i) => {
+  const t = (i + 1) / FADE_STEPS;
+  if (t === 1) return 'transparent';
+  const alpha = (1 - t) ** 2;
+  return `rgba(0,0,0,${alpha.toFixed(3)})`;
+});
+
+export const NavBlur = ({ headerHeight }: { headerHeight: number }) => {
   const total = headerHeight + FADE_EXTENSION;
   const solidStop = headerHeight / total; // fully-opaque up to the bar's bottom, then fade
+  const fadeSpan = 1 - solidStop;
+  const fadeLocations = Array.from({ length: FADE_STEPS }, (_, i) => solidStop + fadeSpan * ((i + 1) / FADE_STEPS));
   return (
     <MaskedView
       style={{ position: 'absolute', top: 0, left: 0, right: 0, height: total }}
       maskElement={
         <LinearGradient
           style={StyleSheet.absoluteFill}
-          colors={['#000', '#000', 'transparent']}
-          locations={[0, solidStop, 1]}
+          colors={['#000', '#000', ...FADE_COLORS]}
+          locations={[0, solidStop, ...fadeLocations]}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
         />
       }
     >
-      <BlurView intensity={100} tint="systemChromeMaterialLight" style={StyleSheet.absoluteFill} />
+      <BlurView intensity={12} tint="light" style={StyleSheet.absoluteFill} />
     </MaskedView>
   );
 };
