@@ -13,6 +13,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
 import { useRouter } from 'expo-router';
 import { COLORS, globalStyles } from '../../styles';
 import { HealthPointsCard } from '../../components/HealthPointsCard';
@@ -187,18 +189,30 @@ export default function TodayTab() {
         {shoppingLists.length > 0 && (
           <View style={{ marginTop: 16, marginBottom: 12 }}>
             <Text style={globalStyles.sectionTitle}>Your Shopping Lists</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
+            <MaskedView
+              style={{ marginHorizontal: -20 }}
+              maskElement={
+                <LinearGradient
+                  style={StyleSheet.absoluteFill}
+                  colors={['transparent', '#000', '#000', 'transparent']}
+                  locations={[0, 0.06, 0.94, 1]}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                />
+              }
+            >
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
               {shoppingLists.map(list => {
                 const previewFoods = list.items.map(i => i.matchedFood || (i as any).food).filter(Boolean).slice(0, 3);
                 return (
-                  <TouchableOpacity 
-                    key={list.id} 
-                    style={[styles.shoppingListCard, { width: 280, marginRight: 16, marginBottom: 0 }]}
+                  <TouchableOpacity
+                    key={list.id}
+                    style={[styles.shoppingListCard, { width: 300, marginRight: 16, marginBottom: 0 }]}
                     activeOpacity={0.7}
                     onPress={() => router.push(`/receipt/${list.id}`)}
                   >
                     <View style={globalStyles.rowBetween}>
-                      <View style={globalStyles.row}>
+                      <View style={[globalStyles.row, { flex: 1 }]}>
                         <View style={styles.basketIconBox}>
                           <Ionicons name="basket" size={24} color={'#0084C9'} />
                         </View>
@@ -223,12 +237,13 @@ export default function TodayTab() {
                           </View>
                         </View>
                       </View>
-                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} style={{ marginLeft: 12 }} />
                     </View>
                   </TouchableOpacity>
                 );
               })}
             </ScrollView>
+            </MaskedView>
           </View>
         )}
 

@@ -200,7 +200,6 @@ export default function ReceiptDetailScreen() {
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <Stack.Screen options={{
         headerBlurEffect: 'none',
-        headerBackground: () => <NavBlur headerHeight={headerHeight} />,
         headerTitle: () => (
           scan.isShoppingList && isEditingTitle ? (
             <TextInput
@@ -331,6 +330,10 @@ export default function ReceiptDetailScreen() {
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      {/* Feathered blur overlay behind the floating native back button. Rendered here (not as
+          headerBackground) so its fade tail isn't clipped by the nav bar bounds. */}
+      <NavBlur headerHeight={headerHeight} />
 
       <SearchModal
         visible={searchModalVisible}

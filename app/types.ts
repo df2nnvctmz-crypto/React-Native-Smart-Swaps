@@ -42,6 +42,7 @@ export interface FoodItem {
   nutri_grade: string;
   nova_group?: number;
   swap_suggestion_id?: string | null;
+  icon_key?: string | null;
   nutrients_per_100: FoodNutrients;
 }
 

@@ -35,6 +35,7 @@ export const NavBlur = ({ headerHeight }: { headerHeight: number }) => {
   const fadeLocations = Array.from({ length: FADE_STEPS }, (_, i) => solidStop + fadeSpan * ((i + 1) / FADE_STEPS));
   return (
     <MaskedView
+      pointerEvents="none"
       style={{ position: 'absolute', top: 0, left: 0, right: 0, height: total }}
       maskElement={
         <LinearGradient
@@ -46,7 +47,7 @@ export const NavBlur = ({ headerHeight }: { headerHeight: number }) => {
         />
       }
     >
-      <BlurView intensity={12} tint="light" style={StyleSheet.absoluteFill} />
+      <BlurView intensity={12} tint="systemChromeMaterial" style={StyleSheet.absoluteFill} />
     </MaskedView>
   );
 };

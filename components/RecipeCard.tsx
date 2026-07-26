@@ -5,7 +5,6 @@ import { COLORS, globalStyles } from '../styles';
 import { Recipe } from '../app/types';
 import { useFavorites } from '../app/context/FavoritesContext';
 import { useInventory } from '../app/context/InventoryContext';
-import { getIconForCategory } from '../app/useFoods';
 
 interface RecipeCardProps {
   recipe: Recipe;

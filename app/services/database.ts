@@ -54,6 +54,16 @@ export const DatabaseService = {
     return rows.map(row => this.mapFoodRow(row));
   },
 
+  async getIconLibrary(): Promise<Record<string, string>> {
+    await this.isReady;
+    const rows = await db!.getAllAsync<{ icon_key: string; svg_content: string }>(
+      `SELECT icon_key, svg_content FROM icon_library`
+    );
+    const library: Record<string, string> = {};
+    for (const row of rows) library[row.icon_key] = row.svg_content;
+    return library;
+  },
+
   async getAllRecipes(): Promise<any[]> {
     await this.isReady;
     const recipesRows = await db!.getAllAsync<any>(`SELECT * FROM recipes`);
@@ -93,6 +103,7 @@ export const DatabaseService = {
       nutri_grade: row.nutri_grade,
       nova_group: row.nova_group,
       swap_suggestion_id: row.swap_suggestion_id,
+      icon_key: row.icon_key,
       nutrients_per_100: {
         kcal: row.kcal,
         protein_g: row.protein_g,

@@ -13,6 +13,7 @@ import { resetPersonalPreferences } from './engine/personalSwapPreferences';
 import { getTrainingLogCount, exportTrainingLog, clearTrainingLog } from './engine/swapTrainingLog';
 import { getMatchLogCount, exportMatchLog, clearMatchLog } from './services/matchLog';
 import { StorageService } from './services/storage';
+import { NavBlur } from '../components/GlassHeader';
 // Mock Clipboard since expo-clipboard native module is missing
 const Clipboard = { 
   setStringAsync: async (text: string) => { console.log('Clipboard set:', text.substring(0, 50)); }, 
@@ -264,9 +265,9 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.safeArea}>
-      <Stack.Screen options={{ title: 'Settings' }} />
+      <Stack.Screen options={{ title: 'Settings', headerBlurEffect: 'none' }} />
 
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingTop: headerHeight + 16 }]} 
         showsVerticalScrollIndicator={false}
       >
@@ -475,10 +476,23 @@ export default function SettingsScreen() {
               with its raw receipt text, so it can be shared as a precise bug report. Confident matches aren't logged.
               Nothing here is sent anywhere unless you tap Export.
             </Text>
+
+            <SettingsGroup title="About">
+              <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+                <Text style={styles.settingsHint}>
+                  Food icons by OpenMoji (openmoji.org), licensed under CC BY-SA 4.0. All icons are bundled with the
+                  app and stored on your device — nothing is downloaded over the network.
+                </Text>
+              </View>
+            </SettingsGroup>
           </>
         )}
 
       </ScrollView>
+
+      {/* Feathered blur overlay behind the floating native back button, matching the detail
+          pages. Purely decorative (pointerEvents none) — does not affect the back button. */}
+      <NavBlur headerHeight={headerHeight} />
 
       {/* Input Modal */}
       <Modal visible={inputModalVisible} transparent animationType="fade">

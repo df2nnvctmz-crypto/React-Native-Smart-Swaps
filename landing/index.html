@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Swaps – Kassenbon scannen. Bessere Wahl treffen.</title>
+<meta name="description" content="Smart Swaps liest deinen Kassenbon und zeigt dir sofort die Nährwerte deiner Einkäufe – mit besseren Alternativen und passenden Rezepten. Kostenlos, werbefrei, 100% auf deinem Gerät.">
+<link rel="icon" href="./assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; max-width: 100%; }
+  body { margin: 0; background: #FFFFFF; font-family: 'Public Sans', sans-serif; -webkit-font-smoothing: antialiased; color: #1E221F; }
+  a { color: #3B964E; text-decoration: none; }
+  a:hover { color: #286635; }
+  [data-page] { display: none; }
+  [data-page].active { display: block; }
+
+  .nav-links { display: flex; align-items: center; gap: clamp(16px,3vw,36px); }
+  .hero-grid { grid-template-columns: minmax(280px,1fr) minmax(240px,420px); }
+  .privacy-grid { grid-template-columns: minmax(280px,1fr) minmax(240px,380px); }
+
+  @media (max-width: 720px) {
+    .nav-links { display: none; }
+    .hero-grid, .privacy-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;background:#FFFFFF;color:#1E221F;">
+
+  <!-- NAV -->
+  <header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border-bottom:1px solid #E6EAE5;">
+    <div style="max-width:1160px;margin:0 auto;padding:0 clamp(20px,4vw,40px);height:76px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+      <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" data-nav="home">
+        <div style="width:34px;height:34px;border-radius:10px;background:#3B964E;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <div style="width:12px;height:12px;border-radius:3px;background:#EBF5ED;"></div>
+        </div>
+        <span style="font-family:'Manrope',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.3px;color:#1E221F;">Smart Swaps</span>
+      </div>
+      <nav class="nav-links">
+        <span class="nav-link" data-nav="home" style="font-size:15px;font-weight:600;cursor:pointer;">Home</span>
+        <span class="nav-link" data-nav="kontakt" style="font-size:15px;font-weight:600;cursor:pointer;">Kontakt</span>
+        <span class="nav-link" data-nav="impressum" style="font-size:15px;font-weight:600;cursor:pointer;">Impressum</span>
+      </nav>
+      <div style="background:#3B964E;color:#FFFFFF;font-size:14px;font-weight:700;padding:11px 20px;border-radius:100px;cursor:pointer;white-space:nowrap;" data-nav="download">Kostenlos laden</div>
+    </div>
+  </header>
+
+  <main style="flex:1;">
+
+    <!-- ================= HOME ================= -->
+    <section data-page="home">
+
+      <!-- HERO -->
+      <div class="hero-grid" style="max-width:1160px;margin:0 auto;padding:clamp(48px,7vw,88px) clamp(20px,4vw,40px) clamp(40px,6vw,64px);display:grid;gap:clamp(32px,5vw,64px);align-items:center;">
+        <div>
+          <div style="display:inline-flex;align-items:center;gap:8px;background:#EBF5ED;color:#286635;font-size:13px;font-weight:700;padding:8px 14px;border-radius:100px;margin-bottom:22px;">
+            <span>100&nbsp;% auf deinem Gerät · kostenlos · werbefrei</span>
+          </div>
+          <h1 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(34px,5vw,54px);line-height:1.08;letter-spacing:-1px;margin:0 0 20px;color:#1E221F;">Kassenbon scannen.<br>Bessere Wahl treffen.</h1>
+          <p style="font-size:clamp(16px,1.6vw,19px);line-height:1.6;color:#606A62;margin:0 0 32px;max-width:480px;">Smart Swaps liest deinen Kassenbon und zeigt dir sofort die Nährwerte deiner Einkäufe – mit besseren Alternativen und passenden Rezepten. Ganz ohne Konto, ganz ohne Cloud.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:14px;">
+            <div style="background:#1E221F;color:#FFFFFF;padding:13px 22px;border-radius:14px;display:flex;align-items:center;gap:10px;cursor:pointer;" data-nav="download">
+              <svg width="20" height="20" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="14" r="8" fill="#FFFFFF"></circle><rect x="11" y="2" width="2.4" height="7" rx="1.2" fill="#FFFFFF"></rect></svg>
+              <div style="line-height:1.1;">
+                <div style="font-size:10px;color:#C6C6C8;">Bald verfügbar</div>
+                <div style="font-size:15px;font-weight:700;">App Store</div>
+              </div>
+            </div>
+            <div style="background:#1E221F;color:#FFFFFF;padding:13px 22px;border-radius:14px;display:flex;align-items:center;gap:10px;cursor:pointer;" data-nav="download">
+              <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0;"><polygon points="5,3 21,12 5,21" fill="#FFFFFF"></polygon></svg>
+              <div style="line-height:1.1;">
+                <div style="font-size:10px;color:#C6C6C8;">Bald verfügbar</div>
+                <div style="font-size:15px;font-weight:700;">Google Play</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="width:100%;aspect-ratio:1179/2556;border-radius:36px;border:1px solid #E6EAE5;box-shadow:0 24px 60px rgba(15,29,17,0.12);overflow:hidden;justify-self:center;max-width:320px;">
+          <img src="./assets/shot-receipt.png" alt="App-Screenshot: Kassenbon-Ergebnis" style="width:100%;height:100%;object-fit:cover;display:block;">
+        </div>
+      </div>
+
+      <!-- TRUST STRIP -->
+      <div style="background:#F7F9F6;border-top:1px solid #E6EAE5;border-bottom:1px solid #E6EAE5;">
+        <div style="max-width:1160px;margin:0 auto;padding:28px clamp(20px,4vw,40px);display:flex;flex-wrap:wrap;gap:28px;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:220px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#3B964E;flex-shrink:0;"></div>
+            <span style="font-size:15px;font-weight:600;color:#1E221F;">Alle Daten bleiben auf deinem Gerät</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:220px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#3B964E;flex-shrink:0;"></div>
+            <span style="font-size:15px;font-weight:600;color:#1E221F;">Komplett kostenlos</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:220px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#3B964E;flex-shrink:0;"></div>
+            <span style="font-size:15px;font-weight:600;color:#1E221F;">Keine Werbung, kein Tracking</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOW IT WORKS -->
+      <div style="max-width:1160px;margin:0 auto;padding:clamp(64px,8vw,100px) clamp(20px,4vw,40px) clamp(40px,6vw,60px);">
+        <div style="text-align:center;max-width:640px;margin:0 auto 56px;">
+          <h2 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(26px,3.4vw,38px);letter-spacing:-0.5px;margin:0 0 14px;color:#1E221F;">So funktioniert's</h2>
+          <p style="font-size:16px;line-height:1.6;color:#606A62;margin:0;">Drei Schritte zwischen Einkauf und besserer Entscheidung.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;">
+          <div>
+            <div style="width:44px;height:44px;border-radius:12px;background:#EBF5ED;color:#286635;font-family:'Manrope',sans-serif;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;">1</div>
+            <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:19px;margin:0 0 8px;color:#1E221F;">Kassenbon fotografieren</h3>
+            <p style="font-size:15px;line-height:1.6;color:#606A62;margin:0;">Ein Foto genügt. Die Erkennung läuft direkt auf deinem Handy, nichts wird hochgeladen.</p>
+          </div>
+          <div>
+            <div style="width:44px;height:44px;border-radius:12px;background:#EBF5ED;color:#286635;font-family:'Manrope',sans-serif;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;">2</div>
+            <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:19px;margin:0 0 8px;color:#1E221F;">Nährwerte auf einen Blick</h3>
+            <p style="font-size:15px;line-height:1.6;color:#606A62;margin:0;">Jedes Produkt bekommt eine klare Einordnung – von Zucker über Fett bis Zusatzstoffe.</p>
+          </div>
+          <div>
+            <div style="width:44px;height:44px;border-radius:12px;background:#EBF5ED;color:#286635;font-family:'Manrope',sans-serif;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;">3</div>
+            <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:19px;margin:0 0 8px;color:#1E221F;">Swaps &amp; Rezepte entdecken</h3>
+            <p style="font-size:15px;line-height:1.6;color:#606A62;margin:0;">Für schwächere Produkte schlägt dir Smart Swaps bessere Alternativen und passende Rezepte vor.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FEATURES -->
+      <div style="background:#F7F9F6;border-top:1px solid #E6EAE5;border-bottom:1px solid #E6EAE5;">
+        <div style="max-width:1160px;margin:0 auto;padding:clamp(64px,8vw,100px) clamp(20px,4vw,40px);">
+          <div style="text-align:center;max-width:640px;margin:0 auto 56px;">
+            <h2 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(26px,3.4vw,38px);letter-spacing:-0.5px;margin:0 0 14px;color:#1E221F;">Alles, was du für bewusstes Einkaufen brauchst</h2>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
+            <div style="background:#FFFFFF;border:1px solid #E6EAE5;border-radius:20px;padding:26px;">
+              <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 8px;color:#1E221F;">Kassenbon-Scan</h3>
+              <p style="font-size:14px;line-height:1.6;color:#606A62;margin:0;">Texterkennung direkt auf dem Gerät ordnet jede Position automatisch einem Lebensmittel zu.</p>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E6EAE5;border-radius:20px;padding:26px;">
+              <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 8px;color:#1E221F;">Nährwert-Ampel</h3>
+              <p style="font-size:14px;line-height:1.6;color:#606A62;margin:0;">Verständliche Bewertung von Zucker, Fett, Salz &amp; Co. statt unübersichtlicher Tabellen.</p>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E6EAE5;border-radius:20px;padding:26px;">
+              <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 8px;color:#1E221F;">Smart Swaps</h3>
+              <p style="font-size:14px;line-height:1.6;color:#606A62;margin:0;">Konkrete, bessere Alternativen zu Produkten mit schlechter Nährwertbilanz.</p>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E6EAE5;border-radius:20px;padding:26px;">
+              <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 8px;color:#1E221F;">Rezeptideen</h3>
+              <p style="font-size:14px;line-height:1.6;color:#606A62;margin:0;">Passende Rezepte auf Basis dessen, was du wirklich eingekauft hast.</p>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E6EAE5;border-radius:20px;padding:26px;">
+              <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 8px;color:#1E221F;">100&nbsp;% On-Device</h3>
+              <p style="font-size:14px;line-height:1.6;color:#606A62;margin:0;">Kassenbons und Fotos verlassen dein Gerät nie. Keine Cloud, kein Server, keine Konten.</p>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E6EAE5;border-radius:20px;padding:26px;">
+              <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 8px;color:#1E221F;">Kostenlos &amp; werbefrei</h3>
+              <p style="font-size:14px;line-height:1.6;color:#606A62;margin:0;">Keine Werbung, keine In-App-Käufe, kein Abo. Und das bleibt so.</p>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E6EAE5;border-radius:20px;padding:26px;">
+              <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 8px;color:#1E221F;">Einkaufslisten</h3>
+              <p style="font-size:14px;line-height:1.6;color:#606A62;margin:0;">Fehlende Zutaten aus Rezepten oder Swaps landen mit einem Tipp direkt auf deiner Liste.</p>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #E6EAE5;border-radius:20px;padding:26px;">
+              <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 8px;color:#1E221F;">Fortschritt verfolgen</h3>
+              <p style="font-size:14px;line-height:1.6;color:#606A62;margin:0;">Ein wöchentlicher Health-Score zeigt, wie sich deine Einkäufe über die Zeit entwickeln.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREENSHOTS -->
+      <div style="max-width:1160px;margin:0 auto;padding:clamp(64px,8vw,100px) clamp(20px,4vw,40px);">
+        <div style="text-align:center;max-width:640px;margin:0 auto 48px;">
+          <h2 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(26px,3.4vw,38px);letter-spacing:-0.5px;margin:0 0 14px;color:#1E221F;">Ein Blick in die App</h2>
+        </div>
+        <div style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;">
+          <div style="width:240px;aspect-ratio:1179/2556;border-radius:32px;border:1px solid #E6EAE5;box-shadow:0 16px 40px rgba(15,29,17,0.08);overflow:hidden;">
+            <img src="./assets/shot-lists.png" alt="Screenshot: Kassenbon-Übersicht" style="width:100%;height:100%;object-fit:cover;display:block;">
+          </div>
+          <div style="width:240px;aspect-ratio:1179/2556;border-radius:32px;border:1px solid #E6EAE5;box-shadow:0 16px 40px rgba(15,29,17,0.08);overflow:hidden;">
+            <img src="./assets/shot-recipe.png" alt="Screenshot: Produkt & Swap" style="width:100%;height:100%;object-fit:cover;display:block;">
+          </div>
+          <div style="width:240px;aspect-ratio:1179/2556;border-radius:32px;border:1px solid #E6EAE5;box-shadow:0 16px 40px rgba(15,29,17,0.08);overflow:hidden;">
+            <img src="./assets/shot-home.png" alt="Screenshot: Rezeptvorschlag" style="width:100%;height:100%;object-fit:cover;display:block;">
+          </div>
+        </div>
+      </div>
+
+      <!-- PRIVACY -->
+      <div style="background:#1E221F;">
+        <div class="privacy-grid" style="max-width:1160px;margin:0 auto;padding:clamp(64px,8vw,100px) clamp(20px,4vw,40px);display:grid;gap:48px;align-items:center;">
+          <div>
+            <div style="display:inline-flex;background:rgba(59,150,78,0.18);color:#7FCB8F;font-size:13px;font-weight:700;padding:8px 14px;border-radius:100px;margin-bottom:20px;">Datenschutz zuerst</div>
+            <h2 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(26px,3.4vw,36px);letter-spacing:-0.5px;margin:0 0 16px;color:#FFFFFF;">Deine Kassenbons gehen niemanden etwas an</h2>
+            <p style="font-size:16px;line-height:1.7;color:#B7BEB8;margin:0 0 20px;max-width:520px;">Alle Fotos, Texte und Auswertungen bleiben ausschließlich auf deinem Gerät. Smart Swaps sendet nichts an einen Server, verlangt kein Konto und verkauft keine Daten.</p>
+            <span style="font-size:15px;font-weight:700;color:#7FCB8F;cursor:pointer;" data-nav="datenschutz">Mehr zum Datenschutz →</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="background:#262B24;border-radius:16px;padding:20px;">
+              <div style="font-size:14px;font-weight:700;color:#FFFFFF;margin-bottom:4px;">Keine Cloud-Verarbeitung</div>
+              <div style="font-size:13px;color:#8C968E;">Texterkennung &amp; Analyse laufen lokal.</div>
+            </div>
+            <div style="background:#262B24;border-radius:16px;padding:20px;">
+              <div style="font-size:14px;font-weight:700;color:#FFFFFF;margin-bottom:4px;">Kein Konto nötig</div>
+              <div style="font-size:13px;color:#8C968E;">Sofort startklar, ohne Registrierung.</div>
+            </div>
+            <div style="background:#262B24;border-radius:16px;padding:20px;">
+              <div style="font-size:14px;font-weight:700;color:#FFFFFF;margin-bottom:4px;">Kein Tracking, keine Werbung</div>
+              <div style="font-size:13px;color:#8C968E;">Kein Analytics-SDK, keine Ads, kein Verkauf von Daten.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div style="max-width:820px;margin:0 auto;padding:clamp(64px,8vw,100px) clamp(20px,4vw,40px) 0;">
+        <div style="text-align:center;max-width:640px;margin:0 auto 40px;">
+          <h2 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(26px,3.4vw,38px);letter-spacing:-0.5px;margin:0 0 14px;color:#1E221F;">Häufige Fragen</h2>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div style="border:1px solid #E6EAE5;border-radius:16px;padding:22px 26px;">
+            <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:16px;margin:0 0 8px;color:#1E221F;">Ist Smart Swaps wirklich kostenlos?</h3>
+            <p style="font-size:14px;line-height:1.65;color:#606A62;margin:0;">Ja. Ohne Abo, ohne In-App-Käufe und ohne Werbung – dauerhaft.</p>
+          </div>
+          <div style="border:1px solid #E6EAE5;border-radius:16px;padding:22px 26px;">
+            <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:16px;margin:0 0 8px;color:#1E221F;">Verlassen meine Kassenbons jemals mein Gerät?</h3>
+            <p style="font-size:14px;line-height:1.65;color:#606A62;margin:0;">Nein. Texterkennung und Auswertung laufen vollständig lokal, es gibt keine Cloud-Verarbeitung.</p>
+          </div>
+          <div style="border:1px solid #E6EAE5;border-radius:16px;padding:22px 26px;">
+            <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:16px;margin:0 0 8px;color:#1E221F;">Funktioniert die Erkennung mit jedem Kassenbon?</h3>
+            <p style="font-size:14px;line-height:1.65;color:#606A62;margin:0;">Die Erkennung ist auf deutsche Supermarkt-Kassenbons ausgelegt und erkennt die meisten gängigen Kürzel zuverlässig. Unklare Positionen kannst du jederzeit manuell zuordnen.</p>
+          </div>
+          <div style="border:1px solid #E6EAE5;border-radius:16px;padding:22px 26px;">
+            <h3 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:16px;margin:0 0 8px;color:#1E221F;">Brauche ich ein Konto?</h3>
+            <p style="font-size:14px;line-height:1.65;color:#606A62;margin:0;">Nein, Smart Swaps startet ohne Registrierung – alle Daten bleiben ohnehin nur auf deinem Gerät.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINAL CTA -->
+      <div style="max-width:840px;margin:0 auto;padding:clamp(72px,9vw,110px) clamp(20px,4vw,40px);text-align:center;">
+        <h2 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(28px,3.6vw,40px);letter-spacing:-0.5px;margin:0 0 16px;color:#1E221F;">Bereit für bewusstere Einkäufe?</h2>
+        <p style="font-size:16px;line-height:1.6;color:#606A62;margin:0 0 32px;">Kostenlos, ohne Werbung, ohne Konto – für iOS und Android.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center;">
+          <div style="background:#3B964E;color:#FFFFFF;padding:14px 28px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;" data-nav="download">Smart Swaps herunterladen</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= DOWNLOAD ================= -->
+    <section data-page="download" style="max-width:840px;margin:0 auto;padding:clamp(56px,7vw,90px) clamp(20px,4vw,40px) clamp(80px,8vw,110px);text-align:center;">
+      <div style="display:inline-flex;background:#EBF5ED;color:#286635;font-size:13px;font-weight:700;padding:8px 14px;border-radius:100px;margin-bottom:22px;">Bald verfügbar</div>
+      <h1 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(30px,4vw,44px);letter-spacing:-0.8px;margin:0 0 16px;color:#1E221F;">Smart Swaps herunterladen</h1>
+      <p style="font-size:16px;line-height:1.7;color:#606A62;margin:0 0 40px;max-width:560px;margin-left:auto;margin-right:auto;">Smart Swaps befindet sich aktuell in der letzten Testphase und erscheint in Kürze kostenlos für iOS und Android. Trag dich unverbindlich ein oder schau später wieder vorbei.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-bottom:56px;">
+        <div style="background:#1E221F;color:#FFFFFF;padding:14px 26px;border-radius:14px;display:flex;align-items:center;gap:10px;cursor:not-allowed;opacity:0.9;min-width:180px;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="14" r="8" fill="#FFFFFF"></circle><rect x="11" y="2" width="2.4" height="7" rx="1.2" fill="#FFFFFF"></rect></svg>
+          <div style="line-height:1.15;text-align:left;">
+            <div style="font-size:10px;color:#C6C6C8;">Bald verfügbar auf dem</div>
+            <div style="font-size:16px;font-weight:700;">App Store</div>
+          </div>
+        </div>
+        <div style="background:#1E221F;color:#FFFFFF;padding:14px 26px;border-radius:14px;display:flex;align-items:center;gap:10px;cursor:not-allowed;opacity:0.9;min-width:180px;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0;"><polygon points="5,3 21,12 5,21" fill="#FFFFFF"></polygon></svg>
+          <div style="line-height:1.15;text-align:left;">
+            <div style="font-size:10px;color:#C6C6C8;">Bald verfügbar bei</div>
+            <div style="font-size:16px;font-weight:700;">Google Play</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#F7F9F6;border:1px solid #E6EAE5;border-radius:20px;padding:32px;text-align:left;margin-bottom:24px;">
+        <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:18px;margin:0 0 16px;color:#1E221F;">Voraussetzungen</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1E221F;margin-bottom:2px;">iOS</div>
+            <div style="font-size:14px;color:#606A62;">iOS 16.4 oder neuer</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1E221F;margin-bottom:2px;">Android</div>
+            <div style="font-size:14px;color:#606A62;">Android 8.0 oder neuer</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1E221F;margin-bottom:2px;">Preis</div>
+            <div style="font-size:14px;color:#606A62;">Kostenlos, ohne Werbung</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1E221F;margin-bottom:2px;">Konto</div>
+            <div style="font-size:14px;color:#606A62;">Nicht erforderlich</div>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:14px;color:#8C968E;">Fragen zum Start? <span style="color:#3B964E;font-weight:600;cursor:pointer;" data-nav="kontakt">Schreib uns</span>.</p>
+    </section>
+
+    <!-- ================= KONTAKT ================= -->
+    <section data-page="kontakt" style="max-width:640px;margin:0 auto;padding:clamp(56px,7vw,90px) clamp(20px,4vw,40px) clamp(80px,8vw,110px);">
+      <h1 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(28px,3.6vw,40px);letter-spacing:-0.6px;margin:0 0 16px;color:#1E221F;">Kontakt</h1>
+      <p style="font-size:16px;line-height:1.7;color:#606A62;margin:0 0 32px;">Fragen, Feedback oder ein Fehlerbericht? Wir freuen uns über eine Nachricht.</p>
+      <div style="background:#F7F9F6;border:1px solid #E6EAE5;border-radius:20px;padding:28px;margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:#8C968E;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">E-Mail</div>
+        <a href="mailto:hallo@smartswaps.app" style="font-size:18px;font-weight:700;">hallo@smartswaps.app</a>
+      </div>
+      <p style="font-size:14px;line-height:1.7;color:#8C968E;">Wir antworten in der Regel innerhalb weniger Werktage. Für presserechtliche Anfragen siehe <span style="color:#3B964E;font-weight:600;cursor:pointer;" data-nav="impressum">Impressum</span>.</p>
+    </section>
+
+    <!-- ================= DATENSCHUTZ ================= -->
+    <section data-page="datenschutz" style="max-width:720px;margin:0 auto;padding:clamp(56px,7vw,90px) clamp(20px,4vw,40px) clamp(80px,8vw,110px);">
+      <h1 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(28px,3.6vw,38px);letter-spacing:-0.6px;margin:0 0 8px;color:#1E221F;">Datenschutzerklärung</h1>
+      <p style="font-size:14px;color:#8C968E;margin:0 0 40px;">Stand: Juli 2026</p>
+
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:19px;margin:0 0 10px;color:#1E221F;">1. Grundprinzip: Verarbeitung ausschließlich auf dem Gerät</h2>
+      <p style="font-size:15px;line-height:1.75;color:#606A62;margin:0 0 28px;">Smart Swaps ist so gebaut, dass keine Kassenbon-Fotos, erkannten Texte oder daraus abgeleiteten Nährwertdaten das Gerät verlassen. Texterkennung, Produktzuordnung, Bewertung und Rezeptvorschläge werden vollständig lokal berechnet. Es gibt keinen Server, an den diese Inhalte übertragen werden, und keine Cloud-Synchronisierung.</p>
+
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:19px;margin:0 0 10px;color:#1E221F;">2. Berechtigungen</h2>
+      <p style="font-size:15px;line-height:1.75;color:#606A62;margin:0 0 28px;">Die App fragt Zugriff auf die Kamera an, um Kassenbons zu fotografieren, sowie optional auf die Fotomediathek, um bestehende Aufnahmen auszuwählen. Beide Berechtigungen werden ausschließlich für diesen Zweck genutzt und die Bilder verbleiben auf dem Gerät.</p>
+
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:19px;margin:0 0 10px;color:#1E221F;">3. Kein Tracking, keine Analyse-Dienste</h2>
+      <p style="font-size:15px;line-height:1.75;color:#606A62;margin:0 0 28px;">Smart Swaps bindet keine Analytics-, Tracking- oder Werbe-SDKs Dritter ein. Es findet keine Auswertung des Nutzungsverhaltens statt und es werden keine Daten an Werbenetzwerke weitergegeben.</p>
+
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:19px;margin:0 0 10px;color:#1E221F;">4. Lokale Speicherung</h2>
+      <p style="font-size:15px;line-height:1.75;color:#606A62;margin:0 0 28px;">Einkaufshistorie, gespeicherte Produkte und Einstellungen werden in einer lokalen Datenbank auf dem Gerät abgelegt. Eine Deinstallation der App löscht diese Daten. Ein Backup findet, sofern vom Betriebssystem vorgesehen, nur im Rahmen des allgemeinen Geräte-Backups statt.</p>
+
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:19px;margin:0 0 10px;color:#1E221F;">5. Rechte der betroffenen Person</h2>
+      <p style="font-size:15px;line-height:1.75;color:#606A62;margin:0 0 28px;">Da keine personenbezogenen Daten an uns übertragen werden, liegen die Daten allein bei dir auf dem Gerät. Über die App-Einstellungen bzw. durch Deinstallation können sämtliche lokal gespeicherten Daten jederzeit gelöscht werden.</p>
+
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:19px;margin:0 0 10px;color:#1E221F;">6. Verantwortlicher</h2>
+      <p style="font-size:15px;line-height:1.75;color:#606A62;margin:0;">Verantwortlich im Sinne der Datenschutzgrundverordnung ist der/die im <span style="color:#3B964E;font-weight:600;cursor:pointer;" data-nav="impressum">Impressum</span> genannte Anbieter. Bei Fragen zum Datenschutz kannst du uns jederzeit über die dort angegebene E-Mail-Adresse erreichen.</p>
+    </section>
+
+    <!-- ================= IMPRESSUM ================= -->
+    <section data-page="impressum" style="max-width:720px;margin:0 auto;padding:clamp(56px,7vw,90px) clamp(20px,4vw,40px) clamp(80px,8vw,110px);">
+      <h1 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(28px,3.6vw,38px);letter-spacing:-0.6px;margin:0 0 40px;color:#1E221F;">Impressum</h1>
+
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 10px;color:#1E221F;">Angaben gemäß § 5 TMG</h2>
+      <p style="font-size:15px;line-height:1.8;color:#606A62;margin:0 0 28px;">
+        [Vollständiger Name / Firmenname]<br>
+        [Straße und Hausnummer]<br>
+        [PLZ und Ort]<br>
+        Deutschland
+      </p>
+
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 10px;color:#1E221F;">Kontakt</h2>
+      <p style="font-size:15px;line-height:1.8;color:#606A62;margin:0 0 28px;">
+        Telefon: [Telefonnummer]<br>
+        E-Mail: <a href="mailto:hallo@smartswaps.app">hallo@smartswaps.app</a>
+      </p>
+
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 10px;color:#1E221F;">Umsatzsteuer-ID</h2>
+      <p style="font-size:15px;line-height:1.8;color:#606A62;margin:0 0 28px;">Umsatzsteuer-Identifikationsnummer gemäß §27a Umsatzsteuergesetz: [USt-IdNr., falls vorhanden]</p>
+
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 10px;color:#1E221F;">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
+      <p style="font-size:15px;line-height:1.8;color:#606A62;margin:0 0 28px;">
+        [Vollständiger Name]<br>
+        [Straße und Hausnummer]<br>
+        [PLZ und Ort]
+      </p>
+
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;margin:0 0 10px;color:#1E221F;">Streitschlichtung</h2>
+      <p style="font-size:15px;line-height:1.8;color:#606A62;margin:0;">Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">https://ec.europa.eu/consumers/odr/</a>. Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer style="background:#F7F9F6;border-top:1px solid #E6EAE5;">
+    <div style="max-width:1160px;margin:0 auto;padding:48px clamp(20px,4vw,40px) 32px;display:flex;flex-wrap:wrap;gap:40px;justify-content:space-between;">
+      <div style="max-width:300px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div style="width:28px;height:28px;border-radius:8px;background:#3B964E;display:flex;align-items:center;justify-content:center;">
+            <div style="width:10px;height:10px;border-radius:3px;background:#EBF5ED;"></div>
+          </div>
+          <span style="font-family:'Manrope',sans-serif;font-weight:800;font-size:16px;color:#1E221F;">Smart Swaps</span>
+        </div>
+        <p style="font-size:14px;line-height:1.6;color:#8C968E;margin:0;">Kassenbon scannen, Nährwerte verstehen, bessere Wahl treffen. Kostenlos, werbefrei, 100&nbsp;% auf deinem Gerät.</p>
+      </div>
+      <div style="display:flex;gap:56px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#8C968E;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:14px;">Seiten</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <span style="font-size:14px;font-weight:600;color:#1E221F;cursor:pointer;" data-nav="home">Home</span>
+            <span style="font-size:14px;font-weight:600;color:#1E221F;cursor:pointer;" data-nav="download">Download</span>
+            <span style="font-size:14px;font-weight:600;color:#1E221F;cursor:pointer;" data-nav="kontakt">Kontakt</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#8C968E;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:14px;">Rechtliches</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <span style="font-size:14px;font-weight:600;color:#1E221F;cursor:pointer;" data-nav="datenschutz">Datenschutz</span>
+            <span style="font-size:14px;font-weight:600;color:#1E221F;cursor:pointer;" data-nav="impressum">Impressum</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid #E6EAE5;padding:20px clamp(20px,4vw,40px);text-align:center;">
+      <span style="font-size:13px;color:#8C968E;">© 2026 Smart Swaps. Alle Rechte vorbehalten.</span>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var ACTIVE = '#3B964E';
+  var INACTIVE = '#606A62';
+  var VALID_PAGES = ['home', 'download', 'kontakt', 'datenschutz', 'impressum'];
+
+  function currentPage() {
+    var hash = window.location.hash.replace(/^#\/?/, '');
+    return VALID_PAGES.indexOf(hash) !== -1 ? hash : 'home';
+  }
+
+  function render() {
+    var page = currentPage();
+
+    document.querySelectorAll('[data-page]').forEach(function (el) {
+      el.classList.toggle('active', el.getAttribute('data-page') === page);
+    });
+
+    document.querySelectorAll('.nav-link[data-nav]').forEach(function (el) {
+      el.style.color = el.getAttribute('data-nav') === page ? ACTIVE : INACTIVE;
+    });
+
+    window.scrollTo(0, 0);
+  }
+
+  document.addEventListener('click', function (e) {
+    var target = e.target.closest('[data-nav]');
+    if (!target) return;
+    var page = target.getAttribute('data-nav');
+    window.location.hash = page === 'home' ? '/' : '/' + page;
+  });
+
+  window.addEventListener('hashchange', render);
+  render();
+})();
+</script>
+
+</body>
+</html>

@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, globalStyles } from '../../styles';
 import { useRecipes, scaleNutrients, emptyNutrients, addNutrients, divideNutrients } from '../useRecipes';
 import { useFoods } from '../useFoods';
+import { useAddedToListAnimation } from '../useAddedToListAnimation';
 import { findBestRecipeSwap } from '../engine/recipeSwapAlgorithm';
 import { FoodNutrients, Recipe, RecipeIngredient, FoodItem } from '../types';
 import { StorageService } from '../services/storage';
@@ -20,6 +21,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { SelectShoppingListModal } from '../../components/SelectShoppingListModal';
 import { NutrientRow } from '../../components/NutrientRow';
 import { NavBlur } from '../../components/GlassHeader';
+import { FoodIcon } from '../../components/FoodIcon';
 
 // We use dynamic targets from useProfile, but still need standard micro targets
 const MICRO_TARGETS = {
@@ -104,7 +106,7 @@ export default function RecipeDetailScreen() {
   const [microsExpanded, setMicrosExpanded] = useState(false);
   const [macrosExpanded, setMacrosExpanded] = useState(false);
   const [shoppingListModalVisible, setShoppingListModalVisible] = useState(false);
-  const [isAdded, setIsAdded] = useState(false);
+  const { isAdded, scale: addedScale, markAdded } = useAddedToListAnimation();
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerHeight = useHeaderHeight();
 
@@ -223,11 +225,9 @@ export default function RecipeDetailScreen() {
 
     await refreshInventory();
     setShoppingListModalVisible(false);
-    
-    // Show success state without layout animation
-    setTimeout(() => {
-      setIsAdded(true);
-    }, 250);
+
+    // Show success state with a small pop, then revert to "Add to List" after 2s.
+    setTimeout(markAdded, 250);
   };
 
   if (!recipe) {
@@ -246,6 +246,10 @@ export default function RecipeDetailScreen() {
 
 
   const activeSwaps = Object.values(ingredientSwaps).filter(Boolean);
+  const ownedIngredientCount = recipe.ingredients.reduce(
+    (acc, ing) => acc + (ing.food_id && ownedFoodIds.has(ing.food_id) ? 1 : 0),
+    0
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
@@ -253,7 +257,6 @@ export default function RecipeDetailScreen() {
         title: '',
         headerBackVisible: true,
         headerBlurEffect: 'none',
-        headerBackground: () => <NavBlur headerHeight={headerHeight} />,
         headerRight: () => (
           <TouchableOpacity onPress={() => toggleFavorite('recipe', recipe.id)} activeOpacity={0.35} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}>
             {Platform.OS === 'ios' ? (
@@ -403,16 +406,18 @@ export default function RecipeDetailScreen() {
               </TouchableOpacity>
               <Text style={{ marginLeft: 8, fontSize: 13, color: COLORS.textMuted }}>servings</Text>
             </View>
-            <TouchableOpacity 
-              style={[styles.addToListBtn, isAdded && { backgroundColor: COLORS.primaryGreen }]} 
-              onPress={() => {
-                if (!isAdded) setShoppingListModalVisible(true);
-              }}
-              activeOpacity={isAdded ? 1 : 0.7}
-            >
-              <Ionicons name={isAdded ? "checkmark-circle" : "basket-outline"} size={16} color={COLORS.white} />
-              <Text style={styles.addToListText}>{isAdded ? "Added!" : "Add to List"}</Text>
-            </TouchableOpacity>
+            <Animated.View style={{ transform: [{ scale: addedScale }] }}>
+              <TouchableOpacity
+                style={[styles.addToListBtn, isAdded && { backgroundColor: COLORS.primaryGreen }]}
+                onPress={() => {
+                  if (!isAdded) setShoppingListModalVisible(true);
+                }}
+                activeOpacity={isAdded ? 1 : 0.7}
+              >
+                <Ionicons name={isAdded ? "checkmark-circle" : "basket-outline"} size={16} color={COLORS.white} />
+                <Text style={styles.addToListText}>{isAdded ? "Added!" : "Add to List"}</Text>
+              </TouchableOpacity>
+            </Animated.View>
           </View>
         </View>
 
@@ -425,7 +430,15 @@ export default function RecipeDetailScreen() {
             setIngredientsExpanded(v => !v);
           }}
         >
-          <Text style={styles.sectionHeader}>Ingredients ({recipe.ingredients.length})</Text>
+          <View style={globalStyles.row}>
+            <Text style={styles.sectionHeader}>Ingredients ({recipe.ingredients.length})</Text>
+            {ownedIngredientCount > 0 && (
+              <View style={styles.inStockHeaderPill}>
+                <Ionicons name="checkmark-circle" size={12} color={COLORS.primaryGreen} />
+                <Text style={styles.inStockHeaderText}>{ownedIngredientCount} in stock</Text>
+              </View>
+            )}
+          </View>
           <Ionicons name={ingredientsExpanded ? 'chevron-up' : 'chevron-down'} size={20} color={COLORS.textMuted} />
         </TouchableOpacity>
 
@@ -435,6 +448,7 @@ export default function RecipeDetailScreen() {
             const swap = ing.food_id ? ingredientSwaps[ing.food_id] : null;
             const isSwappedIn = swapsEnabled && !!swap;
             const displayFood = isSwappedIn ? swap!.candidate : ing.food;
+            const isOwned = !!ing.food_id && ownedFoodIds.has(ing.food_id);
             const kcalRounded = Math.round(
               isSwappedIn ? scaleNutrients(swap!.candidate.nutrients_per_100, ing.grams).kcal : ing.kcal
             );
@@ -447,8 +461,14 @@ export default function RecipeDetailScreen() {
                   disabled={!displayFood}
                   activeOpacity={0.7}
                 >
+                  {displayFood && (
+                    <View style={styles.ingredientIconBox}>
+                      <FoodIcon food={displayFood} size={18} />
+                    </View>
+                  )}
                   <View style={{ flex: 1 }}>
                     <View style={globalStyles.row}>
+                      {isOwned && <Ionicons name="checkmark-circle" size={15} color={COLORS.primaryGreen} style={{ marginRight: 5 }} />}
                       {isSwappedIn && <Ionicons name="swap-horizontal" size={13} color={COLORS.primaryGreen} style={{ marginRight: 4 }} />}
                       <Text style={styles.ingredientName}>{displayFood?.name ?? ing.raw_text.split(',')[0]}</Text>
                     </View>
@@ -581,6 +601,11 @@ export default function RecipeDetailScreen() {
 
         {/* ─── Source Link (removed from bottom — now at top) ── */}
       </Animated.ScrollView>
+
+      {/* Feathered blur overlay behind the floating native back/heart buttons. Rendered here
+          (not as headerBackground) so its fade tail isn't clipped by the nav bar bounds. */}
+      <NavBlur headerHeight={headerHeight} />
+
       <SelectShoppingListModal
         visible={shoppingListModalVisible}
         onClose={() => setShoppingListModalVisible(false)}
@@ -751,6 +776,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   ingredientRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 8 },
+  ingredientIconBox: { width: 30, height: 30, borderRadius: 9, backgroundColor: COLORS.cardBackground, justifyContent: 'center', alignItems: 'center' },
+  inStockHeaderPill: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: COLORS.lightGreenBg, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, marginLeft: 10, marginBottom: 6 },
+  inStockHeaderText: { fontSize: 11, fontWeight: '700', color: COLORS.primaryGreen },
   ingredientName: { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary },
   ingredientAmount: { fontSize: 12, color: COLORS.textMuted, marginTop: 2 },
   ingredientDivider: { height: 1, backgroundColor: COLORS.border },

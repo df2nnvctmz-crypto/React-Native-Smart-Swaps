@@ -24,16 +24,28 @@ export const getIconForCategory = (category: string): keyof typeof Ionicons.glyp
 // search-index build only need to happen once per session, not on every screen mount.
 let cachedFoods: FoodItem[] | null = null;
 let cachedIndex: FoodIndexData | null = null;
+let cachedIconLibrary: Record<string, string> | null = null;
 let foodsPromise: Promise<void> | null = null;
 
 function loadFoods(): Promise<void> {
   if (!foodsPromise) {
-    foodsPromise = DatabaseService.getAllFoods().then(data => {
+    foodsPromise = Promise.all([
+      DatabaseService.getAllFoods(),
+      DatabaseService.getIconLibrary(),
+    ]).then(([data, iconLibrary]) => {
       cachedFoods = data;
       cachedIndex = buildFoodIndex(data);
+      cachedIconLibrary = iconLibrary;
     });
   }
   return foodsPromise;
+}
+
+// Synchronous getter for the bundled OpenMoji SVG library (food_id → svg markup, all
+// stored on-device in smartswaps.db, no network fetch). Used by <FoodIcon> so list rows
+// don't need to call the useFoods() hook just to render an icon.
+export function getCachedIconLibrary(): Record<string, string> {
+  return cachedIconLibrary ?? {};
 }
 
 export function useFoods() {
@@ -42,7 +54,7 @@ export function useFoods() {
   const [foodIndexData, setFoodIndexData] = useState<FoodIndexData | null>(cachedIndex);
 
   useEffect(() => {
-    if (cachedFoods && cachedIndex) return;
+    if (cachedFoods && cachedIndex && cachedIconLibrary) return;
     let isActive = true;
     loadFoods().then(() => {
       if (isActive) {

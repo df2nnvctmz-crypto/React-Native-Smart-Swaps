@@ -20,8 +20,20 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       const scans = await StorageService.getScans();
       const newOwned = new Set<string>();
       const lists = scans.filter(s => s.isShoppingList).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      
+
+      // "Owned" = actually bought this week. Only count real receipts (not shopping lists)
+      // dated within the current (Monday-based) week, so the recipe "in stock" hints reflect
+      // what you have in the kitchen right now rather than everything ever scanned.
+      const now = new Date();
+      const day = now.getDay();
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - day + (day === 0 ? -6 : 1)); // Monday
+      startOfWeek.setHours(0, 0, 0, 0);
+      const startOfWeekMs = startOfWeek.getTime();
+
       for (const scan of scans) {
+        if (scan.isShoppingList) continue;
+        if (new Date(scan.date).getTime() < startOfWeekMs) continue;
         if (scan.items) {
           for (const item of scan.items) {
             if (item.matchedFood?.id) {

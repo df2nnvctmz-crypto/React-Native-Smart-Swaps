@@ -29,6 +29,7 @@ import { LiquidSlider } from './components/LiquidSlider';
 import { SwapComparisonCard } from './components/SwapComparisonCard';
 import { SymbolView } from 'expo-symbols';
 import { GlassHeader, LargeTitle, GlassCircleButton, HEADER_CONTENT_HEIGHT } from './components/GlassHeader';
+import { FoodIcon } from './components/FoodIcon';
 
 interface SearchScreenProps {
   onBack?: () => void;
@@ -117,6 +118,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
         nutriColor: f.health_score >= 75 ? COLORS.scoreGreen : (f.health_score >= 50 ? '#F5A623' : COLORS.scoreRed),
         nutriBg: f.health_score >= 75 ? COLORS.lightGreenBg : (f.health_score >= 50 ? '#FFF8E1' : '#FFEBEE'),
         iconName: getIconForCategory(f.category),
+        iconKey: f.icon_key,
         isFavorite: isFavorite('food', f.id.toString()),
       }));
       results = [...results, ...mappedFoods];
@@ -439,7 +441,11 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ onBack, mode = 'food
                   >
                     {/* Left side: Icon inside square box */}
                     <View style={styles.foodIconBox}>
-                      <Ionicons name={food.iconName} size={22} color={COLORS.primaryGreen} />
+                      {food.type === 'food' ? (
+                        <FoodIcon food={{ icon_key: (food as any).iconKey, category: food.category }} size={26} color={COLORS.primaryGreen} />
+                      ) : (
+                        <Ionicons name={food.iconName} size={22} color={COLORS.primaryGreen} />
+                      )}
                     </View>
 
                     {/* Center details */}
@@ -691,7 +697,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: COLORS.lightGreenBg,
+    backgroundColor: COLORS.cardBackground,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,

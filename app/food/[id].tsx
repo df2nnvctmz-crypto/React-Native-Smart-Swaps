@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, LayoutAnimation, UIManager } from 'react-native';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, LayoutAnimation, UIManager, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SymbolView } from 'expo-symbols';
@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, globalStyles } from '../../styles';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useFoods } from '../useFoods';
+import { useAddedToListAnimation } from '../useAddedToListAnimation';
 import { findBestSwapsPersonalized, SwapResult, isLiquid, isRawIngredient } from '../engine/swapAlgorithm';
 import { recordSwapAccepted, recordSwapRejected } from '../engine/personalSwapPreferences';
 import { logSwapDecision } from '../engine/swapTrainingLog';
@@ -16,6 +17,7 @@ import { useInventory } from '../context/InventoryContext';
 import { StorageService } from '../services/storage';
 import { SelectShoppingListModal } from '../../components/SelectShoppingListModal';
 import { NavBlur } from '../../components/GlassHeader';
+import { FoodIcon } from '../../components/FoodIcon';
 
 const MICRONUTRIENT_DV: Record<string, number> = {
   'Vitamin A': 900,
@@ -68,9 +70,17 @@ export default function FoodDetailsScreen() {
   const [shoppingListModalVisible, setShoppingListModalVisible] = useState(false);
   const [macrosExpanded, setMacrosExpanded] = useState(true);
   const [microsExpanded, setMicrosExpanded] = useState(false);
-  const [isAdded, setIsAdded] = useState(false);
-  
+  const { isAdded, scale: addedScale, markAdded } = useAddedToListAnimation();
+  const trophyScale = useRef(new Animated.Value(1)).current;
+  const ringScale = useRef(new Animated.Value(0.8)).current;
+
   const headerHeight = useHeaderHeight();
+
+  // Gentle scale-in of the score ring whenever a new food loads.
+  useEffect(() => {
+    ringScale.setValue(0.8);
+    Animated.spring(ringScale, { toValue: 1, friction: 5, tension: 120, useNativeDriver: true }).start();
+  }, [id]);
 
   useEffect(() => {
     if (!food) return;
@@ -92,6 +102,16 @@ export default function FoodDetailsScreen() {
     () => swapPool.filter(swap => !dismissedSwapIds.has(swap.candidate.id)).slice(0, SWAP_DISPLAY_COUNT),
     [swapPool, dismissedSwapIds]
   );
+
+  // Celebrate when this food turns out to already be the best option in its category.
+  const isBestInCategory = swapsLoaded && visibleSwaps.length === 0 && !!food && food.health_score >= 80;
+  useEffect(() => {
+    if (!isBestInCategory) return;
+    Animated.sequence([
+      Animated.timing(trophyScale, { toValue: 1.3, duration: 180, useNativeDriver: true }),
+      Animated.spring(trophyScale, { toValue: 1, friction: 3, tension: 90, useNativeDriver: true }),
+    ]).start();
+  }, [isBestInCategory]);
 
   const handleAddToList = async (listId: string | null, newListName?: string) => {
     if (!food) return;
@@ -133,11 +153,9 @@ export default function FoodDetailsScreen() {
 
     await refreshInventory();
     setShoppingListModalVisible(false);
-    
-    // Show success state without layout animation
-    setTimeout(() => {
-      setIsAdded(true);
-    }, 250);
+
+    // Show success state with a small pop, then revert to "Add to Shopping List" after 2s.
+    setTimeout(markAdded, 250);
   };
 
   if (!food) {
@@ -222,7 +240,6 @@ export default function FoodDetailsScreen() {
         title: '',
         headerBackVisible: true,
         headerBlurEffect: 'none',
-        headerBackground: () => <NavBlur headerHeight={headerHeight} />,
         headerRight: () => (
           <TouchableOpacity onPress={() => toggleFavorite('food', food.id)} activeOpacity={0.35} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}>
             {Platform.OS === 'ios' ? (
@@ -252,28 +269,35 @@ export default function FoodDetailsScreen() {
           </View>
 
           <View style={globalStyles.rowBetween}>
-            <View style={{ flex: 1, paddingRight: 16 }}>
-              <Text style={styles.title}>{food.name}</Text>
-              <Text style={styles.per100}>per 100g</Text>
-              <Text style={styles.kcalText}>{Math.round(nutrients.kcal)} <Text style={styles.kcalMuted}>kcal / 100g</Text></Text>
+            <View style={{ flexDirection: 'row', flex: 1, paddingRight: 16 }}>
+              <View style={styles.foodIconBadge}>
+                <FoodIcon food={food} size={30} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.title}>{food.name}</Text>
+                <Text style={styles.per100}>per 100g</Text>
+                <Text style={styles.kcalText}>{Math.round(nutrients.kcal)} <Text style={styles.kcalMuted}>kcal / 100g</Text></Text>
+              </View>
             </View>
-            
+
             {/* Score Ring */}
-            <View style={[styles.scoreRing, { borderColor: scoreColor }]}>
+            <Animated.View style={[styles.scoreRing, { borderColor: scoreColor, transform: [{ scale: ringScale }] }]}>
               <Text style={[styles.scoreText, { color: scoreColor }]}>{food.health_score}</Text>
-            </View>
+            </Animated.View>
           </View>
           
-          <TouchableOpacity 
-            style={[styles.addToListBtnFull, isAdded && { backgroundColor: COLORS.primaryGreen }]} 
-            onPress={() => {
-              if (!isAdded) setShoppingListModalVisible(true);
-            }}
-            activeOpacity={isAdded ? 1 : 0.7}
-          >
-            <Ionicons name={isAdded ? "checkmark-circle" : "basket-outline"} size={18} color={COLORS.white} />
-            <Text style={styles.addToListBtnFullText}>{isAdded ? "Added to Shopping List!" : "Add to Shopping List"}</Text>
-          </TouchableOpacity>
+          <Animated.View style={{ transform: [{ scale: addedScale }] }}>
+            <TouchableOpacity
+              style={[styles.addToListBtnFull, isAdded && { backgroundColor: COLORS.primaryGreen }]}
+              onPress={() => {
+                if (!isAdded) setShoppingListModalVisible(true);
+              }}
+              activeOpacity={isAdded ? 1 : 0.7}
+            >
+              <Ionicons name={isAdded ? "checkmark-circle" : "basket-outline"} size={18} color={COLORS.white} />
+              <Text style={styles.addToListBtnFullText}>{isAdded ? "Added to Shopping List!" : "Add to Shopping List"}</Text>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
 
         {/* Smarter Swaps */}
@@ -281,7 +305,9 @@ export default function FoodDetailsScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Smarter Swaps</Text>
             <View style={styles.bestOptionCard}>
-              <Ionicons name="trophy-outline" size={22} color={COLORS.primaryGreen} />
+              <Animated.View style={{ transform: [{ scale: trophyScale }] }}>
+                <Ionicons name={isBestInCategory ? 'trophy' : 'trophy-outline'} size={22} color={COLORS.primaryGreen} />
+              </Animated.View>
               <Text style={styles.bestOptionText}>
                 {food.health_score >= 80 
                   ? "You already have the best option in this category!" 
@@ -390,7 +416,11 @@ export default function FoodDetailsScreen() {
 
       </ScrollView>
 
-      <SelectShoppingListModal 
+      {/* Feathered blur overlay behind the floating native back/heart buttons. Rendered here
+          (not as headerBackground) so its fade tail isn't clipped by the nav bar bounds. */}
+      <NavBlur headerHeight={headerHeight} />
+
+      <SelectShoppingListModal
         visible={shoppingListModalVisible}
         onClose={() => setShoppingListModalVisible(false)}
         onSelect={handleAddToList}
@@ -449,6 +479,15 @@ const styles = StyleSheet.create({
   topSection: {
     marginBottom: 32,
   },
+  foodIconBadge: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: COLORS.cardBackground,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -503,7 +542,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.primaryGreen,
+    backgroundColor: '#0084C9',
     paddingVertical: 12,
     borderRadius: 12,
     marginTop: 16,
