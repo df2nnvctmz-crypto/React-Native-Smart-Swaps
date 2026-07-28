@@ -7,10 +7,17 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "test": "tsx scripts/regression.test.ts",
+    "test": "tsx scripts/check-db-freshness.ts && tsx scripts/regression.test.ts",
     "validate:matcher": "tsx scripts/validateMatcher.ts",
     "eval:baseline": "tsx scripts/baseline-eval.ts",
-    "eval:groundtruth": "tsx scripts/ground-truth-eval.ts"
+    "eval:groundtruth": "tsx scripts/ground-truth-eval.ts",
+    "pairs:slates": "tsx scripts/build-pair-slates.ts",
+    "pairs:rows": "tsx scripts/build-pair-training-rows.ts",
+    "eval:curve": "tsx scripts/build-pair-training-rows.ts && tsx scripts/learning-curve.ts",
+    "eval:swaps": "tsx scripts/snapshot-swaps.ts",
+    "train:gbm": "tsx scripts/train-swap-gbm.ts",
+    "build:attrs": "tsx scripts/build-food-attributes-asset.ts",
+    "check:db": "tsx scripts/check-db-freshness.ts"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",

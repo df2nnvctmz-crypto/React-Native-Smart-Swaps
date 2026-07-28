@@ -1,0 +1,4005 @@
+[
+ {
+  "id": "bls6459",
+  "sensory": {
+   "sweet": 1,
+   "salty": 2,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 2,
+   "creamy": 1,
+   "crunchy": 0
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls1013",
+  "sensory": {
+   "sweet": 1,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 1,
+   "creamy": 0,
+   "crunchy": 2
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls0550",
+  "sensory": {
+   "sweet": 1,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 2,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls0007",
+  "sensory": {
+   "sweet": 1,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0215",
+  "sensory": {
+   "sweet": 1,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 1,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0220",
+  "sensory": {
+   "sweet": 8,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 1,
+   "creamy": 0,
+   "crunchy": 8
+  },
+  "culinary_role": "breakfast",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "breakfast",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls0202",
+  "sensory": {
+   "sweet": 1,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 2,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 3
+  },
+  "culinary_role": "breakfast",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls1028",
+  "sensory": {
+   "sweet": 7,
+   "salty": 0,
+   "sour": 3,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "raw_produce",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls0083",
+  "sensory": {
+   "sweet": 6,
+   "salty": 0,
+   "sour": 3,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "raw_produce",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "breakfast",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls0181",
+  "sensory": {
+   "sweet": 2,
+   "salty": 0,
+   "sour": 5,
+   "bitter": 4,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "raw_produce",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls0256",
+  "sensory": {
+   "sweet": 3,
+   "salty": 0,
+   "sour": 8,
+   "bitter": 1,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "raw_produce",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls0254",
+  "sensory": {
+   "sweet": 8,
+   "salty": 0,
+   "sour": 1,
+   "bitter": 1,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "raw_produce",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls0591",
+  "sensory": {
+   "sweet": 5,
+   "salty": 0,
+   "sour": 3,
+   "bitter": 1,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "raw_produce",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls6741",
+  "sensory": {
+   "sweet": 2,
+   "salty": 5,
+   "sour": 6,
+   "bitter": 0,
+   "umami": 1,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 3
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5550",
+  "sensory": {
+   "sweet": 3,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 1,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 3
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls3546",
+  "sensory": {
+   "sweet": 3,
+   "salty": 0,
+   "sour": 1,
+   "bitter": 2,
+   "umami": 1,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5525",
+  "sensory": {
+   "sweet": 2,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 3
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls3847",
+  "sensory": {
+   "sweet": 1,
+   "salty": 1,
+   "sour": 2,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 2
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls4050",
+  "sensory": {
+   "sweet": 4,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 5,
+   "fatty_rich": 7,
+   "creamy": 0,
+   "crunchy": 9
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls3082",
+  "sensory": {
+   "sweet": 3,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 2,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 2
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls2005",
+  "sensory": {
+   "sweet": 3,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 2,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 2
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls6812",
+  "sensory": {
+   "sweet": 5,
+   "salty": 4,
+   "sour": 6,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 2
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls7122",
+  "sensory": {
+   "sweet": 2,
+   "salty": 3,
+   "sour": 1,
+   "bitter": 0,
+   "umami": 2,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 2
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls2022",
+  "sensory": {
+   "sweet": 4,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 2,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6802",
+  "sensory": {
+   "sweet": 2,
+   "salty": 5,
+   "sour": 6,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6716",
+  "sensory": {
+   "sweet": 1,
+   "salty": 3,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 2,
+   "fatty_rich": 1,
+   "creamy": 1,
+   "crunchy": 1
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0320",
+  "sensory": {
+   "sweet": 2,
+   "salty": 9,
+   "sour": 1,
+   "bitter": 1,
+   "umami": 10,
+   "fatty_rich": 1,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls0307",
+  "sensory": {
+   "sweet": 3,
+   "salty": 1,
+   "sour": 1,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "beverage_base",
+  "prep_state": "liquid_beverage",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls0509",
+  "sensory": {
+   "sweet": 0,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 5,
+   "creamy": 0,
+   "crunchy": 6
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls3376",
+  "sensory": {
+   "sweet": 6,
+   "salty": 0,
+   "sour": 1,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 1,
+   "creamy": 4,
+   "crunchy": 0
+  },
+  "culinary_role": "beverage_base",
+  "prep_state": "liquid_beverage",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "breakfast",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls0771",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 2,
+   "bitter": 0,
+   "umami": 3,
+   "fatty_rich": 3,
+   "creamy": 7,
+   "crunchy": 0
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls0092",
+  "sensory": {
+   "sweet": 0,
+   "salty": 7,
+   "sour": 3,
+   "bitter": 3,
+   "umami": 8,
+   "fatty_rich": 8,
+   "creamy": 6,
+   "crunchy": 0
+  },
+  "culinary_role": "dairy_staple",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls0155",
+  "sensory": {
+   "sweet": 0,
+   "salty": 8,
+   "sour": 4,
+   "bitter": 1,
+   "umami": 5,
+   "fatty_rich": 4,
+   "creamy": 4,
+   "crunchy": 0
+  },
+  "culinary_role": "dairy_staple",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls0091",
+  "sensory": {
+   "sweet": 0,
+   "salty": 7,
+   "sour": 3,
+   "bitter": 3,
+   "umami": 8,
+   "fatty_rich": 9,
+   "creamy": 6,
+   "crunchy": 0
+  },
+  "culinary_role": "dairy_staple",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls0357",
+  "sensory": {
+   "sweet": 1,
+   "salty": 5,
+   "sour": 3,
+   "bitter": 1,
+   "umami": 6,
+   "fatty_rich": 8,
+   "creamy": 5,
+   "crunchy": 0
+  },
+  "culinary_role": "dairy_staple",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls3929",
+  "sensory": {
+   "sweet": 1,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 5,
+   "umami": 1,
+   "fatty_rich": 0,
+   "creamy": 1,
+   "crunchy": 0
+  },
+  "culinary_role": "beverage_base",
+  "prep_state": "liquid_beverage",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls2840",
+  "sensory": {
+   "sweet": 1,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 2,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 1,
+   "crunchy": 0
+  },
+  "culinary_role": "beverage_base",
+  "prep_state": "liquid_beverage",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls4638",
+  "sensory": {
+   "sweet": 6,
+   "salty": 0,
+   "sour": 2,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "beverage_base",
+  "prep_state": "liquid_beverage",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls5053",
+  "sensory": {
+   "sweet": 1,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 5,
+   "umami": 1,
+   "fatty_rich": 0,
+   "creamy": 1,
+   "crunchy": 0
+  },
+  "culinary_role": "beverage_base",
+  "prep_state": "liquid_beverage",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls0101",
+  "sensory": {
+   "sweet": 1,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 2,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "beverage_base",
+  "prep_state": "liquid_beverage",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": true,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0828",
+  "sensory": {
+   "sweet": 3,
+   "salty": 0,
+   "sour": 4,
+   "bitter": 1,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "beverage_base",
+  "prep_state": "liquid_beverage",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": true,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0163",
+  "sensory": {
+   "sweet": 0,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 3,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "beverage_base",
+  "prep_state": "liquid_beverage",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": true,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0813",
+  "sensory": {
+   "sweet": 4,
+   "salty": 0,
+   "sour": 4,
+   "bitter": 1,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "beverage_base",
+  "prep_state": "liquid_beverage",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": true,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0106",
+  "sensory": {
+   "sweet": 10,
+   "salty": 0,
+   "sour": 1,
+   "bitter": 1,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "breakfast",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls4930",
+  "sensory": {
+   "sweet": 8,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 2,
+   "umami": 1,
+   "fatty_rich": 7,
+   "creamy": 4,
+   "crunchy": 7
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls3876",
+  "sensory": {
+   "sweet": 8,
+   "salty": 0,
+   "sour": 3,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 3,
+   "crunchy": 0
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls2772",
+  "sensory": {
+   "sweet": 9,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 3,
+   "creamy": 4,
+   "crunchy": 1
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls5377",
+  "sensory": {
+   "sweet": 8,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 1,
+   "creamy": 5,
+   "crunchy": 0
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "breakfast",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls6138",
+  "sensory": {
+   "sweet": 0,
+   "salty": 6,
+   "sour": 1,
+   "bitter": 0,
+   "umami": 6,
+   "fatty_rich": 5,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls3749",
+  "sensory": {
+   "sweet": 0,
+   "salty": 2,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls2561",
+  "sensory": {
+   "sweet": 0,
+   "salty": 2,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 1,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls4123",
+  "sensory": {
+   "sweet": 2,
+   "salty": 4,
+   "sour": 3,
+   "bitter": 0,
+   "umami": 6,
+   "fatty_rich": 4,
+   "creamy": 1,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls3858",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 3,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls4342",
+  "sensory": {
+   "sweet": 1,
+   "salty": 5,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 4,
+   "creamy": 0,
+   "crunchy": 6
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0896",
+  "sensory": {
+   "sweet": 0,
+   "salty": 2,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 3,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls1835",
+  "sensory": {
+   "sweet": 0,
+   "salty": 8,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 7,
+   "fatty_rich": 6,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls4826",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 3,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls4607",
+  "sensory": {
+   "sweet": 0,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 1,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls3811",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 2,
+   "umami": 6,
+   "fatty_rich": 9,
+   "creamy": 3,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls2307",
+  "sensory": {
+   "sweet": 0,
+   "salty": 2,
+   "sour": 0,
+   "bitter": 3,
+   "umami": 7,
+   "fatty_rich": 5,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls1186",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5334",
+  "sensory": {
+   "sweet": 0,
+   "salty": 8,
+   "sour": 2,
+   "bitter": 0,
+   "umami": 7,
+   "fatty_rich": 8,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls0928",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 4,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0932",
+  "sensory": {
+   "sweet": 1,
+   "salty": 9,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 8,
+   "fatty_rich": 6,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls5169",
+  "sensory": {
+   "sweet": 1,
+   "salty": 3,
+   "sour": 1,
+   "bitter": 1,
+   "umami": 7,
+   "fatty_rich": 3,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0948",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 4,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5686",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 7,
+   "fatty_rich": 4,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0058",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0175",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 6,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0057",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0910",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 1,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0909",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0968",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 3,
+   "umami": 6,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5144",
+  "sensory": {
+   "sweet": 0,
+   "salty": 6,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 5,
+   "creamy": 1,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls5121",
+  "sensory": {
+   "sweet": 0,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 6,
+   "fatty_rich": 5,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5416",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 5,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5454",
+  "sensory": {
+   "sweet": 1,
+   "salty": 5,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 7,
+   "fatty_rich": 8,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5781",
+  "sensory": {
+   "sweet": 0,
+   "salty": 2,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5766",
+  "sensory": {
+   "sweet": 1,
+   "salty": 6,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 6,
+   "fatty_rich": 5,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5768",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 6,
+   "fatty_rich": 5,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5330",
+  "sensory": {
+   "sweet": 1,
+   "salty": 5,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0940",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 1,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6311",
+  "sensory": {
+   "sweet": 0,
+   "salty": 7,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 7,
+   "fatty_rich": 7,
+   "creamy": 2,
+   "crunchy": 1
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5826",
+  "sensory": {
+   "sweet": 1,
+   "salty": 6,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 6,
+   "fatty_rich": 7,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls5193",
+  "sensory": {
+   "sweet": 0,
+   "salty": 5,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 6,
+   "fatty_rich": 6,
+   "creamy": 1,
+   "crunchy": 3
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0459",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 3,
+   "fatty_rich": 5,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0979",
+  "sensory": {
+   "sweet": 1,
+   "salty": 7,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 6,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls5392",
+  "sensory": {
+   "sweet": 0,
+   "salty": 8,
+   "sour": 1,
+   "bitter": 0,
+   "umami": 7,
+   "fatty_rich": 7,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls5211",
+  "sensory": {
+   "sweet": 1,
+   "salty": 6,
+   "sour": 1,
+   "bitter": 1,
+   "umami": 6,
+   "fatty_rich": 5,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6349",
+  "sensory": {
+   "sweet": 1,
+   "salty": 5,
+   "sour": 3,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 5,
+   "creamy": 4,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5154",
+  "sensory": {
+   "sweet": 2,
+   "salty": 5,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 7,
+   "fatty_rich": 5,
+   "creamy": 0,
+   "crunchy": 3
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls3296",
+  "sensory": {
+   "sweet": 0,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 6,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0332",
+  "sensory": {
+   "sweet": 0,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 4,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 2
+  },
+  "culinary_role": "raw_produce",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0333",
+  "sensory": {
+   "sweet": 0,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 6,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "raw_produce",
+  "prep_state": "raw",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0671",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 3,
+   "fatty_rich": 6,
+   "creamy": 0,
+   "crunchy": 7
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls2147",
+  "sensory": {
+   "sweet": 1,
+   "salty": 3,
+   "sour": 0,
+   "bitter": 2,
+   "umami": 1,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 9
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls2052",
+  "sensory": {
+   "sweet": 5,
+   "salty": 1,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 3,
+   "creamy": 0,
+   "crunchy": 9
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "breakfast",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls5821",
+  "sensory": {
+   "sweet": 1,
+   "salty": 3,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 1,
+   "creamy": 0,
+   "crunchy": 5
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls3921",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 3,
+   "fatty_rich": 1,
+   "creamy": 0,
+   "crunchy": 2
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls5325",
+  "sensory": {
+   "sweet": 8,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 2,
+   "umami": 1,
+   "fatty_rich": 3,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls4532",
+  "sensory": {
+   "sweet": 8,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 3,
+   "umami": 1,
+   "fatty_rich": 6,
+   "creamy": 1,
+   "crunchy": 4
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls6926",
+  "sensory": {
+   "sweet": 6,
+   "salty": 0,
+   "sour": 2,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 6,
+   "creamy": 4,
+   "crunchy": 0
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls5646",
+  "sensory": {
+   "sweet": 7,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 2,
+   "umami": 0,
+   "fatty_rich": 6,
+   "creamy": 1,
+   "crunchy": 6
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls5929",
+  "sensory": {
+   "sweet": 7,
+   "salty": 0,
+   "sour": 2,
+   "bitter": 1,
+   "umami": 1,
+   "fatty_rich": 5,
+   "creamy": 7,
+   "crunchy": 0
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls6230",
+  "sensory": {
+   "sweet": 5,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 1,
+   "fatty_rich": 6,
+   "creamy": 8,
+   "crunchy": 1
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls5859",
+  "sensory": {
+   "sweet": 7,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 1,
+   "fatty_rich": 6,
+   "creamy": 1,
+   "crunchy": 1
+  },
+  "culinary_role": "baked_good",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls6214",
+  "sensory": {
+   "sweet": 6,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 1,
+   "fatty_rich": 5,
+   "creamy": 4,
+   "crunchy": 1
+  },
+  "culinary_role": "baked_good",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "breakfast",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls5936",
+  "sensory": {
+   "sweet": 7,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 1,
+   "fatty_rich": 6,
+   "creamy": 6,
+   "crunchy": 3
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls6136",
+  "sensory": {
+   "sweet": 6,
+   "salty": 0,
+   "sour": 2,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 3,
+   "creamy": 3,
+   "crunchy": 2
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls1145",
+  "sensory": {
+   "sweet": 0,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 2,
+   "fatty_rich": 10,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "cooking_fat_oil",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls1144",
+  "sensory": {
+   "sweet": 0,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 10,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "cooking_fat_oil",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls1270",
+  "sensory": {
+   "sweet": 0,
+   "salty": 2,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 10,
+   "creamy": 1,
+   "crunchy": 0
+  },
+  "culinary_role": "cooking_fat_oil",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls1146",
+  "sensory": {
+   "sweet": 0,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 2,
+   "fatty_rich": 10,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "cooking_fat_oil",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls2954",
+  "sensory": {
+   "sweet": 7,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 3,
+   "umami": 1,
+   "fatty_rich": 8,
+   "creamy": 8,
+   "crunchy": 0
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls0393",
+  "sensory": {
+   "sweet": 0,
+   "salty": 10,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls1149",
+  "sensory": {
+   "sweet": 4,
+   "salty": 2,
+   "sour": 5,
+   "bitter": 1,
+   "umami": 8,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "processed_shelf_stable",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls1795",
+  "sensory": {
+   "sweet": 6,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 3,
+   "umami": 1,
+   "fatty_rich": 7,
+   "creamy": 8,
+   "crunchy": 0
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "low",
+   "caffeine": true,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls4349",
+  "sensory": {
+   "sweet": 1,
+   "salty": 5,
+   "sour": 0,
+   "bitter": 2,
+   "umami": 6,
+   "fatty_rich": 4,
+   "creamy": 3,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls7118",
+  "sensory": {
+   "sweet": 1,
+   "salty": 5,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 3,
+   "creamy": 6,
+   "crunchy": 0
+  },
+  "culinary_role": "soup_stew_base",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls4603",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 3,
+   "creamy": 5,
+   "crunchy": 0
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls4599",
+  "sensory": {
+   "sweet": 2,
+   "salty": 4,
+   "sour": 3,
+   "bitter": 1,
+   "umami": 6,
+   "fatty_rich": 5,
+   "creamy": 1,
+   "crunchy": 2
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls2027",
+  "sensory": {
+   "sweet": 7,
+   "salty": 0,
+   "sour": 4,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 0,
+   "creamy": 1,
+   "crunchy": 0
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls4313",
+  "sensory": {
+   "sweet": 1,
+   "salty": 6,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 8,
+   "creamy": 1,
+   "crunchy": 5
+  },
+  "culinary_role": "snack",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls1427",
+  "sensory": {
+   "sweet": 1,
+   "salty": 3,
+   "sour": 0,
+   "bitter": 4,
+   "umami": 4,
+   "fatty_rich": 3,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls2196",
+  "sensory": {
+   "sweet": 1,
+   "salty": 3,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 2,
+   "fatty_rich": 3,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls1901",
+  "sensory": {
+   "sweet": 3,
+   "salty": 2,
+   "sour": 3,
+   "bitter": 0,
+   "umami": 1,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "base_carb",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "high",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls1626",
+  "sensory": {
+   "sweet": 4,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 1,
+   "fatty_rich": 1,
+   "creamy": 5,
+   "crunchy": 0
+  },
+  "culinary_role": "breakfast",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "breakfast"
+   ]
+  }
+ },
+ {
+  "id": "bls4151",
+  "sensory": {
+   "sweet": 3,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 2,
+   "fatty_rich": 3,
+   "creamy": 4,
+   "crunchy": 0
+  },
+  "culinary_role": "soup_stew_base",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls4221",
+  "sensory": {
+   "sweet": 4,
+   "salty": 0,
+   "sour": 3,
+   "bitter": 0,
+   "umami": 1,
+   "fatty_rich": 1,
+   "creamy": 5,
+   "crunchy": 1
+  },
+  "culinary_role": "breakfast",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "breakfast"
+   ]
+  }
+ },
+ {
+  "id": "bls4266",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 3,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 7,
+   "creamy": 7,
+   "crunchy": 0
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "any"
+   ]
+  }
+ },
+ {
+  "id": "bls4296",
+  "sensory": {
+   "sweet": 1,
+   "salty": 3,
+   "sour": 1,
+   "bitter": 1,
+   "umami": 2,
+   "fatty_rich": 4,
+   "creamy": 1,
+   "crunchy": 1
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls4232",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls2157",
+  "sensory": {
+   "sweet": 3,
+   "salty": 2,
+   "sour": 2,
+   "bitter": 1,
+   "umami": 2,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls1897",
+  "sensory": {
+   "sweet": 1,
+   "salty": 5,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 2,
+   "creamy": 1,
+   "crunchy": 0
+  },
+  "culinary_role": "soup_stew_base",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls2071",
+  "sensory": {
+   "sweet": 2,
+   "salty": 0,
+   "sour": 0,
+   "bitter": 3,
+   "umami": 1,
+   "fatty_rich": 3,
+   "creamy": 6,
+   "crunchy": 0
+  },
+  "culinary_role": "breakfast",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "breakfast"
+   ]
+  }
+ },
+ {
+  "id": "bls4254",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 4,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 6,
+   "creamy": 4,
+   "crunchy": 0
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls4062",
+  "sensory": {
+   "sweet": 1,
+   "salty": 7,
+   "sour": 1,
+   "bitter": 2,
+   "umami": 7,
+   "fatty_rich": 4,
+   "creamy": 1,
+   "crunchy": 4
+  },
+  "culinary_role": "snack",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls1607",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 1,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 4,
+   "creamy": 5,
+   "crunchy": 1
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls1621",
+  "sensory": {
+   "sweet": 0,
+   "salty": 6,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 6,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "soup_stew_base",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls0999",
+  "sensory": {
+   "sweet": 0,
+   "salty": 6,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 7,
+   "fatty_rich": 0,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "soup_stew_base",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls1341",
+  "sensory": {
+   "sweet": 5,
+   "salty": 2,
+   "sour": 4,
+   "bitter": 0,
+   "umami": 1,
+   "fatty_rich": 3,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "side_dish",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls2122",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 2,
+   "bitter": 0,
+   "umami": 7,
+   "fatty_rich": 5,
+   "creamy": 5,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls1962",
+  "sensory": {
+   "sweet": 0,
+   "salty": 3,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls4368",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 7,
+   "fatty_rich": 4,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6901",
+  "sensory": {
+   "sweet": 3,
+   "salty": 4,
+   "sour": 3,
+   "bitter": 0,
+   "umami": 8,
+   "fatty_rich": 6,
+   "creamy": 1,
+   "crunchy": 0
+  },
+  "culinary_role": "soup_stew_base",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6692",
+  "sensory": {
+   "sweet": 6,
+   "salty": 0,
+   "sour": 2,
+   "bitter": 0,
+   "umami": 0,
+   "fatty_rich": 3,
+   "creamy": 6,
+   "crunchy": 0
+  },
+  "culinary_role": "dessert_sweet",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "low",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls6413",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 5,
+   "creamy": 5,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6334",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 5,
+   "fatty_rich": 4,
+   "creamy": 4,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6498",
+  "sensory": {
+   "sweet": 1,
+   "salty": 3,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 2,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6482",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 4,
+   "fatty_rich": 4,
+   "creamy": 0,
+   "crunchy": 5
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6399",
+  "sensory": {
+   "sweet": 1,
+   "salty": 6,
+   "sour": 2,
+   "bitter": 1,
+   "umami": 6,
+   "fatty_rich": 5,
+   "creamy": 0,
+   "crunchy": 2
+  },
+  "culinary_role": "snack",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls6390",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 1,
+   "bitter": 0,
+   "umami": 6,
+   "fatty_rich": 4,
+   "creamy": 0,
+   "crunchy": 5
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6398",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 7,
+   "fatty_rich": 3,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5114",
+  "sensory": {
+   "sweet": 2,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 3,
+   "creamy": 1,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6371",
+  "sensory": {
+   "sweet": 1,
+   "salty": 7,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 7,
+   "fatty_rich": 8,
+   "creamy": 0,
+   "crunchy": 1
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6631",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 1,
+   "bitter": 1,
+   "umami": 7,
+   "fatty_rich": 4,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6656",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 2,
+   "bitter": 1,
+   "umami": 5,
+   "fatty_rich": 6,
+   "creamy": 1,
+   "crunchy": 2
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls5960",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 1,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 3,
+   "creamy": 4,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls6081",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 1,
+   "umami": 7,
+   "fatty_rich": 6,
+   "creamy": 0,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls4049",
+  "sensory": {
+   "sweet": 1,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 3,
+   "creamy": 0,
+   "crunchy": 2
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls7023",
+  "sensory": {
+   "sweet": 1,
+   "salty": 3,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 5,
+   "creamy": 5,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "medium",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ },
+ {
+  "id": "bls2543",
+  "sensory": {
+   "sweet": 1,
+   "salty": 6,
+   "sour": 2,
+   "bitter": 0,
+   "umami": 6,
+   "fatty_rich": 7,
+   "creamy": 8,
+   "crunchy": 0
+  },
+  "culinary_role": "condiment_seasoning",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "medium",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "breakfast",
+    "snack"
+   ]
+  }
+ },
+ {
+  "id": "bls7049",
+  "sensory": {
+   "sweet": 2,
+   "salty": 4,
+   "sour": 0,
+   "bitter": 0,
+   "umami": 5,
+   "fatty_rich": 3,
+   "creamy": 4,
+   "crunchy": 0
+  },
+  "culinary_role": "main_protein",
+  "prep_state": "cooked_ready_to_eat",
+  "effect": {
+   "glycemic_load": "low",
+   "satiety": "high",
+   "caffeine": false,
+   "alcohol": false,
+   "time_of_day": [
+    "lunch",
+    "dinner"
+   ]
+  }
+ }
+]

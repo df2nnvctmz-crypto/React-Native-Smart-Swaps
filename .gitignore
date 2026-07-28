@@ -50,3 +50,45 @@ modules/*/ios/build/
 # logs
 logcat.txt
 *.log
+
+# ---------------------------------------------------------------------------
+# Large regenerable data from the swap-ranker pipeline
+#
+# Git keeps every version of every file forever, so committing these once puts
+# them in history permanently even if they are deleted later, and every clone
+# then pays to download them. GitHub warns above 50 MB and refuses above 100 MB;
+# scripts/food_vectors_jina.json alone is 64.8 MB.
+#
+# Rule applied: ignore anything a script can rebuild, keep anything that
+# represents real compute or that the app loads at runtime.
+# ---------------------------------------------------------------------------
+
+# Embedding vectors, ~96 MB combined - rebuilt by the embedding pipeline.
+scripts/food_vectors.json
+scripts/food_vectors_jina.json
+
+# Pair corpus, ~29 MB - `npm run pairs:slates` (~20s), `npm run pairs:rows`.
+scripts/pair_slates.jsonl
+scripts/pair_training_rows.json
+
+# Other intermediates, all regenerable from their own scripts.
+scripts/ml_dataset.jsonl
+scripts/bls_variants.jsonl
+scripts/retail_variants.jsonl
+scripts/synthetic_cases.json
+scripts/vector_vs_lexical_results_*.json
+scripts/food_vectors_*.json
+scripts/__pycache__/
+*.json.tmp
+
+# Failure logs from the labeling runs (the labels themselves ARE committed).
+scripts/pair_labels_failed.json
+scripts/food_attributes/*failed_ids.json
+
+# DELIBERATELY NOT IGNORED - expensive to produce or needed at runtime:
+#   scripts/pair_labels.json                    13,538 LLM labels, ~25h of compute
+#   scripts/food_attributes/ollama_output.json  7,140 attribute labels, ~24h
+#   app/engine/swapGbm.data.json                trained model the app evaluates
+#   app/engine/foodAttributes.data.json         packed attributes the app reads
+#   app/engine/foodEmbeddings.data.json         packed embeddings the app reads
+#   assets/smartswaps.db                        database shipped with the app

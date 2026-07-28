@@ -1,0 +1,992 @@
+[
+  {
+    "source": "Netto",
+    "raw_line": "Bio BB Teigwaren sort. 500g",
+    "system_match_id": "bls0009",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0009",
+    "correct_name": "Teigwaren eifrei, roh"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Bio BB rot.Lins.Fusi.250g",
+    "system_match_id": "bls1056",
+    "system_confidence": 0.66,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Netto",
+    "raw_line": "GL Skyr Frucht sort.500g",
+    "system_match_id": "bls0772",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0772",
+    "correct_name": "Skyr, Frischkäse < 10 % Fett i. Tr."
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Zeus Feta 200g",
+    "system_match_id": "bls0090",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0090",
+    "correct_name": "Feta mind. 45 % Fett i. Tr."
+  },
+  {
+    "source": "Netto",
+    "raw_line": "GL Proteinjogh.sort.200g",
+    "system_match_id": "bls0695",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0695",
+    "correct_name": "Sahnejoghurt mind. 10 % Fett"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Bert.Olivenoel sort.500ml",
+    "system_match_id": "bls0830",
+    "system_confidence": 0.91,
+    "verdict": "CORRECT",
+    "correct_id": "bls0830",
+    "correct_name": "Olivenöl"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Carat Meersalz Muehle 110g",
+    "system_match_id": "bls0850",
+    "system_confidence": 0.57,
+    "verdict": "CORRECT",
+    "correct_id": "bls0850",
+    "correct_name": "Meersalz"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Ostmann Pfefferkoer.wei. 60g",
+    "system_match_id": "bls0401",
+    "system_confidence": 0.83,
+    "verdict": "CORRECT",
+    "correct_id": "bls0401",
+    "correct_name": "Pfeffer schwarz, getrocknet"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Mon.Ital.Pesto sort.190g",
+    "system_match_id": "bls4128",
+    "system_confidence": 0.81,
+    "verdict": "CORRECT",
+    "correct_id": "bls4128",
+    "correct_name": "Pesto rosso"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Cl. Cashew ErdnussMixsort.200g",
+    "system_match_id": "bls0227",
+    "system_confidence": 0.9,
+    "verdict": "CORRECT",
+    "correct_id": "bls0227",
+    "correct_name": "Erdnuss geröstet"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "EHFE Mozzarella oGt 125g",
+    "system_match_id": "bls0760",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0760",
+    "correct_name": "Mozzarella mind. 45 % Fett i. Tr."
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Wa.Stein.Pizza Thunf.360g",
+    "system_match_id": "bls7140",
+    "system_confidence": 0.75,
+    "verdict": "CORRECT",
+    "correct_id": "bls7140",
+    "correct_name": "Pizza tonno (mit Tomatensauce, Mozzarella, Thunfisch, Sardellen, Oliven, Zwiebeln)"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "GL Sahne 30% 200g VLOG",
+    "system_match_id": "bls0699",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0699",
+    "correct_name": "Schlagsahne mind. 30 % Fett"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Suppengemuese 500g",
+    "system_match_id": "bls2399",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls2399",
+    "correct_name": "Gemüsesuppe"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Apfel Pink Lady Lose",
+    "system_match_id": "bls0237",
+    "system_confidence": 0.93,
+    "verdict": "CORRECT",
+    "correct_id": "bls0237",
+    "correct_name": "Apfel roh"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Hackfleisch gem. 500g",
+    "system_match_id": "bls0453",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0453",
+    "correct_name": "Schwein Hackfleisch, roh"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Haehnchen-Innenfilet 400g",
+    "system_match_id": "bls0951",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0951",
+    "correct_name": "Hähnchen Brustfilet, roh"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Pringles Original 165g",
+    "system_match_id": "bls0501",
+    "system_confidence": 0.36,
+    "verdict": "WRONG",
+    "correct_id": "bls0327",
+    "correct_name": "Kartoffelchips/Stapelchips, diverse Sorten"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Hackfleisch gemischt 400g",
+    "system_match_id": "bls5105",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls5105",
+    "correct_name": "Rind/Schwein, Hackfleisch gemischt, roh"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Paprika Mix 500g",
+    "system_match_id": "bls0016",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0016",
+    "correct_name": "Gemüsepaprika grün, roh"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Tomaten 500g",
+    "system_match_id": "bls0293",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0293",
+    "correct_name": "Tomate roh"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "BE Tomaten ganz,geschaelt 400g",
+    "system_match_id": "bls0636",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0636",
+    "correct_name": "Tomate geschält, Konserve"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Grop.Proteinpudding sort. 200g",
+    "system_match_id": "bls3933",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls3933",
+    "correct_name": "Quarkpudding"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "BioBio Tomatenmark 200g",
+    "system_match_id": "bls1149",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls1149",
+    "correct_name": "Tomatenmark"
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Ostm. Chiliflocken 45g",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Netto",
+    "raw_line": "Gran.Pr.pu.Gr. sort. 500g",
+    "system_match_id": "bls2962",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls2962",
+    "correct_name": "Grießflammeri/Grießpudding, ohne Ei"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "PAPRIKA ORANGE",
+    "system_match_id": "bls0016",
+    "system_confidence": 0.9,
+    "verdict": "CORRECT",
+    "correct_id": "bls0016",
+    "correct_name": "Gemüsepaprika grün, roh"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "BANANE CHIQUITA",
+    "system_match_id": "bls0249",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0249",
+    "correct_name": "Banane roh"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "BIO HACK SW RD",
+    "system_match_id": "bls0453",
+    "system_confidence": 0.85,
+    "verdict": "CORRECT",
+    "correct_id": "bls0453",
+    "correct_name": "Schwein Hackfleisch, roh"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "WACHOLDERSCHINKE",
+    "system_match_id": "bls0932",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0932",
+    "correct_name": "Parmaschinken"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "EDELSALAMI",
+    "system_match_id": "bls0978",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0978",
+    "correct_name": "Salami (Schwein)"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "CHESTER SKS",
+    "system_match_id": "bls0705",
+    "system_confidence": 0.68,
+    "verdict": "CORRECT",
+    "correct_id": "bls0705",
+    "correct_name": "Chester (Cheddar) mind. 50 % Fett i. Tr."
+  },
+  {
+    "source": "REWE",
+    "raw_line": "MOZZ. BUFA MIN",
+    "system_match_id": "bls0760",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0760",
+    "correct_name": "Mozzarella mind. 45 % Fett i. Tr."
+  },
+  {
+    "source": "REWE",
+    "raw_line": "ROGGEN PUR",
+    "system_match_id": "bls0548",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0548",
+    "correct_name": "Roggen Grieß"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "HAMBURGER BROET.",
+    "system_match_id": "bls6050",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls6050",
+    "correct_name": "Hamburger"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "KOERNER BALANCE",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "REWE",
+    "raw_line": "TORTELLONI",
+    "system_match_id": "bls0148",
+    "system_confidence": 0.93,
+    "verdict": "CORRECT",
+    "correct_id": "bls0148",
+    "correct_name": "Eierteigwaren Tortelloni (Ricotta-Spinat-Füllung) getrocknet"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "KR.BUTTERBAGUETT",
+    "system_match_id": "bls3080",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls3080",
+    "correct_name": "Butter gesalzen"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "KNOBLAUCHBAGUETT",
+    "system_match_id": "bls2246",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls2246",
+    "correct_name": "Weizenbaguette"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "SALATBEUTEL REWE",
+    "system_match_id": "bls0274",
+    "system_confidence": 0.94,
+    "verdict": "CORRECT",
+    "correct_id": "bls0274",
+    "correct_name": "Kopfsalat roh"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "TOMATE SNACK",
+    "system_match_id": "bls0293",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0293",
+    "correct_name": "Tomate roh"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "GURKE MINI",
+    "system_match_id": "bls0524",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0524",
+    "correct_name": "Gurke roh"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "JA! MARKENBUTTER",
+    "system_match_id": "bls3080",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls3080",
+    "correct_name": "Butter gesalzen"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "BIO WEIDEMILCH",
+    "system_match_id": "bls0340",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0340",
+    "correct_name": "Rohmilch/Vorzugsmilch, mind. 3,5 % Fett"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "SKYR HIMB.-CRANB",
+    "system_match_id": "bls0772",
+    "system_confidence": 0.87,
+    "verdict": "CORRECT",
+    "correct_id": "bls0772",
+    "correct_name": "Skyr, Frischkäse < 10 % Fett i. Tr."
+  },
+  {
+    "source": "REWE",
+    "raw_line": "SKYR VANILLE",
+    "system_match_id": "bls0772",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0772",
+    "correct_name": "Skyr, Frischkäse < 10 % Fett i. Tr."
+  },
+  {
+    "source": "REWE",
+    "raw_line": "NATUR.JOGHURT 3.5",
+    "system_match_id": "bls0695",
+    "system_confidence": 0.95,
+    "verdict": "WRONG",
+    "correct_id": "bls0343",
+    "correct_name": "Joghurt mild, mind. 3,5 % Fett"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "PROTEINPUDD. SCH",
+    "system_match_id": "bls1937",
+    "system_confidence": 0.95,
+    "verdict": "WRONG",
+    "correct_id": "bls3933",
+    "correct_name": "Quarkpudding"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "ANGUS BURGER",
+    "system_match_id": "bls1282",
+    "system_confidence": 0.61,
+    "verdict": "WRONG",
+    "correct_id": "bls4867",
+    "correct_name": "Rind Frikadelle, roh"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "STEINOFEN PIZZA",
+    "system_match_id": "bls5972",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls5972",
+    "correct_name": "Türkische Pizza (Lahmacun) ungefüllt"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "WAGNER FLAMMK.",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "WRONG",
+    "correct_id": "bls3957",
+    "correct_name": "Flammkuchen Elsässer Art"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "JA! BASMATI REIS",
+    "system_match_id": "bls0007",
+    "system_confidence": 0.91,
+    "verdict": "CORRECT",
+    "correct_id": "bls0007",
+    "correct_name": "Reis poliert, roh"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "RAVIOLI PIKANT",
+    "system_match_id": "bls4159",
+    "system_confidence": 0.85,
+    "verdict": "CORRECT",
+    "correct_id": "bls4159",
+    "correct_name": "Eier-Frischteigwaren Ravioli (Gemüsefüllung) roh"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "RAVIOLI ARRABIAT",
+    "system_match_id": "bls3911",
+    "system_confidence": 0.85,
+    "verdict": "CORRECT",
+    "correct_id": "bls3911",
+    "correct_name": "Teigwaren eifrei, Ravioli (Gemüsefüllung) in Tomatensoße, Konserve"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "ACETO BALSAMICO",
+    "system_match_id": "bls1148",
+    "system_confidence": 0.67,
+    "verdict": "CORRECT",
+    "correct_id": "bls1148",
+    "correct_name": "Balsamicoessig"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "SAUCE ARRABBIATA",
+    "system_match_id": "bls5194",
+    "system_confidence": 0.7,
+    "verdict": "CORRECT",
+    "correct_id": "bls5194",
+    "correct_name": "Tomatensauce aus Tomatenmark"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "TOSKANA KRAEUTER",
+    "system_match_id": "bls0792",
+    "system_confidence": 0.88,
+    "verdict": "CORRECT",
+    "correct_id": "bls0792",
+    "correct_name": "Kräutertee (Getränk)"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "BURGER SAUCE",
+    "system_match_id": "bls1682",
+    "system_confidence": 0.43,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "REWE",
+    "raw_line": "GOLDMAIS",
+    "system_match_id": "bls0005",
+    "system_confidence": 0.94,
+    "verdict": "CORRECT",
+    "correct_id": "bls0005",
+    "correct_name": "Mais roh"
+  },
+  {
+    "source": "REWE",
+    "raw_line": "KIDNEY BOHNEN",
+    "system_match_id": "bls0658",
+    "system_confidence": 0.63,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "REWE",
+    "raw_line": "PASSIERT.TOMATEN",
+    "system_match_id": "bls0857",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0857",
+    "correct_name": "Tomaten passiert/Tomatenpüree"
+  },
+  {
+    "source": "Receipt3 (low OCR quality)",
+    "raw_line": "SKYR FRUCHT EINGERUEHRT",
+    "system_match_id": "bls0772",
+    "system_confidence": 0.87,
+    "verdict": "CORRECT",
+    "correct_id": "bls0772",
+    "correct_name": "Skyr, Frischkäse < 10 % Fett i. Tr."
+  },
+  {
+    "source": "Receipt3 (low OCR quality)",
+    "raw_line": "HIGH PROTEIN PUDDING",
+    "system_match_id": "bls3956",
+    "system_confidence": 0.9,
+    "verdict": "WRONG",
+    "correct_id": "bls3933",
+    "correct_name": "Quarkpudding"
+  },
+  {
+    "source": "Receipt3 (low OCR quality)",
+    "raw_line": "KAMINWUERSTEL 150G",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt3 (low OCR quality)",
+    "raw_line": "CRANBERRIES",
+    "system_match_id": "bls0246",
+    "system_confidence": 0.82,
+    "verdict": "CORRECT",
+    "correct_id": "bls0246",
+    "correct_name": "Cranberries getrocknet, gezuckert"
+  },
+  {
+    "source": "Receipt3 (low OCR quality)",
+    "raw_line": "HACKFLEISCH GEM. 500G",
+    "system_match_id": "bls0453",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0453",
+    "correct_name": "Schwein Hackfleisch, roh"
+  },
+  {
+    "source": "Receipt3 (low OCR quality)",
+    "raw_line": "GRAINS SORTIMENT",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt3 (low OCR quality)",
+    "raw_line": "COCA COLA ZERO",
+    "system_match_id": "bls1947",
+    "system_confidence": 0.58,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt3 (low OCR quality)",
+    "raw_line": "AUBERGINEN",
+    "system_match_id": "bls0523",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0523",
+    "correct_name": "Aubergine roh"
+  },
+  {
+    "source": "Receipt3 (low OCR quality)",
+    "raw_line": "NEKTARINEN 600G",
+    "system_match_id": "bls0594",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0594",
+    "correct_name": "Nektarine roh"
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "Cl.Erdnuesse gewuerztsort.150g",
+    "system_match_id": "bls0227",
+    "system_confidence": 0.76,
+    "verdict": "CORRECT",
+    "correct_id": "bls0227",
+    "correct_name": "Erdnuss geröstet"
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "GL SK SHB Toast 250g",
+    "system_match_id": "bls5426",
+    "system_confidence": 0.47,
+    "verdict": "WRONG",
+    "correct_id": "bls0534",
+    "correct_name": "Weizentoastbrot/Buttertoastbrot"
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "Bon.Parboi.Reis lose 1kg",
+    "system_match_id": "bls0008",
+    "system_confidence": 0.93,
+    "verdict": "CORRECT",
+    "correct_id": "bls0008",
+    "correct_name": "Reis parboiled, poliert, roh"
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "Wagn.Elsaesser Flammkuchen300g",
+    "system_match_id": "bls3957",
+    "system_confidence": 0.69,
+    "verdict": "CORRECT",
+    "correct_id": "bls3957",
+    "correct_name": "Flammkuchen Elsässer Art"
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "Bio Kokosnussmilch 400ml",
+    "system_match_id": "bls1469",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls1469",
+    "correct_name": "Kokosmilch/Kokosnussmilch"
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "FishermansFriend Spearmint 25g",
+    "system_match_id": "bls3098",
+    "system_confidence": 0.54,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "NicNac's XL Fun BBQ 170g",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "TommBlanche-k-St.ca.170g",
+    "system_match_id": "bls0091",
+    "system_confidence": 0.73,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "M.I.Mozz.Miniku.Clas.125g VLOG",
+    "system_match_id": "bls0760",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0760",
+    "correct_name": "Mozzarella mind. 45 % Fett i. Tr."
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "Laugen Burger Buns 300g",
+    "system_match_id": "bls1956",
+    "system_confidence": 0.5,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "Rispentomaten",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "WRONG",
+    "correct_id": "bls0293",
+    "correct_name": "Tomate roh"
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "Zucchini",
+    "system_match_id": "bls0297",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0297",
+    "correct_name": "Zucchini roh"
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "Lauchzwiebeln",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "WRONG",
+    "correct_id": "bls0630",
+    "correct_name": "Frühlingszwiebel/Lauchzwiebel, roh"
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "Bio Avocado 2er Netz",
+    "system_match_id": "bls0248",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0248",
+    "correct_name": "Avocado roh"
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "Haehnchen-Minutenschnitzel400g",
+    "system_match_id": "bls4518",
+    "system_confidence": 0.73,
+    "verdict": "WRONG",
+    "correct_id": "bls0951",
+    "correct_name": "Hähnchen Brustfilet, roh"
+  },
+  {
+    "source": "Receipt4 (Netto app)",
+    "raw_line": "SB BBQR-Hamburger 400g QS",
+    "system_match_id": "bls6050",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls6050",
+    "correct_name": "Hamburger"
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Frosta Bratk.Haehn. 500g",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Spinat-Ricotta-Tortelloni400g",
+    "system_match_id": "bls0148",
+    "system_confidence": 0.88,
+    "verdict": "CORRECT",
+    "correct_id": "bls0148",
+    "correct_name": "Eierteigwaren Tortelloni (Ricotta-Spinat-Füllung) getrocknet"
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "M.I. Parm.Reg. ger.60g",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "WRONG",
+    "correct_id": "bls1080",
+    "correct_name": "Parmesan mind. 30 % Fett i. Tr."
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Mondo Italiano Penne500g",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "WRONG",
+    "correct_id": "bls0009",
+    "correct_name": "Teigwaren eifrei, roh"
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Mondo Ita.Spaghetti 500g",
+    "system_match_id": "bls0009",
+    "system_confidence": 0.7,
+    "verdict": "CORRECT",
+    "correct_id": "bls0009",
+    "correct_name": "Teigwaren eifrei, roh"
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Satori Basmatireis 1 kg",
+    "system_match_id": "bls0007",
+    "system_confidence": 0.89,
+    "verdict": "CORRECT",
+    "correct_id": "bls0007",
+    "correct_name": "Reis poliert, roh"
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "M.I. Nudelsauce sort.420g",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Wagner Piccolinis Salami 270g",
+    "system_match_id": "bls0978",
+    "system_confidence": 0.9,
+    "verdict": "CORRECT",
+    "correct_id": "bls0978",
+    "correct_name": "Salami (Schwein)"
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "FF Linsenchipssort.90g",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "GL Hirtenkaese oGt 250g",
+    "system_match_id": "bls0091",
+    "system_confidence": 0.95,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Drog.Cayen.Pfeff.gema.35g",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "AS Sandwich Vollkorn 750g",
+    "system_match_id": "bls1779",
+    "system_confidence": 0.57,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Liebl.Mozzarella 40% 125g",
+    "system_match_id": "bls0760",
+    "system_confidence": 0.9,
+    "verdict": "CORRECT",
+    "correct_id": "bls0760",
+    "correct_name": "Mozzarella mind. 45 % Fett i. Tr."
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Bio BB NL Eier 6ST",
+    "system_match_id": "bls1820",
+    "system_confidence": 0.95,
+    "verdict": "WRONG",
+    "correct_id": "bls0230",
+    "correct_name": "Hühnerei roh"
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Bio Fruekartoffeln 1,5kg",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "WRONG",
+    "correct_id": "bls0672",
+    "correct_name": "Kartoffel ungeschält, roh"
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Liebl. Minirispentomaten 400g",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "WRONG",
+    "correct_id": "bls0293",
+    "correct_name": "Tomate roh"
+  },
+  {
+    "source": "Receipt5 (Netto app)",
+    "raw_line": "Bananen Lose MT",
+    "system_match_id": "bls0249",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0249",
+    "correct_name": "Banane roh"
+  },
+  {
+    "source": "Receipt6 (Netto paper)",
+    "raw_line": "BE Tomaten gesch.geh.400g",
+    "system_match_id": "bls0636",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0636",
+    "correct_name": "Tomate geschält, Konserve"
+  },
+  {
+    "source": "Receipt6 (Netto paper)",
+    "raw_line": "Bonrisi Langkorn.KB 1000g",
+    "system_match_id": null,
+    "system_confidence": 0.0,
+    "verdict": "WRONG",
+    "correct_id": "bls0007",
+    "correct_name": "Reis poliert, roh"
+  },
+  {
+    "source": "Receipt6 (Netto paper)",
+    "raw_line": "Rist.Pizza Tonno 2ST 710g",
+    "system_match_id": "bls7140",
+    "system_confidence": 0.85,
+    "verdict": "CORRECT",
+    "correct_id": "bls7140",
+    "correct_name": "Pizza tonno (mit Tomatensauce, Mozzarella, Thunfisch, Sardellen, Oliven, Zwiebeln)"
+  },
+  {
+    "source": "Receipt6 (Netto paper)",
+    "raw_line": "M.I. GranaPadano ger.150g",
+    "system_match_id": "bls0710",
+    "system_confidence": 0.62,
+    "verdict": "GAP",
+    "correct_id": null,
+    "correct_name": null
+  },
+  {
+    "source": "Receipt6 (Netto paper)",
+    "raw_line": "VL Eier BB BH 6ST M-XL",
+    "system_match_id": "bls1820",
+    "system_confidence": 0.95,
+    "verdict": "WRONG",
+    "correct_id": "bls0230",
+    "correct_name": "Hühnerei roh"
+  },
+  {
+    "source": "Receipt6 (Netto paper)",
+    "raw_line": "Suppengemuese",
+    "system_match_id": "bls2399",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls2399",
+    "correct_name": "Gemüsesuppe"
+  },
+  {
+    "source": "Receipt6 (Netto paper)",
+    "raw_line": "Paprika rot 500g",
+    "system_match_id": "bls0017",
+    "system_confidence": 0.95,
+    "verdict": "CORRECT",
+    "correct_id": "bls0017",
+    "correct_name": "Gemüsepaprika rot, roh"
+  }
+]

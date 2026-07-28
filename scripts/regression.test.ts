@@ -18,6 +18,7 @@ import * as path from 'path';
 import { parseReceiptLine } from '../app/engine/receiptParser';
 import { buildFoodIndex } from '../app/engine/foodIndex';
 import { FoodItem } from '../app/types';
+import { loadFoods } from './lib/loadFoods';
 import { REGRESSION_CASES, RegressionCase } from './regression.cases';
 
 /**
@@ -26,9 +27,7 @@ import { REGRESSION_CASES, RegressionCase } from './regression.cases';
  */
 const DISPLAY_CONFIDENCE_FLOOR = 0.45;
 
-const foods = JSON.parse(
-  fs.readFileSync(path.join(process.cwd(), 'foods.json'), 'utf-8')
-) as FoodItem[];
+const foods = loadFoods();
 
 const indexData = buildFoodIndex(foods);
 const byId = new Map(foods.map(f => [f.id, f]));

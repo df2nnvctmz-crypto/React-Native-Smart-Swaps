@@ -1,0 +1,558 @@
+[
+  {
+    "text": ".Mozzarella ger.",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "204547 Käse in Saizlake",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "554859 Edamer Tilsiter",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "AIDPara",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "BIO FRISCHKAESE",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Biol. Fri.Milch 3,8%",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "EMMENTALER 45%",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Fresh milk 3.5%",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "FRISCHKASE SORTIERT",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "G&G ger. Hartkäse",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "GAZi Feta trad. Art 1,99 x",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Gouda slices",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Grillkäse HP Natur",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Hirtenkäse 45% (OGT)",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "ja! Geriebener Mozzarella 250g",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "JOGH GRIECH. ART",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Joghurt mild 1,5%",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "K.H-Milch",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "KBio. Feta",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Kondensmilch 7,5%",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "M.I.Mozz.MiniHF3leich125g",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Mozzarella",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Mü. Jogh.m.d. Ecke",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Müllermilch",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Quark-Traum Pfirsich",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "Schmelzkäse Sahne",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": "SKYR VANILLE",
+    "label": "Dairy & Eggs"
+  },
+  {
+    "text": ".champignons",
+    "label": "Pantry"
+  },
+  {
+    "text": "1 Süßkartoffel 1 Stk.",
+    "label": "Pantry"
+  },
+  {
+    "text": "187599 Kuerbiskern-SB-Se",
+    "label": "Pantry"
+  },
+  {
+    "text": "202811 Creme a la Culsine",
+    "label": "Pantry"
+  },
+  {
+    "text": "211584 Schw. Bratwurst",
+    "label": "Pantry"
+  },
+  {
+    "text": "318104 Hähn. Brustfilet",
+    "label": "Pantry"
+  },
+  {
+    "text": "525149 Ingwer Bio",
+    "label": "Pantry"
+  },
+  {
+    "text": "611319 Bio Reis-/Mai swaf.",
+    "label": "Pantry"
+  },
+  {
+    "text": "642554 F&G Rind Hamburger",
+    "label": "Pantry"
+  },
+  {
+    "text": "Alkaholfreie Getraenke",
+    "label": "Pantry"
+  },
+  {
+    "text": "Baguette Bauern",
+    "label": "Pantry"
+  },
+  {
+    "text": "Barilla Bio-Pesto",
+    "label": "Pantry"
+  },
+  {
+    "text": "Barilla Pesto Rosso",
+    "label": "Pantry"
+  },
+  {
+    "text": "Bio Champignons",
+    "label": "Pantry"
+  },
+  {
+    "text": "Bio Haferdrink",
+    "label": "Pantry"
+  },
+  {
+    "text": "BIO MANDELMUS BR",
+    "label": "Pantry"
+  },
+  {
+    "text": "Bio-Eier 0KT 10er",
+    "label": "Pantry"
+  },
+  {
+    "text": "Bio-Tofu Natur",
+    "label": "Pantry"
+  },
+  {
+    "text": "BriocheBröt.m.Butter",
+    "label": "Pantry"
+  },
+  {
+    "text": "Butter-Schokobröt.",
+    "label": "Pantry"
+  },
+  {
+    "text": "Champignons 400g",
+    "label": "Pantry"
+  },
+  {
+    "text": "Corned Beef",
+    "label": "Pantry"
+  },
+  {
+    "text": "Dill",
+    "label": "Pantry"
+  },
+  {
+    "text": "EIER BH M-L",
+    "label": "Pantry"
+  },
+  {
+    "text": "EIER FH WEISS",
+    "label": "Pantry"
+  },
+  {
+    "text": "Elsäss. Flammkuchen",
+    "label": "Pantry"
+  },
+  {
+    "text": "FISH. FR. W. CHERRY",
+    "label": "Pantry"
+  },
+  {
+    "text": "Fro.Thai Hähnchen",
+    "label": "Pantry"
+  },
+  {
+    "text": "G&G SALAMI STICKS",
+    "label": "Pantry"
+  },
+  {
+    "text": "GNOCCHI SUESSKAR",
+    "label": "Pantry"
+  },
+  {
+    "text": "HAFERDRINK",
+    "label": "Pantry"
+  },
+  {
+    "text": "Heinz Tomatenketchup",
+    "label": "Pantry"
+  },
+  {
+    "text": "ja! Kichererbsen 265g",
+    "label": "Pantry"
+  },
+  {
+    "text": "K. Schinkenspeck",
+    "label": "Pantry"
+  },
+  {
+    "text": "K.Weizenmischbröt.",
+    "label": "Pantry"
+  },
+  {
+    "text": "Kartoffeln 5kg",
+    "label": "Pantry"
+  },
+  {
+    "text": "Kbio LK Naturreis",
+    "label": "Pantry"
+  },
+  {
+    "text": "KBio.Leinsamen ga.",
+    "label": "Pantry"
+  },
+  {
+    "text": "KIDNEYBOHNEN",
+    "label": "Pantry"
+  },
+  {
+    "text": "Knackebrot Snacks",
+    "label": "Pantry"
+  },
+  {
+    "text": "KV Pesto alla Cala",
+    "label": "Pantry"
+  },
+  {
+    "text": "LACHS NATUR",
+    "label": "Pantry"
+  },
+  {
+    "text": "MANIOK",
+    "label": "Pantry"
+  },
+  {
+    "text": "Mü Doppeldecker",
+    "label": "Pantry"
+  },
+  {
+    "text": "OdP Tomat. passiert",
+    "label": "Pantry"
+  },
+  {
+    "text": "Pesto",
+    "label": "Pantry"
+  },
+  {
+    "text": "Pr. Riegel Peanut",
+    "label": "Pantry"
+  },
+  {
+    "text": "QSF Salami Venetia",
+    "label": "Pantry"
+  },
+  {
+    "text": "reis-tit BurritoBow 1,89 X",
+    "label": "Pantry"
+  },
+  {
+    "text": "ROESTZWIEBELN",
+    "label": "Pantry"
+  },
+  {
+    "text": "Rügenw. Vegane Salami",
+    "label": "Pantry"
+  },
+  {
+    "text": "Schupfnudeln",
+    "label": "Pantry"
+  },
+  {
+    "text": "Smoked ham",
+    "label": "Pantry"
+  },
+  {
+    "text": "Steak",
+    "label": "Pantry"
+  },
+  {
+    "text": "Suppenfleisch",
+    "label": "Pantry"
+  },
+  {
+    "text": "THUNFISCH STEAK",
+    "label": "Pantry"
+  },
+  {
+    "text": "TOMATENMARK",
+    "label": "Pantry"
+  },
+  {
+    "text": "Veg. Fischstäbchen",
+    "label": "Pantry"
+  },
+  {
+    "text": "Wilhelm Brandenburg Hackfleisch gemischt",
+    "label": "Pantry"
+  },
+  {
+    "text": "ZWIEBEL",
+    "label": "Pantry"
+  },
+  {
+    "text": "Zwiebeln",
+    "label": "Pantry"
+  },
+  {
+    "text": "Zwiebeln gelb",
+    "label": "Pantry"
+  },
+  {
+    "text": "0% Zucker 0,331",
+    "label": "Produce"
+  },
+  {
+    "text": "228595 Johannisb. rot lo",
+    "label": "Produce"
+  },
+  {
+    "text": "230712 Bananen RFA",
+    "label": "Produce"
+  },
+  {
+    "text": "807535 Bananen",
+    "label": "Produce"
+  },
+  {
+    "text": "Ananas",
+    "label": "Produce"
+  },
+  {
+    "text": "Apfel rot süß",
+    "label": "Produce"
+  },
+  {
+    "text": "AUBERGINE",
+    "label": "Produce"
+  },
+  {
+    "text": "B. M. Heidelbeeren",
+    "label": "Produce"
+  },
+  {
+    "text": "Banane Chiquita kg",
+    "label": "Produce"
+  },
+  {
+    "text": "BANANEN G+G",
+    "label": "Produce"
+  },
+  {
+    "text": "Bio Gurke",
+    "label": "Produce"
+  },
+  {
+    "text": "Bio Trauben kernlos",
+    "label": "Produce"
+  },
+  {
+    "text": "Birnen 1kg",
+    "label": "Produce"
+  },
+  {
+    "text": "Broccoli 500g",
+    "label": "Produce"
+  },
+  {
+    "text": "Clementinen",
+    "label": "Produce"
+  },
+  {
+    "text": "Eisbergsalat-Mix",
+    "label": "Produce"
+  },
+  {
+    "text": "Erdbeeren 500g St",
+    "label": "Produce"
+  },
+  {
+    "text": "Feldsalat 150g",
+    "label": "Produce"
+  },
+  {
+    "text": "Fenchel Kg",
+    "label": "Produce"
+  },
+  {
+    "text": "Gewürzgurken Auslese",
+    "label": "Produce"
+  },
+  {
+    "text": "Gurken",
+    "label": "Produce"
+  },
+  {
+    "text": "HIMBEERE BIO",
+    "label": "Produce"
+  },
+  {
+    "text": "K-Bio Gurken",
+    "label": "Produce"
+  },
+  {
+    "text": "KBio Tomaten Risp.",
+    "label": "Produce"
+  },
+  {
+    "text": "KIWI BIO",
+    "label": "Produce"
+  },
+  {
+    "text": "Knoblauch 200g im Netz",
+    "label": "Produce"
+  },
+  {
+    "text": "LIMETTE BIO",
+    "label": "Produce"
+  },
+  {
+    "text": "Mango",
+    "label": "Produce"
+  },
+  {
+    "text": "Multicol. Salat",
+    "label": "Produce"
+  },
+  {
+    "text": "Paprika grün, scharf",
+    "label": "Produce"
+  },
+  {
+    "text": "PAPRIKA ROT",
+    "label": "Produce"
+  },
+  {
+    "text": "Pflaumen",
+    "label": "Produce"
+  },
+  {
+    "text": "RADIESCHEN",
+    "label": "Produce"
+  },
+  {
+    "text": "ROTE BETE FRISCH",
+    "label": "Produce"
+  },
+  {
+    "text": "Rucola Salat",
+    "label": "Produce"
+  },
+  {
+    "text": "Salat Mini-Romana",
+    "label": "Produce"
+  },
+  {
+    "text": "SCHALOTTEN BIO",
+    "label": "Produce"
+  },
+  {
+    "text": "Tafel Meerrettich",
+    "label": "Produce"
+  },
+  {
+    "text": "TOMATEN DELIZIO",
+    "label": "Produce"
+  },
+  {
+    "text": "Trauben 500g Mix",
+    "label": "Produce"
+  },
+  {
+    "text": "ZITR. -DIREKTSAFT",
+    "label": "Produce"
+  },
+  {
+    "text": "Zitronen Bio",
+    "label": "Produce"
+  },
+  {
+    "text": "Zucchini kg",
+    "label": "Produce"
+  },
+  {
+    "text": "285258 Brauner Rohrzucker",
+    "label": "Snacks"
+  },
+  {
+    "text": "Bresso Frischkäse",
+    "label": "Snacks"
+  },
+  {
+    "text": "Gran.Pr.pu.Gr. sort. 500g",
+    "label": "Snacks"
+  },
+  {
+    "text": "KLC.Proteinpudding",
+    "label": "Snacks"
+  },
+  {
+    "text": "PU-BRUSTFILET",
+    "label": "Snacks"
+  },
+  {
+    "text": "Salzstangen",
+    "label": "Snacks"
+  },
+  {
+    "text": "WHITE CHOCOLATE",
+    "label": "Snacks"
+  }
+]
