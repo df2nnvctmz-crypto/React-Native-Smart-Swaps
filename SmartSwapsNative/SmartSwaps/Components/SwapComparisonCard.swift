@@ -61,7 +61,7 @@ struct SwapComparisonCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(fromFood.name).font(.system(size: 16, weight: .heavy)).foregroundColor(Colors.textPrimary)
                     .lineLimit(2).frame(minHeight: 40, alignment: .top)
-                Text("\(fromFood.health_score) pt").font(.system(size: 12, weight: .heavy)).foregroundColor(Color(hex: 0xD97706))
+                Text("\(JSNumber.roundToInt(fromFood.health_score)) pt").font(.system(size: 12, weight: .heavy)).foregroundColor(Color(hex: 0xD97706))
                     .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(Color(hex: 0xFEF3C7)).cornerRadius(6)
                 Text("\(JSNumber.roundToInt(fromFood.nutrients_per_100.kcal)) kcal").font(.system(size: 13)).foregroundColor(Colors.textMuted)
@@ -76,7 +76,7 @@ struct SwapComparisonCard: View {
             VStack(alignment: .trailing, spacing: 4) {
                 Text(toFood.name).font(.system(size: 16, weight: .heavy)).foregroundColor(Colors.textPrimary)
                     .lineLimit(2).multilineTextAlignment(.trailing).frame(minHeight: 40, alignment: .top)
-                Text("\(toFood.health_score) pt").font(.system(size: 12, weight: .heavy)).foregroundColor(Colors.primaryGreen)
+                Text("\(JSNumber.roundToInt(toFood.health_score)) pt").font(.system(size: 12, weight: .heavy)).foregroundColor(Colors.primaryGreen)
                     .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(Colors.lightGreenBg).cornerRadius(6)
                 Text("\(JSNumber.roundToInt(toFood.nutrients_per_100.kcal)) kcal").font(.system(size: 13)).foregroundColor(Colors.textMuted)

@@ -118,7 +118,7 @@ struct ReceiptItemList: View {
             SwapAlgorithm.findBestSwaps($0, safeFoods, 1, profileStore.profile.dietaryPreference.map(\.rawValue))
         } ?? []
         let swap = bestSwaps.first
-        let improvement = swap.map { $0.candidate.health_score - (f?.health_score ?? 0) } ?? 0
+        let improvement = swap.map { JSNumber.roundToInt($0.candidate.health_score) - JSNumber.roundToInt(f?.health_score ?? 0) } ?? 0
 
         return VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
@@ -147,7 +147,7 @@ struct ReceiptItemList: View {
 
                 HStack(spacing: 12) {
                     if let f, confidence >= 0.45 {
-                        Text("\(f.health_score)").font(.system(size: 15, weight: .heavy)).foregroundColor(Colors.primaryGreen)
+                        Text("\(JSNumber.roundToInt(f.health_score))").font(.system(size: 15, weight: .heavy)).foregroundColor(Colors.primaryGreen)
                             .frame(width: 28, alignment: .trailing)
                     } else {
                         Text("-").font(.system(size: 15, weight: .heavy)).foregroundColor(Color(hex: 0x999999))

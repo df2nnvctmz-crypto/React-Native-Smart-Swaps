@@ -87,7 +87,7 @@ struct SearchScreen: View {
                 let sc = scoreColors(Double(f.health_score))
                 return Row(id: f.id, type: "food", title: f.name, category: f.category,
                            calories: "\(JSNumber.roundToInt(f.nutrients_per_100.kcal)) kcal / 100g",
-                           score: f.health_score,
+                           score: JSNumber.roundToInt(f.health_score),
                            nutriScore: f.nutri_grade.map { "NUTRI SCORE \($0.uppercased())" } ?? "UNGRADED",
                            nutriColor: sc.fg, nutriBg: sc.bg, iconKey: f.icon_key,
                            isFavorite: favoritesStore.isFavorite(.food, f.id))
@@ -143,7 +143,7 @@ struct SearchScreen: View {
             let best = SwapAlgorithm.findBestSwaps(badFood, pool, 1, profileStore.profile.dietaryPreference.map(\.rawValue))
             guard let top = best.first else { return nil }
             return SwapRow(id: "\(badFood.id)-\(top.candidate.id)", from: badFood, to: top.candidate,
-                            improvement: top.candidate.health_score - badFood.health_score)
+                            improvement: JSNumber.roundToInt(top.candidate.health_score) - JSNumber.roundToInt(badFood.health_score))
         }
     }
 

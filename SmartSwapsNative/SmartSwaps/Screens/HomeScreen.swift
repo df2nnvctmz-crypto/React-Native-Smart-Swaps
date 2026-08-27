@@ -170,7 +170,7 @@ struct HomeScreen: View {
             CoverFlowCarousel(data: plan.items, keyExtractor: { item, _ in item.id }, initialScrollIndex: plan.initialScrollIndex) { item, _ in
                 Button(action: { onNavigateToFood?(item.id) }) {
                     SpotlightCard(
-                        title: item.name, score: item.health_score,
+                        title: item.name, score: JSNumber.roundToInt(item.health_score),
                         categoryLabel: item.id == plan.spotlight?.id ? "TODAY'S SPOTLIGHT" : "RECOMMENDED",
                         iconName: getIconForCategory(item.category),
                         calories: "\(JSNumber.roundToInt(item.nutrients_per_100.kcal)) kcal / 100g",

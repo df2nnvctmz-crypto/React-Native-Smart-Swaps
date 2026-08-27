@@ -15,7 +15,7 @@ than Phase 7 so nothing is reconstructed from memory later. **Phases 0-3 complet
 | 2 Data layer | done, verified row-for-row, **plus** `StorageService`, `FoodsStore`, `RecipeStore`/`RecipeMath`, `ProfileStore`/`ProfileMath`, `FavoritesStore`, `InventoryStore` added in Phase 4 (below) — components needed them to type-check at all. `SettingsStore` is the one piece of PORTING_INVENTORY.md §4 still not ported; nothing in Phase 4 needed it. |
 | 3 Engine | **done, gate green** — 18 tests, 0 failures. `Micronutrients.swift` and `RecipeMath.swift` (parseGrams/scaleNutrients/addNutrients/divideNutrients/estimateTimeDifficulty/hydrateRecipes) added in Phase 4 — both were named in PORTING_INVENTORY.md's file map but not yet written; neither has a differential test against the TS original the way the rest of the engine does (see below). |
 | 4 Components | **all 15 non-dead components ported** (`Header.tsx` stays unported per §9). SwiftUI `#Preview` on every file, but **none have been opened in Xcode/Previews** — no macOS available, see below. |
-| 5 Screens | **in progress** — 4 tab screens + Settings done; the 3 detail/modal screens (food, recipe, receipt) and the scan flow are not yet ported. |
+| 5 Screens | **done** — all 9 screens ported (4 tabs, Settings, food/recipe/receipt detail, scan flow). No navigation wiring between them yet — that's Phase 6. |
 | 6-7 | not started |
 
 Run the suite with `swift test` in `SmartSwapsNative/` (~4 min, no simulator needed).
@@ -254,6 +254,63 @@ sheet" comment); the numeric input modal uses the same centered-transparent-over
 bottom, not centered, and would look wrong for this one). `.presentationDetents`/`.wheel`
 picker styling has not been checked in an actual iOS Settings-style bottom sheet since no
 Xcode/simulator is available - visually unverified like everything else in Phases 4-5.
+
+---
+
+## Phase 5 continued — detail screens and the scan flow (Phase 5 now done)
+
+Ports the remaining 4 screens: `FoodDetailScreen.swift` (`app/food/[id].tsx`, 716 ln),
+`RecipeDetailScreen.swift` (`app/recipe/[id].tsx`, 851 ln), `ReceiptDetailScreen.swift`
+(`app/receipt/[id].tsx`, 500 ln), `ScanReceiptScreen.swift` (`app/scan-receipt.tsx`, 465 ln).
+All 9 screens from PORTING_INVENTORY.md §8 now exist.
+
+**A significant correction to PORTING_INVENTORY.md, found by reading the actual source
+(brief rule 1: "the RN code wins") rather than trusting the earlier summary:**
+`app/engine/recipeSwapAlgorithm.ts` and `app/engine/foodVectors.ts` are both listed in
+PORTING_INVENTORY.md §5.1 as **deleted from the working tree / dead code**. Neither is true
+in the tree this phase actually read — `recipe/[id].tsx` imports and calls
+`findBestRecipeSwap` directly, which itself imports `computeVectorSimilarity` from
+`foodVectors.ts`. Both are real, live, and required for the recipe detail screen's ingredient
+swap suggestions. Ported as `Engine/RecipeSwapAlgorithm.swift` and `Engine/FoodVectors.swift`
+— the inventory was evidently written against a different tree state than what's in this repo
+now; treat its "dead code" claims for these two files as stale, not authoritative. Also added
+`Services/NativeOcr.swift` — `modules/native-ocr/ios/NativeOcrModule.swift` lifted near-
+verbatim per the brief's own instruction, with only the `ExpoModulesCore` wrapper replaced by
+`async throws`. Kept in the app target (not `SmartSwapsKit`, which also targets macOS for
+`swift test` and has no `UIKit`).
+
+**Two real, would-not-compile bugs caught and fixed in this pass, both worth flagging because
+nothing but reading the code line-by-line caught them — there is still no build gate on any of
+this:**
+
+1. **`FoodItem.health_score` is `Double`** (matches the JS `number` type and the differential-
+   tested Phase 3 data layer exactly), but numerous Phase 4/5 view-layer types
+   (`SpotlightCard.score`, `SearchScreen.Row.score`, `SwapComparisonCard`/`SearchScreen`'s
+   `improvement`) declared themselves `Int` and were fed `food.health_score` or a difference
+   of two `health_score`s directly - a type mismatch that would not compile. Fixed by wrapping
+   every such site in `JSNumber.roundToInt(...)`, which is also the behaviorally-correct
+   choice (matches `Math.round`/JS `Number#toString` truncation semantics the rest of the port
+   already standardizes on), not just a type-checker workaround. `Recipe.health_score` is
+   correctly `Int` (computed via `JSNumber.roundToInt` in `RecipeMath.hydrateRecipes`) and was
+   never affected.
+2. **Two `.onChange(of:)` call sites used the iOS 17+ two-parameter closure form**
+   (`RecipeSearchModal.swift`, `ScanReceiptScreen.swift`) on a project whose deployment target
+   is 16.4. Fixed to the iOS 14+ single-parameter form.
+
+**Deviations, each disclosed in the file's own header comment:**
+
+| File | Deviation |
+|---|---|
+| `FoodDetailScreen.swift` / `RecipeDetailScreen.swift` | Both presented as sheets (matches PORTING_INVENTORY.md §8's `presentation: 'modal'`), so the native-stack back chevron + `headerRight` favorite button become a small custom floating header (close + heart, `GlassCircleButton` styling) with `NavBlur` behind it, rather than `Stack.Screen`'s `headerRight`. `RecipeDetailScreen`'s active-totals/ingredient-swap computation re-runs on every body evaluation (no `useMemo` equivalent), same tradeoff already flagged for the tab screens. |
+| `ReceiptDetailScreen.swift` | Title-edit-on-blur has no clean SwiftUI equivalent without `@FocusState` plumbing not yet wired here - only edit-and-submit (return key) saves, not tap-away. |
+| `ScanReceiptScreen.swift` | Camera capture is a `UIImagePickerController` wrapper (SwiftUI has no built-in camera view); library selection uses `PhotosPicker` (`PhotosUI`) instead of `expo-image-picker`'s library mode - a modern SwiftUI-native equivalent, not a behavior change. The picked image round-trips through a temp JPEG file so `NativeOcr.recognize(uri:)` keeps the same file-URI contract the original module had. |
+| `ReceiptDetailScreen.swift` / `ScanReceiptScreen.swift` "Add Item via Search" | RN's `handleAddItem` accepts either a `FoodItem` or a whole `Recipe` (adding all its ingredients, tagged with `recipeName`). `SearchModal.swift`'s `onSelect` only carries a `FoodItem` (a Phase 4 simplification, see that phase's notes) - selecting a recipe from this flow isn't wired yet. Revisit alongside the still-open `ParsedReceiptItem`/`ScanRecord` `recipeName` gap already noted in Phase 5's tab-screen section. |
+
+None of these 4 files have been opened in Xcode either - same standing caveat as every other
+UI file in this port. Phase 5 is now complete; Phase 6 (navigation, modal presentation, deep
+links, haptics, the scan → parse → resolve → swap → save flow end to end) is next. Every
+`onNavigateTo*`/`onSelect*` closure across all 9 screens currently defaults to a no-op `nil` -
+`RootView` wires the 4 tab screens but nothing navigates to Settings or any detail screen yet.
 
 ---
 
