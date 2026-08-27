@@ -7,228 +7,237 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		12D00B2204374838D3EEA4D5 /* RecipeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC58633C3AA36875CBF3C381 /* RecipeCard.swift */; };
-		1D744DDCCD40646557296D0A /* ScrollOffset.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF757E21A4A93C274E40F081 /* ScrollOffset.swift */; };
-		2B8BAD04A0C7F95E51668403 /* RecommendedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CBE9A899BEC24CA2B4C28 /* RecommendedCard.swift */; };
-		37D68731CB33FB9159F22D42 /* SelectShoppingListModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54357055BA60907204C9BA44 /* SelectShoppingListModal.swift */; };
-		488589930B60F24FE8BA5104 /* CircularScoreRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 419B93761942E61FE3C2FF3D /* CircularScoreRing.swift */; };
-		4B66528BA173D2C591599898 /* ReceiptsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BAC793DCFBCBC94935EB864 /* ReceiptsScreen.swift */; };
-		5A4F55B6FB12D8ED73066D30 /* SwapComparisonCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AFCEC2975517F9721FE11CE /* SwapComparisonCard.swift */; };
-		5C0C41DCDBD12B7886BD8CA5 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D487AD6D8E09670DE8366065 /* Colors.swift */; };
-		60B02D578AFF25FB226C204F /* ReceiptItemList.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC454909E8E59C49D41AF630 /* ReceiptItemList.swift */; };
-		6887685F0F149A95C7CA0831 /* SearchModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDF4D8C7FB660A3B6F62A8FD /* SearchModal.swift */; };
-		6C9F28B672494DE2F3C472FE /* CoverFlowCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5002F5C83BF6046BFEEF77A9 /* CoverFlowCarousel.swift */; };
-		76C816CDC17A656A1A92BE41 /* FoodIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFD4691E3B49A4A4ADDD3BD /* FoodIcon.swift */; };
-		7A2AC7EFF3F240A8962FAEAC /* SmartSwapsKit in Frameworks */ = {isa = PBXBuildFile; productRef = FCC9948725158AD4E436D771 /* SmartSwapsKit */; };
-		881F4686BDA137942F38E475 /* RecipeSearchModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 431965A6DE65A5132BCD04C0 /* RecipeSearchModal.swift */; };
-		8AE8486B7BD5A69DAFEFA35D /* SmartSwapsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA9B0CCAEED94527F413698 /* SmartSwapsApp.swift */; };
-		905C570F3E06B1E4135C593A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26B605E3CEEE372AB46B9F1E /* Foundation.framework */; };
-		A028CE9EDA8CF32ED31E7A44 /* SearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F642484F6E560E72B4B601C0 /* SearchScreen.swift */; };
-		A4F5AF38CAADC24C7CB0F954 /* FoodsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 762B949C7A3BEC9679660861 /* FoodsStore.swift */; };
-		ABDFDE11AFFBA30167FE08FC /* HealthPointsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0BD83890B5F923E635F8279 /* HealthPointsCard.swift */; };
-		BA1160DAD80B03F0728B0A8D /* RecipeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E8E90A5B945B45D91EA5A6 /* RecipeStore.swift */; };
-		BAE11387235B007DBBD6FC8A /* RecipesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB920D0B7F97C3D7BA35256 /* RecipesScreen.swift */; };
-		BFFED35D3468498C80A654DD /* NutrientRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9BF1F8CC2067AC5F2892D52 /* NutrientRow.swift */; };
-		C23346FC9E8ACE029CA2CE39 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E797E9F44B1B30E0FFEF90C6 /* ProfileStore.swift */; };
-		C563793B41767E5C4186B310 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B15654148BB46F4E2F62A46 /* RootView.swift */; };
-		C800A9671F74CCBA1292BA73 /* SpotlightCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BA3B9974689243EC1C940 /* SpotlightCard.swift */; };
-		CBC3274CCB62C9C85568D6D2 /* GlassHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DB018C17D9EBEF7195A58B /* GlassHeader.swift */; };
-		CFA24C45E92BF86B35BA561C /* LiquidSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF2CF6DA140A2A3EC71301B0 /* LiquidSlider.swift */; };
-		D9984BC40CB3B13BCB1B99BD /* InventoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 087FE332E6C31297F3B01129 /* InventoryStore.swift */; };
-		DA2AF7C4D6718C66DF88913B /* NutritionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2635BD34A0D452E4B5766A2 /* NutritionModal.swift */; };
-		DC7BCAE277010236FE2B7147 /* FavoritesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FBC4730CB3A04DC5B38625 /* FavoritesStore.swift */; };
-		DE780FDCCB774C564E51F485 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B45E3FD5F3BA005EC0B97E7 /* Typography.swift */; };
-		E7031B28080199BACE5184F1 /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10E2FE3E82B4768A688EBD2 /* HomeScreen.swift */; };
-		F57E6445958B5AC80CDB0E48 /* GlobalStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDCA7C1E7AF264FA98A8689D /* GlobalStyles.swift */; };
+		02608776C4A8CFCC1C779B36 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81EF8A171D18E6AC457FBB45 /* RootView.swift */; };
+		1D693F10E1E084C045252E89 /* FoodIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854D3B584987076AC46F92E6 /* FoodIcon.swift */; };
+		20957D4756B6BDC2ECCE6703 /* InventoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E883310A158B8117935EEA8 /* InventoryStore.swift */; };
+		2641C3837F5FFF1E735EB382 /* ReceiptsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD686868DE8BF7BF4FB520C /* ReceiptsScreen.swift */; };
+		270CC725AB4CEEE217E4C661 /* RecipesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86A5F4C8DB7B000537D37C08 /* RecipesScreen.swift */; };
+		2CBEB367B957ECF92D390B78 /* SpotlightCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36C3CC322FF0B46B278FBC77 /* SpotlightCard.swift */; };
+		2FFE1FBDB19BB762D8F8E05E /* SearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FEB882E44C1493ADCBA7DA /* SearchScreen.swift */; };
+		39EC4886494029FA72B36929 /* SwapComparisonCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18C21C966EB301757C7125A1 /* SwapComparisonCard.swift */; };
+		4324E8D84A5515AD682B0090 /* GlobalStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC85EABF5DFB6DAF8170EC56 /* GlobalStyles.swift */; };
+		4A171A93CE57421C7E0054CC /* RecipeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71FAF54DC3ABC457F628AE15 /* RecipeCard.swift */; };
+		4A62B371D29C2CF1F196C066 /* FavoritesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24FD7F568106EE0B46194113 /* FavoritesStore.swift */; };
+		501A45B77ADB1BFE3CC960C5 /* RecipeSearchModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6123BDFEB2CEDE811D91782A /* RecipeSearchModal.swift */; };
+		5BF607F10DD61C3B64DE177E /* FoodsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 818B9A1530F4938B5923BCBA /* FoodsStore.swift */; };
+		5D25D032FBB608C7C455B912 /* RecipeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE13FDC22A723D6D4B69B5DA /* RecipeStore.swift */; };
+		6A71630D4EE9A9EE472EB16E /* LiquidSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923EB79D0E3B1D25C33890D3 /* LiquidSlider.swift */; };
+		70FC270BFC7560CF34F38EBE /* SearchModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CE88CEA8DA7ED40A95BABC /* SearchModal.swift */; };
+		7570899CF40E1470F942B932 /* ReceiptItemList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29450A5E09E434BFAAFCC515 /* ReceiptItemList.swift */; };
+		827BBED85B746756B723A436 /* SelectShoppingListModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87A775A185691DF871D2DCFE /* SelectShoppingListModal.swift */; };
+		82ACEDA322A9450D2182325D /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E7F001CA000180B8CFBA35 /* Colors.swift */; };
+		84A6A79AF9BD0F74D2E9857F /* HealthPointsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4A80162C36F84BEEC367AA7 /* HealthPointsCard.swift */; };
+		8808765C4DAABBCDDA6A3311 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CC22809762D521C75AAB7D1 /* ProfileStore.swift */; };
+		A19A54A603D6D9E875AEE7B2 /* RecommendedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117CBB63CAAED36081B35D5C /* RecommendedCard.swift */; };
+		AAF873163261D3883EA82C88 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EED3987351C22D1225CCB44 /* ActivityView.swift */; };
+		AB5285762C05821760417318 /* NutrientRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5FB794770E5BB8340B5D8C /* NutrientRow.swift */; };
+		B5D4C7B4B5242E468A5606AC /* GlassHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65AC186223C1ACD1C05E3553 /* GlassHeader.swift */; };
+		B6251FADDBDD237F4A106613 /* ScrollOffset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B7B9C5FA192ECF9A4935193 /* ScrollOffset.swift */; };
+		B6D79371ED7E2388C055E1CA /* SmartSwapsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57860208D72C83A8D6860BFB /* SmartSwapsApp.swift */; };
+		BF868B62928A831FD5D2B508 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07B3CEBB90C3DFFC857A839 /* SettingsStore.swift */; };
+		C1FAB31C403C5C39E1F222A0 /* CoverFlowCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6B606759A8A57978D4C66C /* CoverFlowCarousel.swift */; };
+		CC053DDEEDC3B5545C42E7FF /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E7BFB43B216DDB807085E7 /* SettingsScreen.swift */; };
+		E3D9BAF7838A77ACAF226303 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E00E78320462F37A171546 /* Foundation.framework */; };
+		E93EE7E8EF4EBF75476866F2 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63171F3B050BD9B5E24EA438 /* Typography.swift */; };
+		EB9307494534939EAAA6787A /* SmartSwapsKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5506746A847DD9055E91BB7F /* SmartSwapsKit */; };
+		F295F7ACF93A143941BACA06 /* CircularScoreRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA696ED9A666B89A222A233B /* CircularScoreRing.swift */; };
+		FC53B62156580E5317FE4BB6 /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A05E2071005E18FCEB376733 /* HomeScreen.swift */; };
+		FE58F300A5FB3FBB56371ED0 /* NutritionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9FB4F24C7DD52EAD6F620D5 /* NutritionModal.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		087FE332E6C31297F3B01129 /* InventoryStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InventoryStore.swift; sourceTree = "<group>"; };
-		0B45E3FD5F3BA005EC0B97E7 /* Typography.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
-		11DB018C17D9EBEF7195A58B /* GlassHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlassHeader.swift; sourceTree = "<group>"; };
-		1B15654148BB46F4E2F62A46 /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		26B605E3CEEE372AB46B9F1E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		2FB920D0B7F97C3D7BA35256 /* RecipesScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecipesScreen.swift; sourceTree = "<group>"; };
-		419B93761942E61FE3C2FF3D /* CircularScoreRing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircularScoreRing.swift; sourceTree = "<group>"; };
-		431965A6DE65A5132BCD04C0 /* RecipeSearchModal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecipeSearchModal.swift; sourceTree = "<group>"; };
-		44C35FED23E798448BF142B8 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		45E8E90A5B945B45D91EA5A6 /* RecipeStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecipeStore.swift; sourceTree = "<group>"; };
-		5002F5C83BF6046BFEEF77A9 /* CoverFlowCarousel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoverFlowCarousel.swift; sourceTree = "<group>"; };
-		54357055BA60907204C9BA44 /* SelectShoppingListModal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SelectShoppingListModal.swift; sourceTree = "<group>"; };
-		5BFD4691E3B49A4A4ADDD3BD /* FoodIcon.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FoodIcon.swift; sourceTree = "<group>"; };
-		6BAC793DCFBCBC94935EB864 /* ReceiptsScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReceiptsScreen.swift; sourceTree = "<group>"; };
-		762B949C7A3BEC9679660861 /* FoodsStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FoodsStore.swift; sourceTree = "<group>"; };
-		7C1BA3B9974689243EC1C940 /* SpotlightCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpotlightCard.swift; sourceTree = "<group>"; };
-		90967EA6D880B991B1BBFA86 /* SmartSwaps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartSwaps.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9AFCEC2975517F9721FE11CE /* SwapComparisonCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwapComparisonCard.swift; sourceTree = "<group>"; };
-		A0BD83890B5F923E635F8279 /* HealthPointsCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HealthPointsCard.swift; sourceTree = "<group>"; };
-		A58CBE9A899BEC24CA2B4C28 /* RecommendedCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecommendedCard.swift; sourceTree = "<group>"; };
-		BBA9B0CCAEED94527F413698 /* SmartSwapsApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SmartSwapsApp.swift; sourceTree = "<group>"; };
-		BC454909E8E59C49D41AF630 /* ReceiptItemList.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReceiptItemList.swift; sourceTree = "<group>"; };
-		BF757E21A4A93C274E40F081 /* ScrollOffset.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScrollOffset.swift; sourceTree = "<group>"; };
-		C0FBC4730CB3A04DC5B38625 /* FavoritesStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FavoritesStore.swift; sourceTree = "<group>"; };
-		C9BF1F8CC2067AC5F2892D52 /* NutrientRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NutrientRow.swift; sourceTree = "<group>"; };
-		CC58633C3AA36875CBF3C381 /* RecipeCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecipeCard.swift; sourceTree = "<group>"; };
-		D10E2FE3E82B4768A688EBD2 /* HomeScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
-		D2635BD34A0D452E4B5766A2 /* NutritionModal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NutritionModal.swift; sourceTree = "<group>"; };
-		D487AD6D8E09670DE8366065 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
-		DF2CF6DA140A2A3EC71301B0 /* LiquidSlider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiquidSlider.swift; sourceTree = "<group>"; };
-		E797E9F44B1B30E0FFEF90C6 /* ProfileStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
-		EDCA7C1E7AF264FA98A8689D /* GlobalStyles.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlobalStyles.swift; sourceTree = "<group>"; };
-		EDF4D8C7FB660A3B6F62A8FD /* SearchModal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchModal.swift; sourceTree = "<group>"; };
-		F642484F6E560E72B4B601C0 /* SearchScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchScreen.swift; sourceTree = "<group>"; };
+		00E00E78320462F37A171546 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		117CBB63CAAED36081B35D5C /* RecommendedCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecommendedCard.swift; sourceTree = "<group>"; };
+		18C21C966EB301757C7125A1 /* SwapComparisonCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwapComparisonCard.swift; sourceTree = "<group>"; };
+		24FD7F568106EE0B46194113 /* FavoritesStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FavoritesStore.swift; sourceTree = "<group>"; };
+		29450A5E09E434BFAAFCC515 /* ReceiptItemList.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReceiptItemList.swift; sourceTree = "<group>"; };
+		2FD686868DE8BF7BF4FB520C /* ReceiptsScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReceiptsScreen.swift; sourceTree = "<group>"; };
+		36C3CC322FF0B46B278FBC77 /* SpotlightCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpotlightCard.swift; sourceTree = "<group>"; };
+		3E883310A158B8117935EEA8 /* InventoryStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InventoryStore.swift; sourceTree = "<group>"; };
+		4CC22809762D521C75AAB7D1 /* ProfileStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
+		53E7F001CA000180B8CFBA35 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		57860208D72C83A8D6860BFB /* SmartSwapsApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SmartSwapsApp.swift; sourceTree = "<group>"; };
+		5EED3987351C22D1225CCB44 /* ActivityView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
+		6123BDFEB2CEDE811D91782A /* RecipeSearchModal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecipeSearchModal.swift; sourceTree = "<group>"; };
+		63171F3B050BD9B5E24EA438 /* Typography.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		65AC186223C1ACD1C05E3553 /* GlassHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlassHeader.swift; sourceTree = "<group>"; };
+		71CE88CEA8DA7ED40A95BABC /* SearchModal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchModal.swift; sourceTree = "<group>"; };
+		71FAF54DC3ABC457F628AE15 /* RecipeCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecipeCard.swift; sourceTree = "<group>"; };
+		818B9A1530F4938B5923BCBA /* FoodsStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FoodsStore.swift; sourceTree = "<group>"; };
+		81EF8A171D18E6AC457FBB45 /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		854D3B584987076AC46F92E6 /* FoodIcon.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FoodIcon.swift; sourceTree = "<group>"; };
+		864E8076CA2068090AED6819 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		86A5F4C8DB7B000537D37C08 /* RecipesScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecipesScreen.swift; sourceTree = "<group>"; };
+		87A775A185691DF871D2DCFE /* SelectShoppingListModal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SelectShoppingListModal.swift; sourceTree = "<group>"; };
+		8B7B9C5FA192ECF9A4935193 /* ScrollOffset.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScrollOffset.swift; sourceTree = "<group>"; };
+		923EB79D0E3B1D25C33890D3 /* LiquidSlider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiquidSlider.swift; sourceTree = "<group>"; };
+		A05E2071005E18FCEB376733 /* HomeScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
+		A07B3CEBB90C3DFFC857A839 /* SettingsStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		A0E7BFB43B216DDB807085E7 /* SettingsScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
+		AB5FB794770E5BB8340B5D8C /* NutrientRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NutrientRow.swift; sourceTree = "<group>"; };
+		C4A80162C36F84BEEC367AA7 /* HealthPointsCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HealthPointsCard.swift; sourceTree = "<group>"; };
+		CA696ED9A666B89A222A233B /* CircularScoreRing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircularScoreRing.swift; sourceTree = "<group>"; };
+		D9FB4F24C7DD52EAD6F620D5 /* NutritionModal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NutritionModal.swift; sourceTree = "<group>"; };
+		E5509D770662ECA5E181FAF4 /* SmartSwaps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartSwaps.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EC85EABF5DFB6DAF8170EC56 /* GlobalStyles.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlobalStyles.swift; sourceTree = "<group>"; };
+		F9FEB882E44C1493ADCBA7DA /* SearchScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchScreen.swift; sourceTree = "<group>"; };
+		FB6B606759A8A57978D4C66C /* CoverFlowCarousel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoverFlowCarousel.swift; sourceTree = "<group>"; };
+		FE13FDC22A723D6D4B69B5DA /* RecipeStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecipeStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		0315BE9EACAA1265F68DF9DE /* Frameworks */ = {
+		E98084B2C36D55E4C46CD277 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				905C570F3E06B1E4135C593A /* Foundation.framework in Frameworks */,
-				7A2AC7EFF3F240A8962FAEAC /* SmartSwapsKit in Frameworks */,
+				E3D9BAF7838A77ACAF226303 /* Foundation.framework in Frameworks */,
+				EB9307494534939EAAA6787A /* SmartSwapsKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		2CB3D32CA1D1BAC6B883F887 /* SmartSwaps */ = {
+		23E0C186E47A63679296C6F7 /* State */ = {
 			isa = PBXGroup;
 			children = (
-				949BC40573A7CAC7AE1BD4F5 /* App */,
-				A422B38F4108B6E7D313447A /* DesignSystem */,
-				EC9DA1BF2576418E4263BFD8 /* Screens */,
-				9794DE930671A5149D716CB7 /* State */,
-				393EC5BC5BED085B0597691B /* Components */,
-				A03C97C49A473920CD2F55A0 /* Resources */,
-			);
-			name = SmartSwaps;
-			path = SmartSwaps;
-			sourceTree = "<group>";
-		};
-		393EC5BC5BED085B0597691B /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				419B93761942E61FE3C2FF3D /* CircularScoreRing.swift */,
-				5002F5C83BF6046BFEEF77A9 /* CoverFlowCarousel.swift */,
-				5BFD4691E3B49A4A4ADDD3BD /* FoodIcon.swift */,
-				11DB018C17D9EBEF7195A58B /* GlassHeader.swift */,
-				A0BD83890B5F923E635F8279 /* HealthPointsCard.swift */,
-				DF2CF6DA140A2A3EC71301B0 /* LiquidSlider.swift */,
-				C9BF1F8CC2067AC5F2892D52 /* NutrientRow.swift */,
-				D2635BD34A0D452E4B5766A2 /* NutritionModal.swift */,
-				BC454909E8E59C49D41AF630 /* ReceiptItemList.swift */,
-				CC58633C3AA36875CBF3C381 /* RecipeCard.swift */,
-				431965A6DE65A5132BCD04C0 /* RecipeSearchModal.swift */,
-				A58CBE9A899BEC24CA2B4C28 /* RecommendedCard.swift */,
-				EDF4D8C7FB660A3B6F62A8FD /* SearchModal.swift */,
-				54357055BA60907204C9BA44 /* SelectShoppingListModal.swift */,
-				7C1BA3B9974689243EC1C940 /* SpotlightCard.swift */,
-				9AFCEC2975517F9721FE11CE /* SwapComparisonCard.swift */,
-			);
-			name = Components;
-			path = Components;
-			sourceTree = "<group>";
-		};
-		7660D88BF61A9DF84DC87929 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				90967EA6D880B991B1BBFA86 /* SmartSwaps.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		949BC40573A7CAC7AE1BD4F5 /* App */ = {
-			isa = PBXGroup;
-			children = (
-				1B15654148BB46F4E2F62A46 /* RootView.swift */,
-				BBA9B0CCAEED94527F413698 /* SmartSwapsApp.swift */,
-			);
-			name = App;
-			path = App;
-			sourceTree = "<group>";
-		};
-		9794DE930671A5149D716CB7 /* State */ = {
-			isa = PBXGroup;
-			children = (
-				C0FBC4730CB3A04DC5B38625 /* FavoritesStore.swift */,
-				762B949C7A3BEC9679660861 /* FoodsStore.swift */,
-				087FE332E6C31297F3B01129 /* InventoryStore.swift */,
-				E797E9F44B1B30E0FFEF90C6 /* ProfileStore.swift */,
-				45E8E90A5B945B45D91EA5A6 /* RecipeStore.swift */,
+				24FD7F568106EE0B46194113 /* FavoritesStore.swift */,
+				818B9A1530F4938B5923BCBA /* FoodsStore.swift */,
+				3E883310A158B8117935EEA8 /* InventoryStore.swift */,
+				4CC22809762D521C75AAB7D1 /* ProfileStore.swift */,
+				FE13FDC22A723D6D4B69B5DA /* RecipeStore.swift */,
+				A07B3CEBB90C3DFFC857A839 /* SettingsStore.swift */,
 			);
 			name = State;
 			path = State;
 			sourceTree = "<group>";
 		};
-		9D82AB0375E9B25E889AFEB6 /* iOS */ = {
+		2D0C2F8426E068CBCA46E3A0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				26B605E3CEEE372AB46B9F1E /* Foundation.framework */,
+				E5509D770662ECA5E181FAF4 /* SmartSwaps.app */,
 			);
-			name = iOS;
+			name = Products;
 			sourceTree = "<group>";
 		};
-		A03C97C49A473920CD2F55A0 /* Resources */ = {
+		415BF2CC05FF599A465EEEFC /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				44C35FED23E798448BF142B8 /* Info.plist */,
+				864E8076CA2068090AED6819 /* Info.plist */,
 			);
 			name = Resources;
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		A422B38F4108B6E7D313447A /* DesignSystem */ = {
+		4FFE85C8CBB6C93E70FAD22D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D487AD6D8E09670DE8366065 /* Colors.swift */,
-				EDCA7C1E7AF264FA98A8689D /* GlobalStyles.swift */,
-				BF757E21A4A93C274E40F081 /* ScrollOffset.swift */,
-				0B45E3FD5F3BA005EC0B97E7 /* Typography.swift */,
+				FE6DDF226FAE999C40C020CC /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		673CDE898D9836B8A9793C93 /* SmartSwaps */ = {
+			isa = PBXGroup;
+			children = (
+				73D5AD6127A1DFE1E8330C6A /* App */,
+				9B8845F49F545B166DBC3978 /* DesignSystem */,
+				F08D2AEDE5E1F0CE1F6A556F /* Screens */,
+				23E0C186E47A63679296C6F7 /* State */,
+				E68ED6516F9938005B7F60B5 /* Components */,
+				415BF2CC05FF599A465EEEFC /* Resources */,
+			);
+			name = SmartSwaps;
+			path = SmartSwaps;
+			sourceTree = "<group>";
+		};
+		73CF470317328D3041187636 = {
+			isa = PBXGroup;
+			children = (
+				2D0C2F8426E068CBCA46E3A0 /* Products */,
+				4FFE85C8CBB6C93E70FAD22D /* Frameworks */,
+				673CDE898D9836B8A9793C93 /* SmartSwaps */,
+			);
+			sourceTree = "<group>";
+		};
+		73D5AD6127A1DFE1E8330C6A /* App */ = {
+			isa = PBXGroup;
+			children = (
+				81EF8A171D18E6AC457FBB45 /* RootView.swift */,
+				57860208D72C83A8D6860BFB /* SmartSwapsApp.swift */,
+			);
+			name = App;
+			path = App;
+			sourceTree = "<group>";
+		};
+		9B8845F49F545B166DBC3978 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				5EED3987351C22D1225CCB44 /* ActivityView.swift */,
+				53E7F001CA000180B8CFBA35 /* Colors.swift */,
+				EC85EABF5DFB6DAF8170EC56 /* GlobalStyles.swift */,
+				8B7B9C5FA192ECF9A4935193 /* ScrollOffset.swift */,
+				63171F3B050BD9B5E24EA438 /* Typography.swift */,
 			);
 			name = DesignSystem;
 			path = DesignSystem;
 			sourceTree = "<group>";
 		};
-		B8EA50C40B778DDCC27747AB /* Frameworks */ = {
+		E68ED6516F9938005B7F60B5 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				9D82AB0375E9B25E889AFEB6 /* iOS */,
+				CA696ED9A666B89A222A233B /* CircularScoreRing.swift */,
+				FB6B606759A8A57978D4C66C /* CoverFlowCarousel.swift */,
+				854D3B584987076AC46F92E6 /* FoodIcon.swift */,
+				65AC186223C1ACD1C05E3553 /* GlassHeader.swift */,
+				C4A80162C36F84BEEC367AA7 /* HealthPointsCard.swift */,
+				923EB79D0E3B1D25C33890D3 /* LiquidSlider.swift */,
+				AB5FB794770E5BB8340B5D8C /* NutrientRow.swift */,
+				D9FB4F24C7DD52EAD6F620D5 /* NutritionModal.swift */,
+				29450A5E09E434BFAAFCC515 /* ReceiptItemList.swift */,
+				71FAF54DC3ABC457F628AE15 /* RecipeCard.swift */,
+				6123BDFEB2CEDE811D91782A /* RecipeSearchModal.swift */,
+				117CBB63CAAED36081B35D5C /* RecommendedCard.swift */,
+				71CE88CEA8DA7ED40A95BABC /* SearchModal.swift */,
+				87A775A185691DF871D2DCFE /* SelectShoppingListModal.swift */,
+				36C3CC322FF0B46B278FBC77 /* SpotlightCard.swift */,
+				18C21C966EB301757C7125A1 /* SwapComparisonCard.swift */,
 			);
-			name = Frameworks;
+			name = Components;
+			path = Components;
 			sourceTree = "<group>";
 		};
-		D425B813645116053620D00D = {
+		F08D2AEDE5E1F0CE1F6A556F /* Screens */ = {
 			isa = PBXGroup;
 			children = (
-				7660D88BF61A9DF84DC87929 /* Products */,
-				B8EA50C40B778DDCC27747AB /* Frameworks */,
-				2CB3D32CA1D1BAC6B883F887 /* SmartSwaps */,
-			);
-			sourceTree = "<group>";
-		};
-		EC9DA1BF2576418E4263BFD8 /* Screens */ = {
-			isa = PBXGroup;
-			children = (
-				D10E2FE3E82B4768A688EBD2 /* HomeScreen.swift */,
-				6BAC793DCFBCBC94935EB864 /* ReceiptsScreen.swift */,
-				2FB920D0B7F97C3D7BA35256 /* RecipesScreen.swift */,
-				F642484F6E560E72B4B601C0 /* SearchScreen.swift */,
+				A05E2071005E18FCEB376733 /* HomeScreen.swift */,
+				2FD686868DE8BF7BF4FB520C /* ReceiptsScreen.swift */,
+				86A5F4C8DB7B000537D37C08 /* RecipesScreen.swift */,
+				F9FEB882E44C1493ADCBA7DA /* SearchScreen.swift */,
+				A0E7BFB43B216DDB807085E7 /* SettingsScreen.swift */,
 			);
 			name = Screens;
 			path = Screens;
 			sourceTree = "<group>";
 		};
+		FE6DDF226FAE999C40C020CC /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				00E00E78320462F37A171546 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F8784D01C7E273DE742097A0 /* SmartSwaps */ = {
+		9FA30E25F3829CA018EA1BC2 /* SmartSwaps */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B0C253CF368368C9E4458060 /* Build configuration list for PBXNativeTarget "SmartSwaps" */;
+			buildConfigurationList = A83A10A6A4B6D8A169A78893 /* Build configuration list for PBXNativeTarget "SmartSwaps" */;
 			buildPhases = (
-				FE139988DC923B9BC4C30944 /* Sources */,
-				0315BE9EACAA1265F68DF9DE /* Frameworks */,
-				F38609463F9C56C3C2414EDD /* Resources */,
+				DFF8327F8421529B80A4137D /* Sources */,
+				E98084B2C36D55E4C46CD277 /* Frameworks */,
+				60196FAFB5EB43A3A10E4329 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -236,22 +245,22 @@
 			);
 			name = SmartSwaps;
 			packageProductDependencies = (
-				FCC9948725158AD4E436D771 /* SmartSwapsKit */,
+				5506746A847DD9055E91BB7F /* SmartSwapsKit */,
 			);
 			productName = SmartSwaps;
-			productReference = 90967EA6D880B991B1BBFA86 /* SmartSwaps.app */;
+			productReference = E5509D770662ECA5E181FAF4 /* SmartSwaps.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		E4554694B8217C64E9DB3B22 /* Project object */ = {
+		D433F54F6B6BB0749D4CB958 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 1600;
 			};
-			buildConfigurationList = A7FD53725604C605FBB83B0F /* Build configuration list for PBXProject "SmartSwaps" */;
+			buildConfigurationList = B8651EB985670B3D07E29F6F /* Build configuration list for PBXProject "SmartSwaps" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -259,23 +268,23 @@
 				en,
 				Base,
 			);
-			mainGroup = D425B813645116053620D00D;
+			mainGroup = 73CF470317328D3041187636;
 			minimizedProjectReferenceProxies = 0;
 			packageReferences = (
-				C498E57EB34B68660080305E /* XCLocalSwiftPackageReference ".." */,
+				59BE84408C7CD621179A5177 /* XCLocalSwiftPackageReference ".." */,
 			);
 			preferredProjectObjectVersion = 100;
-			productRefGroup = 7660D88BF61A9DF84DC87929 /* Products */;
+			productRefGroup = 2D0C2F8426E068CBCA46E3A0 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F8784D01C7E273DE742097A0 /* SmartSwaps */,
+				9FA30E25F3829CA018EA1BC2 /* SmartSwaps */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		F38609463F9C56C3C2414EDD /* Resources */ = {
+		60196FAFB5EB43A3A10E4329 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -285,48 +294,69 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		FE139988DC923B9BC4C30944 /* Sources */ = {
+		DFF8327F8421529B80A4137D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C563793B41767E5C4186B310 /* RootView.swift in Sources */,
-				8AE8486B7BD5A69DAFEFA35D /* SmartSwapsApp.swift in Sources */,
-				5C0C41DCDBD12B7886BD8CA5 /* Colors.swift in Sources */,
-				F57E6445958B5AC80CDB0E48 /* GlobalStyles.swift in Sources */,
-				1D744DDCCD40646557296D0A /* ScrollOffset.swift in Sources */,
-				DE780FDCCB774C564E51F485 /* Typography.swift in Sources */,
-				E7031B28080199BACE5184F1 /* HomeScreen.swift in Sources */,
-				4B66528BA173D2C591599898 /* ReceiptsScreen.swift in Sources */,
-				BAE11387235B007DBBD6FC8A /* RecipesScreen.swift in Sources */,
-				A028CE9EDA8CF32ED31E7A44 /* SearchScreen.swift in Sources */,
-				DC7BCAE277010236FE2B7147 /* FavoritesStore.swift in Sources */,
-				A4F5AF38CAADC24C7CB0F954 /* FoodsStore.swift in Sources */,
-				D9984BC40CB3B13BCB1B99BD /* InventoryStore.swift in Sources */,
-				C23346FC9E8ACE029CA2CE39 /* ProfileStore.swift in Sources */,
-				BA1160DAD80B03F0728B0A8D /* RecipeStore.swift in Sources */,
-				488589930B60F24FE8BA5104 /* CircularScoreRing.swift in Sources */,
-				6C9F28B672494DE2F3C472FE /* CoverFlowCarousel.swift in Sources */,
-				76C816CDC17A656A1A92BE41 /* FoodIcon.swift in Sources */,
-				CBC3274CCB62C9C85568D6D2 /* GlassHeader.swift in Sources */,
-				ABDFDE11AFFBA30167FE08FC /* HealthPointsCard.swift in Sources */,
-				CFA24C45E92BF86B35BA561C /* LiquidSlider.swift in Sources */,
-				BFFED35D3468498C80A654DD /* NutrientRow.swift in Sources */,
-				DA2AF7C4D6718C66DF88913B /* NutritionModal.swift in Sources */,
-				60B02D578AFF25FB226C204F /* ReceiptItemList.swift in Sources */,
-				12D00B2204374838D3EEA4D5 /* RecipeCard.swift in Sources */,
-				881F4686BDA137942F38E475 /* RecipeSearchModal.swift in Sources */,
-				2B8BAD04A0C7F95E51668403 /* RecommendedCard.swift in Sources */,
-				6887685F0F149A95C7CA0831 /* SearchModal.swift in Sources */,
-				37D68731CB33FB9159F22D42 /* SelectShoppingListModal.swift in Sources */,
-				C800A9671F74CCBA1292BA73 /* SpotlightCard.swift in Sources */,
-				5A4F55B6FB12D8ED73066D30 /* SwapComparisonCard.swift in Sources */,
+				02608776C4A8CFCC1C779B36 /* RootView.swift in Sources */,
+				B6D79371ED7E2388C055E1CA /* SmartSwapsApp.swift in Sources */,
+				AAF873163261D3883EA82C88 /* ActivityView.swift in Sources */,
+				82ACEDA322A9450D2182325D /* Colors.swift in Sources */,
+				4324E8D84A5515AD682B0090 /* GlobalStyles.swift in Sources */,
+				B6251FADDBDD237F4A106613 /* ScrollOffset.swift in Sources */,
+				E93EE7E8EF4EBF75476866F2 /* Typography.swift in Sources */,
+				FC53B62156580E5317FE4BB6 /* HomeScreen.swift in Sources */,
+				2641C3837F5FFF1E735EB382 /* ReceiptsScreen.swift in Sources */,
+				270CC725AB4CEEE217E4C661 /* RecipesScreen.swift in Sources */,
+				2FFE1FBDB19BB762D8F8E05E /* SearchScreen.swift in Sources */,
+				CC053DDEEDC3B5545C42E7FF /* SettingsScreen.swift in Sources */,
+				4A62B371D29C2CF1F196C066 /* FavoritesStore.swift in Sources */,
+				5BF607F10DD61C3B64DE177E /* FoodsStore.swift in Sources */,
+				20957D4756B6BDC2ECCE6703 /* InventoryStore.swift in Sources */,
+				8808765C4DAABBCDDA6A3311 /* ProfileStore.swift in Sources */,
+				5D25D032FBB608C7C455B912 /* RecipeStore.swift in Sources */,
+				BF868B62928A831FD5D2B508 /* SettingsStore.swift in Sources */,
+				F295F7ACF93A143941BACA06 /* CircularScoreRing.swift in Sources */,
+				C1FAB31C403C5C39E1F222A0 /* CoverFlowCarousel.swift in Sources */,
+				1D693F10E1E084C045252E89 /* FoodIcon.swift in Sources */,
+				B5D4C7B4B5242E468A5606AC /* GlassHeader.swift in Sources */,
+				84A6A79AF9BD0F74D2E9857F /* HealthPointsCard.swift in Sources */,
+				6A71630D4EE9A9EE472EB16E /* LiquidSlider.swift in Sources */,
+				AB5285762C05821760417318 /* NutrientRow.swift in Sources */,
+				FE58F300A5FB3FBB56371ED0 /* NutritionModal.swift in Sources */,
+				7570899CF40E1470F942B932 /* ReceiptItemList.swift in Sources */,
+				4A171A93CE57421C7E0054CC /* RecipeCard.swift in Sources */,
+				501A45B77ADB1BFE3CC960C5 /* RecipeSearchModal.swift in Sources */,
+				A19A54A603D6D9E875AEE7B2 /* RecommendedCard.swift in Sources */,
+				70FC270BFC7560CF34F38EBE /* SearchModal.swift in Sources */,
+				827BBED85B746756B723A436 /* SelectShoppingListModal.swift in Sources */,
+				2CBEB367B957ECF92D390B78 /* SpotlightCard.swift in Sources */,
+				39EC4886494029FA72B36929 /* SwapComparisonCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		082CA05467A233E31E47CFEE /* Debug */ = {
+		10DA9D83AB9CB0D8E7611174 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SmartSwaps/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.smartswapsmobile;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5CEE2EEA08FF43211B8C00CB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -387,7 +417,7 @@
 			};
 			name = Debug;
 		};
-		8C3814F873FFEB9CA2960B11 /* Debug */ = {
+		FDBAD42F63EC48344BFB0F21 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "";
@@ -402,10 +432,11 @@
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
-			name = Debug;
+			name = Release;
 		};
-		92F2A9D3CABF8AC5A4C52EA0 /* Release */ = {
+		FFCAC7E81BDA546F9957D66A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -459,42 +490,23 @@
 			};
 			name = Release;
 		};
-		BCB2F6EE4CB6BDF747A19DD7 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = SmartSwaps/Resources/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.smartswapsmobile;
-				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.9;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A7FD53725604C605FBB83B0F /* Build configuration list for PBXProject "SmartSwaps" */ = {
+		A83A10A6A4B6D8A169A78893 /* Build configuration list for PBXNativeTarget "SmartSwaps" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				082CA05467A233E31E47CFEE /* Debug */,
-				92F2A9D3CABF8AC5A4C52EA0 /* Release */,
+				FDBAD42F63EC48344BFB0F21 /* Release */,
+				10DA9D83AB9CB0D8E7611174 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B0C253CF368368C9E4458060 /* Build configuration list for PBXNativeTarget "SmartSwaps" */ = {
+		B8651EB985670B3D07E29F6F /* Build configuration list for PBXProject "SmartSwaps" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				BCB2F6EE4CB6BDF747A19DD7 /* Release */,
-				8C3814F873FFEB9CA2960B11 /* Debug */,
+				5CEE2EEA08FF43211B8C00CB /* Debug */,
+				FFCAC7E81BDA546F9957D66A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -502,19 +514,19 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		C498E57EB34B68660080305E /* XCLocalSwiftPackageReference ".." */ = {
+		59BE84408C7CD621179A5177 /* XCLocalSwiftPackageReference ".." */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ..;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		FCC9948725158AD4E436D771 /* SmartSwapsKit */ = {
+		5506746A847DD9055E91BB7F /* SmartSwapsKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C498E57EB34B68660080305E /* XCLocalSwiftPackageReference ".." */;
+			package = 59BE84408C7CD621179A5177 /* XCLocalSwiftPackageReference ".." */;
 			productName = SmartSwapsKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = E4554694B8217C64E9DB3B22 /* Project object */;
+	rootObject = D433F54F6B6BB0749D4CB958 /* Project object */;
 }

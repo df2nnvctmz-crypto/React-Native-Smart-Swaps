@@ -2,9 +2,9 @@ import Foundation
 
 /// `ProfileContext.tsx`'s string-union types. Raw values are the exact JS strings —
 /// persisted JSON and `findBestSwaps`' `dietaryPreference: [String]` both need them verbatim.
-public enum Sex: String, Codable, CaseIterable { case male = "Male", female = "Female" }
+public enum Sex: String, Codable, CaseIterable, Hashable { case male = "Male", female = "Female" }
 
-public enum ActivityLevel: String, Codable, CaseIterable {
+public enum ActivityLevel: String, Codable, CaseIterable, Hashable {
     case sedentary = "Sedentary"
     case lightlyActive = "Lightly Active"
     case moderatelyActive = "Moderately Active"
@@ -12,7 +12,7 @@ public enum ActivityLevel: String, Codable, CaseIterable {
     case extraActive = "Extra Active"
 }
 
-public enum WeightGoal: String, Codable, CaseIterable {
+public enum WeightGoal: String, Codable, CaseIterable, Hashable {
     case lose500 = "-0.5 kg"
     case lose250 = "-0.25 kg"
     case stay = "stay"
@@ -20,7 +20,7 @@ public enum WeightGoal: String, Codable, CaseIterable {
     case gain500 = "+0.5 kg"
 }
 
-public enum DietaryPreference: String, Codable, CaseIterable {
+public enum DietaryPreference: String, Codable, CaseIterable, Hashable {
     case balanced = "Balanced"
     case highProtein = "High Protein"
     case lowCarb = "Low Carb"

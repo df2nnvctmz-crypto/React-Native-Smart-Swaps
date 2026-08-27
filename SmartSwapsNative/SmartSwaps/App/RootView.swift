@@ -14,10 +14,9 @@ import SwiftUI
 /// deliberately just the four-tab shell the Phase 1 gate asks for.
 struct RootView: View {
     // Nesting order matches `_layout.tsx`: Profile -> Favorites -> Settings -> Inventory.
-    // `SettingsStore` doesn't exist yet (no Phase 4 component needs it) - noted as an open
-    // item in PORTING_NOTES.md rather than silently substituted for.
     @StateObject private var profileStore = ProfileStore()
     @StateObject private var favoritesStore = FavoritesStore()
+    @StateObject private var settingsStore = SettingsStore()
     @StateObject private var inventoryStore = InventoryStore()
     @StateObject private var recipeStore = RecipeStore.shared
     @StateObject private var foodsStore = FoodsStore.shared
@@ -32,7 +31,8 @@ struct RootView: View {
             // NOTHING (`if (!isLoaded) return null`) until their AsyncStorage reads resolve,
             // rather than showing defaults while loading. Reproduced here rather than the
             // brief's "show defaults" instruction, since rule 1 makes the RN code win.
-            if profileStore.isLoaded && favoritesStore.isLoaded {
+            // `InventoryProvider` does NOT gate on its own load - matches the source.
+            if profileStore.isLoaded && favoritesStore.isLoaded && settingsStore.isLoaded {
                 tabs
             } else {
                 Color(Colors.background).ignoresSafeArea()
@@ -40,6 +40,7 @@ struct RootView: View {
         }
         .environmentObject(profileStore)
         .environmentObject(favoritesStore)
+        .environmentObject(settingsStore)
         .environmentObject(inventoryStore)
         .environmentObject(recipeStore)
         .environmentObject(foodsStore)

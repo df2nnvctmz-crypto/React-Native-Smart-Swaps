@@ -15,7 +15,7 @@ than Phase 7 so nothing is reconstructed from memory later. **Phases 0-3 complet
 | 2 Data layer | done, verified row-for-row, **plus** `StorageService`, `FoodsStore`, `RecipeStore`/`RecipeMath`, `ProfileStore`/`ProfileMath`, `FavoritesStore`, `InventoryStore` added in Phase 4 (below) — components needed them to type-check at all. `SettingsStore` is the one piece of PORTING_INVENTORY.md §4 still not ported; nothing in Phase 4 needed it. |
 | 3 Engine | **done, gate green** — 18 tests, 0 failures. `Micronutrients.swift` and `RecipeMath.swift` (parseGrams/scaleNutrients/addNutrients/divideNutrients/estimateTimeDifficulty/hydrateRecipes) added in Phase 4 — both were named in PORTING_INVENTORY.md's file map but not yet written; neither has a differential test against the TS original the way the rest of the engine does (see below). |
 | 4 Components | **all 15 non-dead components ported** (`Header.tsx` stays unported per §9). SwiftUI `#Preview` on every file, but **none have been opened in Xcode/Previews** — no macOS available, see below. |
-| 5 Screens | **in progress** — all 4 tab screens done (Search, Recipes, Receipts, Home); Settings, the 3 detail/modal screens, and the scan flow are not yet ported. |
+| 5 Screens | **in progress** — 4 tab screens + Settings done; the 3 detail/modal screens (food, recipe, receipt) and the scan flow are not yet ported. |
 | 6-7 | not started |
 
 Run the suite with `swift test` in `SmartSwapsNative/` (~4 min, no simulator needed).
@@ -214,6 +214,46 @@ Phase 6 will introduce - flagged rather than silently treated as equivalent.
 | `HomeScreen.swift` | The `ActionSheetIOS`/`Alert.alert` dietary-preference picker becomes a `.confirmationDialog` - the RN Android branch (one `Alert.alert` row per option) has no separate Swift path since this port is iOS-only. |
 | All 4 screens | `router.push` calls become `onNavigateTo*` closures, all defaulting to `nil` (no-op) until Phase 6 wires a real `NavigationStack`. `useMemo`'s explicit dependency arrays have no SwiftUI equivalent - filtering/sorting logic is plain computed properties that SwiftUI recomputes on every body evaluation rather than only when RN's listed dependencies change. Functionally equivalent, not performance-equivalent; worth profiling once real data volumes (7,140 foods) are wired through in Phase 6. |
 | `SearchScreen.swift` swap mode | Same `sort(() => 0.5 - Math.random())` non-determinism as the Home carousel filler (Phase 3/4's flagged open item) - `JSSort.sorted` with a random comparator, same algorithm and bias, not the same sequence. |
+
+**A real bug caught and fixed in this pass:** `Sex`, `ActivityLevel`, `WeightGoal`,
+`DietaryPreference` (`Models/Profile.swift`, added in Phase 4) were declared
+`String, Codable, CaseIterable` only - no `Equatable`/`Hashable`. Swift does not synthesize
+either for a raw-value enum unless the type explicitly declares conformance; every `==`,
+`.contains(_:)`, and `ForEach(id: \.self)` against these types across Phase 4/5 (dietary
+preference filters in `FoodsStore`/`RecipesScreen`/`RecipeSearchModal`, the Home carousel's
+`.confirmationDialog`, Settings' diet toggles) would not have compiled. Fixed by adding
+`Hashable` (which implies `Equatable`) to all four enums in `Models/Profile.swift` - a single,
+central fix rather than one per call site. Flagging because nothing caught this except reading
+the code line by line; there is still no `swift test`/Xcode compile gate on any app-target file.
+
+### Settings screen
+
+Ports `app/settings.tsx` (808 ln) to `Screens/SettingsScreen.swift`. Needed three more
+`SmartSwapsKit` pieces PORTING_INVENTORY.md's file map named but nothing had built yet:
+`Engine/SwapRanker.swift` (153 ln - dead in the app itself, but `SwapTrainingLog` calls its
+`extractSwapFeatures`), `Engine/SwapTrainingLog.swift`, `Data/MatchLog.swift`. Plus
+`State/SettingsStore.swift` (the last of PORTING_INVENTORY.md §4's four context stores -
+`ProfileStore`/`FavoritesStore`/`InventoryStore` landed in Phase 4) and
+`DesignSystem/ActivityView.swift` (a `UIActivityViewController` wrapper standing in for RN's
+`Share.share`, since the export buttons' content is only known after an async, possibly-
+throwing load - not a good fit for SwiftUI's declarative `ShareLink`). `RootView` now injects
+`SettingsStore` too, nested Profile → Favorites → **Settings** → Inventory per §4, gating the
+"renders nothing until loaded" behavior on all three providers that have it (Inventory doesn't,
+matching the source).
+
+**Reproduced deliberately, not a new bug:** `settings.tsx` shadows `expo-clipboard` with an
+inline no-op mock (`PORTING_NOTES.md`'s existing "Bugs faithfully reproduced" #7) - `getStringAsync`
+always returns `"[]"`. `SettingsScreen.swift`'s private `MockClipboard` enum reproduces the
+exact same behavior, so Export/Import Shopping Lists remain silently non-functional here too,
+matching the running RN app rather than "fixing" it.
+
+**Deviations:** `ActionSheetIOS`/bottom-sheet `<Picker>` → SwiftUI `.wheel`-style `Picker` in a
+`.sheet` with `.presentationDetents` (a native bottom sheet, matching the RN "iOS style bottom
+sheet" comment); the numeric input modal uses the same centered-transparent-overlay pattern
+`NutritionModal.swift` (Phase 4) established, not a system `.sheet` (which anchors to the
+bottom, not centered, and would look wrong for this one). `.presentationDetents`/`.wheel`
+picker styling has not been checked in an actual iOS Settings-style bottom sheet since no
+Xcode/simulator is available - visually unverified like everything else in Phases 4-5.
 
 ---
 
