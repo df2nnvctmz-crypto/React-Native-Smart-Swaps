@@ -12,7 +12,7 @@ import SmartSwapsKit
 /// `iconKey` is present; `iconLibrary` is threaded through already so swapping in the
 /// rasterised-asset lookup later is a one-line change here, not a prop-shape change.
 struct FoodIcon: View {
-    var iconKey: String?
+    var iconKey: String? = nil
     var category: String
     var size: CGFloat = 20
     var color: Color = Colors.textSecondary

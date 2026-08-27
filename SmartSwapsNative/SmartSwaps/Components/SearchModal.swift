@@ -9,8 +9,8 @@ struct SearchModal: View {
     enum Mode { case foods, swaps }
 
     var mode: Mode = .foods
-    var onSelect: ((FoodItem) -> Void)?
-    var rawText: String?
+    var onSelect: ((FoodItem) -> Void)? = nil
+    var rawText: String? = nil
 
     var body: some View {
         SearchScreen()

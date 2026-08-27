@@ -9,8 +9,8 @@ struct SwapComparisonCard: View {
     var fromFood: FoodItem
     var toFood: FoodItem
     var improvement: Int
-    var onPressFrom: (() -> Void)?
-    var onPressTo: (() -> Void)?
+    var onPressFrom: (() -> Void)? = nil
+    var onPressTo: (() -> Void)? = nil
 
     @EnvironmentObject private var favorites: FavoritesStore
     @EnvironmentObject private var recipeStore: RecipeStore

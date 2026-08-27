@@ -9,7 +9,7 @@ struct RecommendedCard: View {
     var score: Int
     var calories: String
     var iconName: String = "leaf"
-    var onPress: (() -> Void)?
+    var onPress: (() -> Void)? = nil
 
     private var scoreColor: Color {
         if score >= 75 { return Colors.scoreGreen }

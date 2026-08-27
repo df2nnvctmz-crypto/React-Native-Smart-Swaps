@@ -4,7 +4,7 @@ import SmartSwapsKit
 /// Port of `components/HealthPointsCard.tsx` (94 ln).
 struct HealthPointsCard: View {
     var percentage: Double
-    var onScanPress: (() -> Void)?
+    var onScanPress: (() -> Void)? = nil
 
     var body: some View {
         HStack(spacing: 20) {

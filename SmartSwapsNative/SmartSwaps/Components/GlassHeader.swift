@@ -52,7 +52,7 @@ let headerContentHeight: CGFloat = 44
 /// to a white circle with a soft shadow — this port always takes the fallback for now (see
 /// PORTING_NOTES.md on the deferred `isLiquidGlassAvailable()`/`NativeTabs` branch).
 struct GlassCircleButton<Content: View>: View {
-    var onPress: (() -> Void)?
+    var onPress: (() -> Void)? = nil
     @ViewBuilder var content: Content
 
     var body: some View {
@@ -69,7 +69,7 @@ struct GlassCircleButton<Content: View>: View {
 
 struct GlassHeader<Left: View>: View {
     var title: String
-    var onSettingsPress: (() -> Void)?
+    var onSettingsPress: (() -> Void)? = nil
     var scrollY: CGFloat = 0
     @ViewBuilder var leftAccessory: Left
     /// `nil` reproduces the RN `!rightAccessory` check that swaps in the settings button.

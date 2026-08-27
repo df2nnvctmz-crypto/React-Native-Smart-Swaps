@@ -15,7 +15,8 @@ than Phase 7 so nothing is reconstructed from memory later. **Phases 0-3 complet
 | 2 Data layer | done, verified row-for-row, **plus** `StorageService`, `FoodsStore`, `RecipeStore`/`RecipeMath`, `ProfileStore`/`ProfileMath`, `FavoritesStore`, `InventoryStore` added in Phase 4 (below) — components needed them to type-check at all. `SettingsStore` is the one piece of PORTING_INVENTORY.md §4 still not ported; nothing in Phase 4 needed it. |
 | 3 Engine | **done, gate green** — 18 tests, 0 failures. `Micronutrients.swift` and `RecipeMath.swift` (parseGrams/scaleNutrients/addNutrients/divideNutrients/estimateTimeDifficulty/hydrateRecipes) added in Phase 4 — both were named in PORTING_INVENTORY.md's file map but not yet written; neither has a differential test against the TS original the way the rest of the engine does (see below). |
 | 4 Components | **all 15 non-dead components ported** (`Header.tsx` stays unported per §9). SwiftUI `#Preview` on every file, but **none have been opened in Xcode/Previews** — no macOS available, see below. |
-| 5-7 | not started |
+| 5 Screens | **in progress** — all 4 tab screens done (Search, Recipes, Receipts, Home); Settings, the 3 detail/modal screens, and the scan flow are not yet ported. |
+| 6-7 | not started |
 
 Run the suite with `swift test` in `SmartSwapsNative/` (~4 min, no simulator needed).
 
@@ -171,6 +172,48 @@ unverified until opened on a Mac.
 | `Models/Inventory.swift` (`PersistedReceiptItem`) | `ParsedReceiptItem` (Phase 3) holds a live `FoodItem` **class** reference, which is correct for in-memory matching but can't round-trip through `Codable` the way JS serializes the matched food's plain object into `@smart_swaps_scans`. Added a separate `Codable` shape (`matchedFoodId: String?`) with a `resolved(in:)` bridge back to `ParsedReceiptItem`, rather than making the engine's own matched-object identity semantics (§5.2c) `Codable`. |
 | `SearchModal.swift` | RN's `SearchModal` self-presents a `<Modal>`; this port renders bare content and expects the caller to present it via SwiftUI's `.sheet(...)` modifier instead (see `ReceiptItemList.swift`'s usage) — modifier-driven presentation is the SwiftUI idiom, RN's self-presenting component isn't. `SearchScreen()` itself is still the Phase 1 placeholder. |
 | `Data/DatabaseService.swift` / `RecipeMath.hydrateRecipes` | `recipe_ingredients` has `grams`/`kcal` DB columns that `RecipeIngredientRaw` already reads (Phase 2), but `RecipeMath.hydrateRecipes` ignores both and recomputes them from `raw_text` via `parseGrams`/`scaleNutrients`, because that's what the TS source actually does (`useRecipes.ts` never reads those DB columns either). Whatever those columns hold is unused by the real app — flagging so a future reader doesn't assume it's a bug that they're dead. |
+
+---
+
+## Phase 5 — screens (in progress)
+
+All 4 tab screens ported to `SmartSwapsNative/SmartSwaps/Screens/*.swift`, replacing the
+Phase 1 placeholders: `SearchScreen.swift` (from `SearchScreen.tsx`, 772 ln),
+`RecipesScreen.swift` (`(tabs)/recipes.tsx`, 350 ln), `ReceiptsScreen.swift`
+(`(tabs)/receipts.tsx`, 467 ln), `HomeScreen.swift` (`(tabs)/index.tsx`, 415 ln, titled
+"Groceries"). Settings, the 3 detail/modal screens (food, recipe, receipt), and the scan flow
+are still outstanding.
+
+**New shared infrastructure this needed:**
+
+- `DesignSystem/ScrollOffset.swift` - `TrackableScrollView`/`ScrollOffsetReporter`, a
+  `PreferenceKey`-based scroll offset tracker every `GlassHeader`-hosting screen uses to feed
+  `scrollY` (SwiftUI has no `Animated.ScrollView` equivalent - see `GlassHeader.swift`'s own
+  header comment from Phase 4). Compatible back to iOS 14, unlike the iOS 17+
+  `onScrollGeometryChange` alternative.
+- Every screen's (and several Phase 4 components') optional closure/string properties needed
+  an explicit `= nil` default that Phase 4 had omitted - Swift's synthesized memberwise init
+  does NOT default an `Optional`-typed property just because its type can hold `nil`; without
+  the explicit default, `RootView`'s zero-argument `HomeScreen()` etc. would not compile. Fixed
+  across `Components/` and `Screens/` in this pass; flagging since it's an easy mistake to
+  reintroduce when adding new closures later.
+
+**`RootView.swift`** now instantiates all 4 tab screens for real (previously empty placeholder
+`Color` views).
+
+**`useFocusEffect` -> `.onAppear`.** `SearchScreen`/`ReceiptsScreen` re-fetch scans every time
+their RN screen regains focus (tab reselect, back-navigation); `.onAppear` fires on first
+appearance and on navigating back to the view, but not on every tab reselect within a
+`TabView` the way `useFocusEffect` does. Not fixable cleanly without the real `NavigationStack`
+Phase 6 will introduce - flagged rather than silently treated as equivalent.
+
+**Deviations and simplifications, each disclosed in the file's own header comment:**
+
+| File | Deviation |
+|---|---|
+| `HomeScreen.swift` | The `ActionSheetIOS`/`Alert.alert` dietary-preference picker becomes a `.confirmationDialog` - the RN Android branch (one `Alert.alert` row per option) has no separate Swift path since this port is iOS-only. |
+| All 4 screens | `router.push` calls become `onNavigateTo*` closures, all defaulting to `nil` (no-op) until Phase 6 wires a real `NavigationStack`. `useMemo`'s explicit dependency arrays have no SwiftUI equivalent - filtering/sorting logic is plain computed properties that SwiftUI recomputes on every body evaluation rather than only when RN's listed dependencies change. Functionally equivalent, not performance-equivalent; worth profiling once real data volumes (7,140 foods) are wired through in Phase 6. |
+| `SearchScreen.swift` swap mode | Same `sort(() => 0.5 - Math.random())` non-determinism as the Home carousel filler (Phase 3/4's flagged open item) - `JSSort.sorted` with a random comparator, same algorithm and bias, not the same sequence. |
 
 ---
 

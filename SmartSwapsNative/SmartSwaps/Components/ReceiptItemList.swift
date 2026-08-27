@@ -15,7 +15,7 @@ struct ReceiptItemList: View {
 
     @EnvironmentObject private var foodsStore: FoodsStore
     @EnvironmentObject private var profileStore: ProfileStore
-    var onSelectFood: ((String) -> Void)?
+    var onSelectFood: ((String) -> Void)? = nil
 
     @State private var editingIndex: Int?
     @State private var pendingDelete: (index: Int, label: String)?

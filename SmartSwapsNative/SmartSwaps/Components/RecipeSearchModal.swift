@@ -6,7 +6,7 @@ import SmartSwapsKit
 /// `router.push` -> `onSelectRecipe` closure, same pattern as `ReceiptItemList.swift`.
 struct RecipeSearchModal: View {
     var onClose: () -> Void
-    var onSelectRecipe: ((String) -> Void)?
+    var onSelectRecipe: ((String) -> Void)? = nil
     var initialQuery: String = ""
 
     @EnvironmentObject private var recipeStore: RecipeStore
