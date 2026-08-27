@@ -6,14 +6,10 @@ import SmartSwapsKit
 /// the RN Android branch (`Alert.alert` with one row per option) has no separate Swift path
 /// since this port is iOS-only.
 struct HomeScreen: View {
-    var onNavigateToSettings: (() -> Void)? = nil
-    var onNavigateToFood: ((String) -> Void)? = nil
-    var onNavigateToScan: (() -> Void)? = nil
-    var onNavigateToReceipt: ((String) -> Void)? = nil
-
     @EnvironmentObject private var foodsStore: FoodsStore
     @EnvironmentObject private var profileStore: ProfileStore
     @EnvironmentObject private var inventoryStore: InventoryStore
+    @EnvironmentObject private var router: Router
 
     @State private var searchVisible = false
     @State private var nutritionModalVisible = false
@@ -102,7 +98,7 @@ struct HomeScreen: View {
                     content
                 }
 
-                GlassHeader(title: "Groceries", onSettingsPress: onNavigateToSettings, scrollY: scrollY, leftAccessory: { EmptyView() })
+                GlassHeader(title: "Groceries", onSettingsPress: { router.openSettings() }, scrollY: scrollY, leftAccessory: { EmptyView() })
             }
         }
         .sheet(isPresented: $searchVisible) { SearchModal() }
@@ -134,7 +130,7 @@ struct HomeScreen: View {
             }
             .padding(.bottom, 6)
 
-            Button(action: { onNavigateToSettings?() }) {
+            Button(action: { router.openSettings() }) {
                 HStack(spacing: 6) {
                     Image(systemName: "slider.horizontal.3").font(.system(size: 14))
                     Text("Personalise • \(profileStore.profile.dietaryPreference.contains(.balanced) ? "Recommended" : profileStore.profile.dietaryPreference.map(\.rawValue).joined(separator: ", "))")
@@ -149,7 +145,7 @@ struct HomeScreen: View {
             .buttonStyle(.plain)
             .padding(.bottom, 16)
 
-            HealthPointsCard(percentage: Double(avgWeeklyPoints), onScanPress: { onNavigateToScan?() })
+            HealthPointsCard(percentage: Double(avgWeeklyPoints), onScanPress: { router.openScan() })
 
             if !inventoryStore.shoppingLists.isEmpty {
                 shoppingListsSection
@@ -168,7 +164,7 @@ struct HomeScreen: View {
 
             let plan = carouselPlan
             CoverFlowCarousel(data: plan.items, keyExtractor: { item, _ in item.id }, initialScrollIndex: plan.initialScrollIndex) { item, _ in
-                Button(action: { onNavigateToFood?(item.id) }) {
+                Button(action: { router.openFood(item.id) }) {
                     SpotlightCard(
                         title: item.name, score: JSNumber.roundToInt(item.health_score),
                         categoryLabel: item.id == plan.spotlight?.id ? "TODAY'S SPOTLIGHT" : "RECOMMENDED",
@@ -195,7 +191,7 @@ struct HomeScreen: View {
                 HStack(spacing: 16) {
                     ForEach(inventoryStore.shoppingLists) { list in
                         let previewFoods = Array(list.items.compactMap { $0.matchedFoodId.flatMap { foodsStore.byId[$0] } }.prefix(3))
-                        Button(action: { onNavigateToReceipt?(list.id) }) {
+                        Button(action: { router.openReceipt(list.id) }) {
                             HStack {
                                 Circle().fill(Color(hex: 0xD0EFFF)).frame(width: 48, height: 48)
                                     .overlay(Image(systemName: "basket").font(.system(size: 24)).foregroundColor(Color(hex: 0x0084C9)))
@@ -248,4 +244,5 @@ struct HomeScreen: View {
         .environmentObject(FoodsStore.shared)
         .environmentObject(ProfileStore())
         .environmentObject(InventoryStore())
+        .environmentObject(Router())
 }

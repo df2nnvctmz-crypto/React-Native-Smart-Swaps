@@ -10,12 +10,11 @@ import SmartSwapsKit
 /// through a temp JPEG file so `NativeOcr.recognize(uri:)` keeps the same file-URI contract
 /// the original native module had, rather than growing a UIImage-specific overload.
 struct ScanReceiptScreen: View {
-    var onNavigateToReceipts: (() -> Void)? = nil
-
     @EnvironmentObject private var foodsStore: FoodsStore
     @EnvironmentObject private var profileStore: ProfileStore
     @EnvironmentObject private var settingsStore: SettingsStore
     @EnvironmentObject private var inventoryStore: InventoryStore
+    @EnvironmentObject private var router: Router
 
     private enum ProgressStatus { case idle, reading, matching, enriching, calculating, done }
 
@@ -161,7 +160,7 @@ struct ScanReceiptScreen: View {
             ReceiptItemList(items: results, onUpdateItem: { index, food in Task { await handleUpdateItem(index: index, newFood: food) } },
                              onDeleteItem: { index in Task { await handleDeleteItem(index: index) } })
 
-            Button(action: { onNavigateToReceipts?() }) {
+            Button(action: { router.goToReceiptsTab() }) {
                 Text("View in Recent Receipts").font(.system(size: 16, weight: .semibold)).foregroundColor(.white)
                     .frame(maxWidth: .infinity).padding(.vertical, 14)
                     .background(Colors.primaryGreen).cornerRadius(14)
@@ -336,5 +335,6 @@ private struct CameraPicker: UIViewControllerRepresentable {
             .environmentObject(ProfileStore())
             .environmentObject(SettingsStore())
             .environmentObject(InventoryStore())
+            .environmentObject(Router())
     }
 }

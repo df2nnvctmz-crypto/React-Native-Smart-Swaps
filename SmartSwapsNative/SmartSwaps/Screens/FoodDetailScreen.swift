@@ -8,9 +8,7 @@ import SmartSwapsKit
 /// header bar (close + favorite), matching `GlassCircleButton`'s look, with `NavBlur` behind
 /// it exactly as the source renders it as a decorative, non-interactive layer.
 struct FoodDetailScreen: View {
-    var foodId: String
     var onClose: () -> Void
-    var onNavigateToFood: ((String) -> Void)? = nil
 
     @EnvironmentObject private var foodsStore: FoodsStore
     @EnvironmentObject private var profileStore: ProfileStore
@@ -20,6 +18,12 @@ struct FoodDetailScreen: View {
     private static let swapDisplayCount = 2
     private static let headerHeight: CGFloat = 44
 
+    /// The RN screen reads `id` from the route on every navigation; `router.replace(...)`
+    /// (accepting a swap) swaps this screen's content in place rather than pushing/re-
+    /// presenting a new one - reproduced here as internal `@State` seeded from `foodId`,
+    /// updated by `acceptSwap`, rather than telling `RootView` to represent a new sheet
+    /// (which would dismiss-and-reanimate instead of updating in place).
+    @State private var currentFoodId: String
     @State private var swapPool: [SwapAlgorithm.SwapResult] = []
     @State private var swapsLoaded = false
     @State private var dismissedSwapIds: Set<String> = []
@@ -40,7 +44,12 @@ struct FoodDetailScreen: View {
         "Potassium": 4700, "Sodium": 2300,
     ]
 
-    private var food: FoodItem? { foodsStore.allFoods.first { $0.id == foodId } ?? foodsStore.allFoods.first }
+    init(foodId: String, onClose: @escaping () -> Void) {
+        self.onClose = onClose
+        _currentFoodId = State(initialValue: foodId)
+    }
+
+    private var food: FoodItem? { foodsStore.allFoods.first { $0.id == currentFoodId } ?? foodsStore.allFoods.first }
     private var isFav: Bool { food.map { favoritesStore.isFavorite(.food, $0.id) } ?? false }
 
     private var visibleSwaps: [SwapAlgorithm.SwapResult] {
@@ -70,7 +79,7 @@ struct FoodDetailScreen: View {
                 ProgressView("Loading food details...").frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .task(id: foodId) { await loadSwaps() }
+        .task(id: currentFoodId) { await loadSwaps() }
         .onAppear { ringScale = 0.8; withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) { ringScale = 1 } }
         .sheet(isPresented: $shoppingListModalVisible) {
             SelectShoppingListModal(onSelect: { listId, newName in Task { await handleAddToList(listId: listId, newListName: newName) } },
@@ -365,7 +374,7 @@ struct FoodDetailScreen: View {
                 liquidMismatch: SwapAlgorithm.isLiquid(food) != SwapAlgorithm.isLiquid(swap.candidate) ? 1 : 0,
                 rawIngredientMismatch: SwapAlgorithm.isRawIngredient(food) != SwapAlgorithm.isRawIngredient(swap.candidate) ? 1 : 0)
         }
-        onNavigateToFood?(swap.candidate.id)
+        currentFoodId = swap.candidate.id
     }
 
     private func rejectSwap(_ food: FoodItem, _ swap: SwapAlgorithm.SwapResult) {

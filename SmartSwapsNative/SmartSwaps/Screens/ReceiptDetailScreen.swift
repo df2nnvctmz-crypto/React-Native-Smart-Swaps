@@ -9,16 +9,20 @@ private let receiptMicroTargets: [String: Double] = [
     "sodium_mg": 2000, "iodide_ug": 150,
 ]
 
-/// Port of `app/receipt/[id].tsx` (500 ln). Pushed (not modal) in the source - kept as a
-/// standalone screen here too, presented by Phase 6's navigation the same way
-/// `ReceiptsScreen`/`SearchScreen` already expect `onNavigateToReceipt`.
+/// Port of `app/receipt/[id].tsx` (500 ln). Pushed (not modal, unlike food/recipe detail) -
+/// `Router.openReceipt` pushes it onto the shared `NavigationStack`. The native back chevron
+/// (`headerBackButtonDisplayMode: 'minimal'` at the root `Stack` level) comes for free from
+/// `NavigationStack`; the source's own `headerBlurEffect: 'none'` override plus its
+/// separately-rendered `<NavBlur>` become a hidden system toolbar background with `NavBlur`
+/// layered behind the content instead, so the feathered fade isn't fighting a second, opaque
+/// system material.
 struct ReceiptDetailScreen: View {
     var scanId: String
-    var onBack: () -> Void
 
     @EnvironmentObject private var foodsStore: FoodsStore
     @EnvironmentObject private var profileStore: ProfileStore
     @EnvironmentObject private var inventoryStore: InventoryStore
+    @Environment(\.dismiss) private var dismiss
 
     @State private var scan: ScanRecord?
     @State private var searchModalVisible = false
@@ -74,13 +78,13 @@ struct ReceiptDetailScreen: View {
                     Color(hex: 0xF9FAF9).ignoresSafeArea()
                     ScrollView(showsIndicators: false) {
                         content(scan)
-                            .padding(.top, 52)
+                            .padding(.top, 8)
                     }
-                    // Feathered blur overlay behind the floating close/title bar, matching
-                    // the source's separately-rendered `<NavBlur>` rather than a flat material.
-                    NavBlur(headerHeight: 44)
-                    header(scan)
+                    NavBlur(headerHeight: 44).allowsHitTesting(false)
                 }
+                .toolbarBackground(.hidden, for: .navigationBar)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar { ToolbarItem(placement: .principal) { titleView(scan) } }
             } else {
                 Color(hex: 0xF9FAF9).ignoresSafeArea()
             }
@@ -99,12 +103,8 @@ struct ReceiptDetailScreen: View {
         }
     }
 
-    private func header(_ scan: ScanRecord) -> some View {
-        HStack {
-            GlassCircleButton(onPress: onBack) {
-                Image(systemName: "xmark").font(.system(size: 18, weight: .semibold)).foregroundColor(Colors.textPrimary)
-            }
-            Spacer()
+    private func titleView(_ scan: ScanRecord) -> some View {
+        Group {
             if scan.isShoppingList == true, isEditingTitle {
                 TextField("", text: $editTitleText)
                     .font(.system(size: 17, weight: .semibold))
@@ -122,12 +122,7 @@ struct ReceiptDetailScreen: View {
                     }
                 }.buttonStyle(.plain).disabled(scan.isShoppingList != true)
             }
-            Spacer()
-            Color.clear.frame(width: 44, height: 44)
         }
-        .padding(.horizontal, 16)
-        .frame(height: 44)
-        .padding(.top, 8)
     }
 
     @ViewBuilder
@@ -324,13 +319,16 @@ struct ReceiptDetailScreen: View {
         guard let scan else { return }
         await StorageService.deleteScan(id: scan.id)
         await inventoryStore.refreshInventory()
-        onBack()
+        dismiss()
     }
 }
 
 #Preview {
-    ReceiptDetailScreen(scanId: "preview", onBack: {})
-        .environmentObject(FoodsStore.shared)
-        .environmentObject(ProfileStore())
-        .environmentObject(InventoryStore())
+    NavigationStack {
+        ReceiptDetailScreen(scanId: "preview")
+    }
+    .environmentObject(FoodsStore.shared)
+    .environmentObject(ProfileStore())
+    .environmentObject(InventoryStore())
+    .environmentObject(Router())
 }

@@ -47,11 +47,11 @@ private func siteName(for urlString: String) -> String {
 struct RecipeDetailScreen: View {
     var recipeId: String
     var onClose: () -> Void
-    var onNavigateToFood: ((String) -> Void)? = nil
 
     @EnvironmentObject private var recipeStore: RecipeStore
     @EnvironmentObject private var foodsStore: FoodsStore
     @EnvironmentObject private var profileStore: ProfileStore
+    @EnvironmentObject private var router: Router
     @EnvironmentObject private var favoritesStore: FavoritesStore
     @EnvironmentObject private var inventoryStore: InventoryStore
 
@@ -396,7 +396,7 @@ struct RecipeDetailScreen: View {
         let scoreColors = displayFood.map { recipeScoreColors(JSNumber.roundToInt($0.health_score)) }
 
         return VStack(alignment: .leading, spacing: 0) {
-            Button(action: { if let displayFood { onNavigateToFood?(displayFood.id) } }) {
+            Button(action: { if let displayFood { router.openFood(displayFood.id) } }) {
                 HStack(spacing: 8) {
                     if let displayFood {
                         RoundedRectangle(cornerRadius: 9).fill(Colors.cardBackground).frame(width: 30, height: 30)
@@ -427,7 +427,7 @@ struct RecipeDetailScreen: View {
             .disabled(displayFood == nil)
 
             if let swap, !swapsEnabled {
-                Button(action: { onNavigateToFood?(swap.candidate.id) }) {
+                Button(action: { router.openFood(swap.candidate.id) }) {
                     HStack(spacing: 6) {
                         Image(systemName: "shuffle").font(.system(size: 13)).foregroundColor(Colors.primaryGreen)
                         Text("Swap suggestion: replace with \(swap.name)").font(.system(size: 12)).foregroundColor(Colors.textSecondary)
@@ -623,4 +623,5 @@ struct RecipeDetailScreen: View {
         .environmentObject(ProfileStore())
         .environmentObject(FavoritesStore())
         .environmentObject(InventoryStore())
+        .environmentObject(Router())
 }

@@ -10,8 +10,9 @@ enum SearchSelection {
 /// `mode="foods"`, and reused as a sheet by `components/SearchModal.tsx`). Replaces the
 /// Phase 1 placeholder of the same name.
 ///
-/// `useRouter()`/`router.push` become `onNavigateTo*` closures (same style as
-/// `ReceiptItemList`/`RecipeCard`) - Phase 6 wires these to a real `NavigationStack`.
+/// `useRouter()`/`router.push` -> `Router` (`@EnvironmentObject`, see `App/Router.swift`).
+/// `onSelect`/`onBack`/`rawText` stay as explicit params since they only apply to the
+/// correction-picker use (wrapped by `SearchModal`) - the tab instance leaves them `nil`.
 /// `useFocusEffect` (re-fetch scans every time the screen regains focus) is approximated
 /// with `.onAppear`, which fires on first appearance and on push-back-to but not on every
 /// tab reselect the way `useFocusEffect` does - flagged here rather than silently assumed
@@ -23,14 +24,12 @@ struct SearchScreen: View {
     var mode: Mode = .foods
     var onSelect: ((SearchSelection) -> Void)? = nil
     var rawText: String? = nil
-    var onNavigateToFood: ((String) -> Void)? = nil
-    var onNavigateToRecipe: ((String) -> Void)? = nil
-    var onNavigateToReceipt: ((String) -> Void)? = nil
 
     @EnvironmentObject private var foodsStore: FoodsStore
     @EnvironmentObject private var favoritesStore: FavoritesStore
     @EnvironmentObject private var profileStore: ProfileStore
     @EnvironmentObject private var recipeStore: RecipeStore
+    @EnvironmentObject private var router: Router
 
     @State private var searchQuery = ""
     @State private var searchFilter = "all"
@@ -312,8 +311,8 @@ struct SearchScreen: View {
             if mode == .swaps {
                 ForEach(swapResults.prefix(limit)) { swap in
                     SwapComparisonCard(fromFood: swap.from, toFood: swap.to, improvement: swap.improvement,
-                                        onPressFrom: { onBack?(); onNavigateToFood?(swap.from.id) },
-                                        onPressTo: { onBack?(); onNavigateToFood?(swap.to.id) })
+                                        onPressFrom: { onBack?(); router.openFood(swap.from.id) },
+                                        onPressTo: { onBack?(); router.openFood(swap.to.id) })
                         .padding(.bottom, 16)
                 }
             } else {
@@ -400,9 +399,9 @@ struct SearchScreen: View {
         }
         onBack?()
         switch row.type {
-        case "receipt", "list": onNavigateToReceipt?(row.id)
-        case "recipe": onNavigateToRecipe?(row.id)
-        default: onNavigateToFood?(row.id)
+        case "receipt", "list": router.openReceipt(row.id)
+        case "recipe": router.openRecipe(row.id)
+        default: router.openFood(row.id)
         }
     }
 }
@@ -413,4 +412,5 @@ struct SearchScreen: View {
         .environmentObject(FavoritesStore())
         .environmentObject(ProfileStore())
         .environmentObject(RecipeStore.shared)
+        .environmentObject(Router())
 }

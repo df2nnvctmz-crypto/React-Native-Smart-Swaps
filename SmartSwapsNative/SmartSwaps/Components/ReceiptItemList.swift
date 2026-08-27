@@ -2,10 +2,10 @@ import SwiftUI
 import SmartSwapsKit
 
 /// Port of `components/ReceiptItemList.tsx` (351 ln). `useFoods()`/`useProfile()` become
-/// `FoodsStore`/`ProfileStore` via `@EnvironmentObject`. `useRouter()` has no SwiftUI
-/// equivalent at the component level - `onSelectFood` stands in for `router.push`, same
-/// callback style `RecipeCard`/`SwapComparisonCard` already use; Phase 6 wires it to a real
-/// `NavigationStack` path. `expo-haptics` -> `UIImpactFeedbackGenerator`, `Alert.alert` ->
+/// `FoodsStore`/`ProfileStore` via `@EnvironmentObject`; `useRouter()` -> `Router`
+/// (`@EnvironmentObject`, see `App/Router.swift`) rather than a passed-in closure, since
+/// every host screen (`ReceiptDetailScreen`, `ScanReceiptScreen`) already sits inside the
+/// shared navigation tree. `expo-haptics` -> `UIImpactFeedbackGenerator`, `Alert.alert` ->
 /// `.alert(...)`.
 struct ReceiptItemList: View {
     var items: [ParsedReceiptItem]
@@ -15,7 +15,7 @@ struct ReceiptItemList: View {
 
     @EnvironmentObject private var foodsStore: FoodsStore
     @EnvironmentObject private var profileStore: ProfileStore
-    var onSelectFood: ((String) -> Void)? = nil
+    @EnvironmentObject private var router: Router
 
     @State private var editingIndex: Int?
     @State private var pendingDelete: (index: Int, label: String)?
@@ -141,7 +141,7 @@ struct ReceiptItemList: View {
                     }
                 }
                 .contentShape(Rectangle())
-                .onTapGesture { if showFoodChrome, let f { onSelectFood?(f.id) } }
+                .onTapGesture { if showFoodChrome, let f { router.openFood(f.id) } }
 
                 Spacer()
 
@@ -153,10 +153,10 @@ struct ReceiptItemList: View {
                         Text("-").font(.system(size: 15, weight: .heavy)).foregroundColor(Color(hex: 0x999999))
                             .frame(width: 28, alignment: .trailing)
                     }
-                    Button(action: { editingIndex = entry.originalIndex }) {
+                    Button(action: { Haptics.light(); editingIndex = entry.originalIndex }) {
                         Image(systemName: "pencil").font(.system(size: 16)).foregroundColor(Colors.textMuted)
                     }.buttonStyle(.plain)
-                    Button(action: { pendingDelete = (entry.originalIndex, f?.name ?? item.rawText) }) {
+                    Button(action: { Haptics.light(); pendingDelete = (entry.originalIndex, f?.name ?? item.rawText) }) {
                         Image(systemName: "trash").font(.system(size: 16)).foregroundColor(Colors.textMuted)
                     }.buttonStyle(.plain)
                 }
@@ -173,7 +173,7 @@ struct ReceiptItemList: View {
                 .overlay(Rectangle().fill(Colors.border).frame(height: 0.5), alignment: .top)
                 .padding(.top, 6)
                 .contentShape(Rectangle())
-                .onTapGesture { onSelectFood?(swap.candidate.id) }
+                .onTapGesture { router.openFood(swap.candidate.id) }
             }
         }
         .padding(.vertical, 10)
@@ -185,5 +185,6 @@ struct ReceiptItemList: View {
     ReceiptItemList(items: [], onUpdateItem: { _, _ in }, onDeleteItem: { _ in })
         .environmentObject(FoodsStore.shared)
         .environmentObject(ProfileStore())
+        .environmentObject(Router())
         .padding()
 }

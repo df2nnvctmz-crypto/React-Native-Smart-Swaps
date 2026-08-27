@@ -1,17 +1,17 @@
 import SwiftUI
 
-/// Phase 1 skeleton — matches `(tabs)/_layout.tsx`'s `ClassicTabLayout` branch:
-/// a blurred, transparent tab bar tinted `primaryGreen` active / `textMuted`
-/// inactive, SF Symbols at the sizes the RN screen renders on iOS.
+/// Matches `(tabs)/_layout.tsx`'s `ClassicTabLayout` branch: a blurred, transparent tab bar
+/// tinted `primaryGreen` active / `textMuted` inactive, SF Symbols at the sizes the RN screen
+/// renders on iOS.
 ///
 /// `(tabs)/_layout.tsx` branches on `isLiquidGlassAvailable()` to a `NativeTabs`
 /// (iOS 26+ Liquid Glass) presentation instead. That branch is deferred — see
 /// PORTING_NOTES.md "Still uncertain / open" — until real tab content exists to
 /// verify it against, rather than guessing at API surface with nothing behind it.
 ///
-/// Settings (pushed, `href: null` — hidden from the bar) and the food/recipe
-/// modal routes are Phase 6 (Integration) per the phase plan; this view is
-/// deliberately just the four-tab shell the Phase 1 gate asks for.
+/// Phase 6: the whole app lives under one `NavigationStack` + `Router` (see `Router.swift`),
+/// matching `app/_layout.tsx`'s single root `Stack` wrapping `(tabs)` with `food`/`recipe`
+/// as global modals.
 struct RootView: View {
     // Nesting order matches `_layout.tsx`: Profile -> Favorites -> Settings -> Inventory.
     @StateObject private var profileStore = ProfileStore()
@@ -20,6 +20,7 @@ struct RootView: View {
     @StateObject private var inventoryStore = InventoryStore()
     @StateObject private var recipeStore = RecipeStore.shared
     @StateObject private var foodsStore = FoodsStore.shared
+    @StateObject private var router = Router()
 
     init() {
         configureTabBarAppearance()
@@ -33,7 +34,15 @@ struct RootView: View {
             // brief's "show defaults" instruction, since rule 1 makes the RN code win.
             // `InventoryProvider` does NOT gate on its own load - matches the source.
             if profileStore.isLoaded && favoritesStore.isLoaded && settingsStore.isLoaded {
-                tabs
+                navigationRoot
+                    .onAppear {
+                        // `useFoods()`/`useRecipes()` load lazily on first hook use in RN;
+                        // here that's the first screen mount, which is always the tab root.
+                        foodsStore.load()
+                    }
+                    .onChange(of: foodsStore.isLoaded) { loaded in
+                        if loaded { recipeStore.load(foodsStore: foodsStore) }
+                    }
             } else {
                 Color(Colors.background).ignoresSafeArea()
             }
@@ -44,21 +53,54 @@ struct RootView: View {
         .environmentObject(inventoryStore)
         .environmentObject(recipeStore)
         .environmentObject(foodsStore)
+        .environmentObject(router)
+    }
+
+    private var navigationRoot: some View {
+        NavigationStack(path: $router.path) {
+            tabs
+                .navigationDestination(for: Router.PushRoute.self) { route in
+                    switch route {
+                    case .settings:
+                        SettingsScreen()
+                    case .receipt(let id):
+                        ReceiptDetailScreen(scanId: id)
+                    case .scan:
+                        ScanReceiptScreen()
+                    }
+                }
+        }
+        .sheet(item: Binding(
+            get: { router.presentedFoodId.map(IdentifiableID.init) },
+            set: { router.presentedFoodId = $0?.id }
+        )) { item in
+            FoodDetailScreen(foodId: item.id, onClose: { router.closeFood() })
+        }
+        .sheet(item: Binding(
+            get: { router.presentedRecipeId.map(IdentifiableID.init) },
+            set: { router.presentedRecipeId = $0?.id }
+        )) { item in
+            RecipeDetailScreen(recipeId: item.id, onClose: { router.closeRecipe() })
+        }
     }
 
     private var tabs: some View {
-        TabView {
+        TabView(selection: $router.selectedTab) {
             HomeScreen()
                 .tabItem { tabLabel("Home", systemImage: "house.fill") }
+                .tag(Router.Tab.home)
 
             RecipesScreen()
                 .tabItem { tabLabel("Recipes", systemImage: "fork.knife") }
+                .tag(Router.Tab.recipes)
 
             ReceiptsScreen()
                 .tabItem { tabLabel("Receipts", systemImage: "list.bullet.rectangle") }
+                .tag(Router.Tab.receipts)
 
             SearchScreen()
                 .tabItem { tabLabel("Search", systemImage: "magnifyingglass") }
+                .tag(Router.Tab.search)
         }
         .tint(Colors.primaryGreen)
     }

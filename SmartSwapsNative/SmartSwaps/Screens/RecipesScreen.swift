@@ -3,13 +3,12 @@ import SmartSwapsKit
 
 /// Port of `app/(tabs)/recipes.tsx` (350 ln). Replaces the Phase 1 placeholder.
 struct RecipesScreen: View {
-    var onNavigateToRecipe: ((String) -> Void)? = nil
-
     @EnvironmentObject private var foodsStore: FoodsStore
     @EnvironmentObject private var profileStore: ProfileStore
     @EnvironmentObject private var favoritesStore: FavoritesStore
     @EnvironmentObject private var recipeStore: RecipeStore
     @EnvironmentObject private var inventoryStore: InventoryStore
+    @EnvironmentObject private var router: Router
 
     @State private var selectedCategory = "All"
     @State private var searchVisible = false
@@ -81,7 +80,7 @@ struct RecipesScreen: View {
             GlassHeader(title: "Recipes", onSettingsPress: nil, scrollY: scrollY, leftAccessory: { EmptyView() })
         }
         .sheet(isPresented: $searchVisible) {
-            RecipeSearchModal(onClose: { searchVisible = false }, onSelectRecipe: onNavigateToRecipe)
+            RecipeSearchModal(onClose: { searchVisible = false }, onSelectRecipe: { router.openRecipe($0) })
         }
     }
 
@@ -122,7 +121,7 @@ struct RecipesScreen: View {
             .padding(.bottom, 20)
 
             if let featured {
-                RecipeCard(recipe: featured, onPress: { onNavigateToRecipe?(featured.id) }, variant: .large)
+                RecipeCard(recipe: featured, onPress: { router.openRecipe(featured.id) }, variant: .large)
             }
 
             VStack(alignment: .leading, spacing: 0) {
@@ -135,7 +134,7 @@ struct RecipesScreen: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
                             ForEach(likedRecipes) { recipe in
-                                RecipeCard(recipe: recipe, onPress: { onNavigateToRecipe?(recipe.id) }, variant: .small)
+                                RecipeCard(recipe: recipe, onPress: { router.openRecipe(recipe.id) }, variant: .small)
                                     .frame(width: 280)
                             }
                         }
@@ -149,7 +148,7 @@ struct RecipesScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Popular Recipes").sectionTitleText().padding(.bottom, 8)
                     ForEach(visibleRest) { recipe in
-                        RecipeCard(recipe: recipe, onPress: { onNavigateToRecipe?(recipe.id) }, variant: .small)
+                        RecipeCard(recipe: recipe, onPress: { router.openRecipe(recipe.id) }, variant: .small)
                     }
                     if hasMore {
                         Button(action: { limit += 20 }) {
@@ -186,4 +185,5 @@ struct RecipesScreen: View {
         .environmentObject(FavoritesStore())
         .environmentObject(RecipeStore.shared)
         .environmentObject(InventoryStore())
+        .environmentObject(Router())
 }

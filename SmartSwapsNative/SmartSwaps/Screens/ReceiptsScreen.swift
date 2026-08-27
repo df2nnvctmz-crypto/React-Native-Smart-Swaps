@@ -5,10 +5,8 @@ import SmartSwapsKit
 /// `useFocusEffect` -> `.onAppear` (see `SearchScreen.swift`'s note on the same tradeoff).
 /// `LayoutAnimation.easeInEaseOut` -> `withAnimation(.easeInOut)`, matching other components.
 struct ReceiptsScreen: View {
-    var onNavigateToReceipt: ((String) -> Void)? = nil
-    var onNavigateToScan: (() -> Void)? = nil
-
     @EnvironmentObject private var foodsStore: FoodsStore
+    @EnvironmentObject private var router: Router
     @State private var scans: [ScanRecord] = []
     @State private var expandedListIds: Set<String> = []
     @State private var scrollY: CGFloat = 0
@@ -90,7 +88,7 @@ struct ReceiptsScreen: View {
             LargeTitle(title: "Receipts", scrollY: scrollY)
             Text("Track your receipts and health points").subtitleText().padding(.bottom, 24).padding(.top, 4)
 
-            Button(action: { onNavigateToScan?() }) {
+            Button(action: { router.openScan() }) {
                 HStack(spacing: 8) {
                     Image(systemName: "camera.fill").font(.system(size: 20))
                     Text("Scan New Receipt").font(.system(size: 16, weight: .bold))
@@ -182,7 +180,7 @@ struct ReceiptsScreen: View {
                     if list.items.count > 10 {
                         Text("...and \(list.items.count - 10) more items").font(.system(size: 13)).italic().foregroundColor(Colors.textMuted)
                     }
-                    Button(action: { onNavigateToReceipt?(list.id) }) {
+                    Button(action: { Haptics.light(); router.openReceipt(list.id) }) {
                         Text("Open List Details").font(.system(size: 15, weight: .bold)).foregroundColor(Colors.white)
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                             .background(Color(hex: 0x0084C9)).cornerRadius(12)
@@ -217,7 +215,7 @@ struct ReceiptsScreen: View {
                     .padding(.bottom, 12)
 
                     ForEach(group.scans) { scan in
-                        Button(action: { onNavigateToReceipt?(scan.id) }) {
+                        Button(action: { Haptics.light(); router.openReceipt(scan.id) }) {
                             HStack {
                                 Circle().fill(Colors.lightGreenBg).frame(width: 36, height: 36)
                                     .overlay(Image(systemName: "receipt").font(.system(size: 16)).foregroundColor(Colors.primaryGreen))
@@ -268,4 +266,5 @@ struct ReceiptsScreen: View {
 #Preview {
     ReceiptsScreen()
         .environmentObject(FoodsStore.shared)
+        .environmentObject(Router())
 }

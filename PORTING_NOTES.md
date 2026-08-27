@@ -16,7 +16,8 @@ than Phase 7 so nothing is reconstructed from memory later. **Phases 0-3 complet
 | 3 Engine | **done, gate green** — 18 tests, 0 failures. `Micronutrients.swift` and `RecipeMath.swift` (parseGrams/scaleNutrients/addNutrients/divideNutrients/estimateTimeDifficulty/hydrateRecipes) added in Phase 4 — both were named in PORTING_INVENTORY.md's file map but not yet written; neither has a differential test against the TS original the way the rest of the engine does (see below). |
 | 4 Components | **all 15 non-dead components ported** (`Header.tsx` stays unported per §9). SwiftUI `#Preview` on every file, but **none have been opened in Xcode/Previews** — no macOS available, see below. |
 | 5 Screens | **done** — all 9 screens ported (4 tabs, Settings, food/recipe/receipt detail, scan flow). No navigation wiring between them yet — that's Phase 6. |
-| 6-7 | not started |
+| 6 Integration | **done** — single `NavigationStack` + `Router` wired through `RootView`; all 9 screens navigate for real (no more no-op closures); haptics added at every RN call site; full scan → parse → resolve → swap → save flow reachable end to end. Deep links explicitly out of scope (no `scheme` in `app.json` — see below). |
+| 7 Verification | not started |
 
 Run the suite with `swift test` in `SmartSwapsNative/` (~4 min, no simulator needed).
 
@@ -311,6 +312,94 @@ UI file in this port. Phase 5 is now complete; Phase 6 (navigation, modal presen
 links, haptics, the scan → parse → resolve → swap → save flow end to end) is next. Every
 `onNavigateTo*`/`onSelect*` closure across all 9 screens currently defaults to a no-op `nil` -
 `RootView` wires the 4 tab screens but nothing navigates to Settings or any detail screen yet.
+
+---
+
+## Phase 6 — Integration (navigation, modals, haptics, the full scan flow)
+
+Replaces every `onNavigateTo*`/`onSelect*` closure-passing scheme from Phases 4-5 with a
+single shared `Router` (`App/Router.swift`, `@MainActor final class Router: ObservableObject`),
+mirroring `app/_layout.tsx`'s expo-router tree: one root `Stack` wrapping `(tabs)`, with
+`food/[id]` and `recipe/[id]` declared `presentation: 'modal'` and everything else (Settings,
+`receipt/[id]`, `scan-receipt`) an implicit plain push.
+
+**Architecture.** `RootView` now owns one `NavigationStack(path: $router.path)` wrapping the
+`TabView`, with a single `.navigationDestination(for: Router.PushRoute.self)` switching on
+`.settings` / `.receipt(id)` / `.scan`. The two modal routes are separate `.sheet(item:)`
+modifiers driven by `router.presentedFoodId`/`presentedRecipeId` (`@Published var: String?`),
+converted to `Identifiable` via a small `IdentifiableID` wrapper struct since a bare `String`
+can't drive `.sheet(item:)` directly. `router.selectedTab` backs the `TabView`'s own
+`selection:` binding. Every screen that needs to navigate now takes `@EnvironmentObject private
+var router: Router` instead of a bag of closures - this collapses e.g. `HomeScreen`'s four
+`onNavigateTo*` params, `RecipesScreen`/`ReceiptsScreen`/`SearchScreen`/`RecipeDetailScreen`'s
+one each, and `ReceiptItemList`'s `onSelectFood`, down to zero navigation params on all of them.
+
+**`FoodDetailScreen`'s in-place replace vs. `RecipeDetailScreen`'s external navigate.** RN's
+`food/[id].tsx` `handleAcceptSwap` calls `router.replace(...)` to swap the *currently open*
+modal's content for the accepted-swap food, without closing and reopening it. There's no
+direct SwiftUI equivalent to "replace the item driving an already-presented `.sheet(item:)`
+that also survives without re-triggering the sheet's appear/dismiss transition, so
+`FoodDetailScreen` was changed to own its displayed food as internal `@State private var
+currentFoodId: String` (seeded from an `init(foodId:onClose:)`) rather than reacting to
+`router.presentedFoodId` changing underneath it; `acceptSwap` now just reassigns
+`currentFoodId` in place. `RecipeDetailScreen`, by contrast, genuinely needs to open a *new*
+food sheet on top when an ingredient or swap suggestion is tapped (RN's equivalent there is a
+real `router.push`, not a `replace`), so it correctly goes through `router.openFood(id)`.
+
+**`ReceiptDetailScreen` push-vs-modal header correction.** Built in Phase 5 with the same
+`GlassCircleButton` "X" close-button chrome as the genuinely-modal `FoodDetailScreen`/
+`RecipeDetailScreen`, but per `app/_layout.tsx` only `food/[id]` and `recipe/[id]` are declared
+`presentation: 'modal'` — `receipt/[id]` is a plain push, so RN shows the root `Stack`'s native
+back chevron (`headerBackButtonDisplayMode: 'minimal'`), not a custom X. Corrected in this
+phase: removed the custom floating header entirely, replaced the `onBack: () -> Void` param
+with `@Environment(\.dismiss)`, moved the (still-editable, still-tappable) title into a
+`.toolbar { ToolbarItem(placement: .principal) { ... } }`, and set
+`.toolbarBackground(.hidden, for: .navigationBar)` + `.navigationBarTitleDisplayMode(.inline)`
+so the source's `headerBlurEffect: 'none'` + separately-rendered `<NavBlur>` still reads as one
+feathered fade layered *behind* the content rather than fighting an opaque system material.
+
+**`SearchModal` bug fix.** Found while wiring `ReceiptItemList`'s correction-picker sheet:
+`SearchModal.body` called bare `SearchScreen()`, silently dropping its own `mode`/`onSelect`/
+`rawText` properties entirely — a Phase 4 leftover written before `SearchScreen` existed for
+real (Phase 5). Now forwards all three; `onSelect` narrows `SearchSelection` down to the
+`.food` case only, matching this modal's `FoodItem`-only contract (same "recipe selection not
+wired here" simplification already flagged for `ReceiptDetailScreen`/`ScanReceiptScreen`'s
+"Add Item via Search" in Phase 5's notes).
+
+**Haptics.** `Services/Haptics.swift` wraps `UIImpactFeedbackGenerator(.light)` behind a single
+`Haptics.light()` call, matching every `expo-haptics` `impactAsync(ImpactFeedbackStyle.Light)`
+call site found by grep: `ReceiptsScreen`'s "navigate to receipt" rows (RN's
+`handleScanPress`), `ReceiptItemList`'s edit/delete buttons. Deliberately *not* added to
+`ReceiptsScreen`'s scan button or `HealthPointsCard`'s scan button — RN doesn't haptic those
+either, confirmed by reading the source rather than adding it everywhere for consistency.
+
+**`RecipesScreen`'s dead search-sheet state, confirmed not a bug.** `RecipesScreen` renders a
+`RecipeSearchModal` gated on `searchVisible`, but grepping `app/(tabs)/recipes.tsx` shows
+`setSearchVisible(true)` is never called anywhere in the source — the sheet is genuinely
+unreachable in the original RN app too. Left as-is (unreachable `@State`, no trigger wired),
+per rule 3 (reproduce bugs/dead paths faithfully, don't silently "fix" them).
+
+**Explicit non-goal: deep linking.** The brief's Phase 6 description mentions deep links, but
+`app.json` has no `"scheme"` key (confirmed by grep) - there is nothing for `expo-router` to
+register as a URL scheme in the first place, so there's no native `Info.plist` `CFBundleURLTypes`
+entry to port either. Recording this explicitly rather than leaving it silently undone.
+
+**Standing performance tradeoff, not new to this phase but only now exercised end-to-end:**
+`FoodsStore.load()` is synchronous and blocks the main actor during `RootView.onAppear`. This
+was a deliberate risk-averse choice in Phase 4 (no compiler/simulator available to verify a
+background-dispatch refactor against a non-`Sendable` `DatabaseService`), and now that the full
+tab bar actually mounts and calls it for real, it causes a one-time hitch on cold launch before
+the first tab's content appears. Flagging as an open item for whenever real device/simulator
+profiling becomes possible.
+
+No changes needed to `HomeScreen`/`RecipesScreen`/`ReceiptsScreen`/`SearchScreen` beyond
+swapping their closure params for `@EnvironmentObject private var router: Router` and updating
+each call site 1:1 — no new behavioral decisions there. `xcodeproj` regenerated to pick up
+`App/Router.swift` and `Services/Haptics.swift`; both confirmed present in the app target's
+source list via `ruby -rxcodeproj`. As with every other phase, none of this has been opened in
+Xcode/Simulator - unverified beyond manual reading, brace/paren balance checks (no new
+mismatches beyond the two pre-existing false positives in `JSSort.swift`/`ReceiptParser.swift`,
+both from string/comment content, already documented), and `ruby -rxcodeproj` structural checks.
 
 ---
 
