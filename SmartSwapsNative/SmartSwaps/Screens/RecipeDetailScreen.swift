@@ -65,6 +65,7 @@ struct RecipeDetailScreen: View {
     @State private var shoppingServings = 1
     @State private var isAdded = false
     @State private var addedScale: CGFloat = 1
+    @State private var showNoIngredientsAlert = false
 
     private static let headerHeight: CGFloat = 44
 
@@ -142,6 +143,9 @@ struct RecipeDetailScreen: View {
                 Task { await generateShoppingList(listId: listId, newListName: newName) }
             }, onClose: { shoppingListModalVisible = false })
                 .environmentObject(inventoryStore)
+        }
+        .alert("This recipe has no ingredients to add!", isPresented: $showNoIngredientsAlert) {
+            Button("OK") {}
         }
     }
 
@@ -574,7 +578,10 @@ struct RecipeDetailScreen: View {
     private func generateShoppingList(listId: String?, newListName: String?) async {
         guard let recipe else { return }
         let scaleFactor = Double(shoppingServings) / Double(recipe.serves > 0 ? recipe.serves : 1)
-        guard !recipe.ingredients.isEmpty else { return }
+        guard !recipe.ingredients.isEmpty else {
+            showNoIngredientsAlert = true
+            return
+        }
 
         let swaps = ingredientSwaps(for: recipe)
         let items: [PersistedReceiptItem] = recipe.ingredients.map { ing in
@@ -589,14 +596,14 @@ struct RecipeDetailScreen: View {
             if let existing = inventoryStore.shoppingLists.first(where: { $0.id == listId }) {
                 let updatedItems = existing.items + items
                 let validScores = updatedItems.compactMap { $0.matchedFoodId.flatMap { foodsStore.byId[$0]?.health_score } }
-                let avgScore = validScores.isEmpty ? 50.0 : validScores.reduce(0, +) / Double(validScores.count)
+                let avgScore = validScores.isEmpty ? 50.0 : Double(JSNumber.roundToInt(validScores.reduce(0, +) / Double(validScores.count)))
                 await StorageService.updateScan(id: listId, updatedScan: ScanRecord(
                     id: existing.id, date: existing.date, items: updatedItems, averageScore: avgScore,
                     interactions: existing.interactions, isShoppingList: existing.isShoppingList, recipeName: existing.recipeName))
             }
         } else {
             let validScores = items.compactMap { $0.matchedFoodId.flatMap { foodsStore.byId[$0]?.health_score } }
-            let avgScore = validScores.isEmpty ? 50.0 : validScores.reduce(0, +) / Double(validScores.count)
+            let avgScore = validScores.isEmpty ? 50.0 : Double(JSNumber.roundToInt(validScores.reduce(0, +) / Double(validScores.count)))
             let iso = ISO8601DateFormatter().string(from: Date())
             await StorageService.saveScan(id: UUID().uuidString, date: iso, items: items, averageScore: avgScore,
                                            isShoppingList: true, recipeName: (newListName?.isEmpty == false ? newListName! : recipe.name))
@@ -611,7 +618,13 @@ struct RecipeDetailScreen: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { addedScale = 1 }
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { isAdded = false }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                isAdded = false
+                withAnimation(.spring(response: 0.25, dampingFraction: 0.4)) { addedScale = 1.06 }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { addedScale = 1 }
+                }
+            }
         }
     }
 }

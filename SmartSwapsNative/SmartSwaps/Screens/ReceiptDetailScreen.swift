@@ -167,8 +167,10 @@ struct ReceiptDetailScreen: View {
                     HStack(spacing: 8) {
                         Image(systemName: "chart.pie").font(.system(size: 15)).foregroundColor(Colors.primaryGreen)
                         Text(macrosExpanded ? "Hide Macronutrients" : "Show Macronutrients").font(.system(size: 14, weight: .bold)).foregroundColor(Colors.primaryGreen)
+                        Spacer()
+                        Image(systemName: macrosExpanded ? "chevron.up" : "chevron.down").font(.system(size: 15)).foregroundColor(Colors.primaryGreen)
                     }
-                    .frame(maxWidth: .infinity).padding(.vertical, 12)
+                    .padding(.horizontal, 14).padding(.vertical, 12)
                     .background(Colors.lightGreenBg).cornerRadius(12)
                 }.buttonStyle(.plain).padding(.bottom, 14)
 
@@ -195,8 +197,10 @@ struct ReceiptDetailScreen: View {
                     HStack(spacing: 8) {
                         Image(systemName: "testtube.2").font(.system(size: 15)).foregroundColor(Colors.primaryGreen)
                         Text(microsExpanded ? "Hide Micronutrients" : "Show Micronutrients").font(.system(size: 14, weight: .bold)).foregroundColor(Colors.primaryGreen)
+                        Spacer()
+                        Image(systemName: microsExpanded ? "chevron.up" : "chevron.down").font(.system(size: 15)).foregroundColor(Colors.primaryGreen)
                     }
-                    .frame(maxWidth: .infinity).padding(.vertical, 12)
+                    .padding(.horizontal, 14).padding(.vertical, 12)
                     .background(Colors.lightGreenBg).cornerRadius(12)
                 }.buttonStyle(.plain)
 

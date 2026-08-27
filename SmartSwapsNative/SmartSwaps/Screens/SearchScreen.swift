@@ -100,7 +100,8 @@ struct SearchScreen: View {
                 let sc = scoreColors(Double(r.health_score))
                 return Row(id: r.id, type: "recipe", title: r.name, category: "Recipe",
                            calories: "\(JSNumber.roundToInt(r.totals.kcal)) kcal", score: r.health_score,
-                           nutriScore: "", nutriColor: sc.fg, nutriBg: sc.bg, iconKey: nil, isFavorite: false)
+                           nutriScore: "", nutriColor: sc.fg, nutriBg: sc.bg, iconKey: nil,
+                           isFavorite: favoritesStore.isFavorite(.food, r.id))
             }
         }
 
@@ -115,7 +116,8 @@ struct SearchScreen: View {
                            title: s.recipeName ?? (s.isShoppingList == true ? "Shopping List" : "Receipt"),
                            category: s.date, calories: "\(s.items.count) items",
                            score: JSNumber.roundToInt(s.averageScore), nutriScore: "",
-                           nutriColor: sc.fg, nutriBg: sc.bg, iconKey: nil, isFavorite: false)
+                           nutriColor: sc.fg, nutriBg: sc.bg, iconKey: nil,
+                           isFavorite: favoritesStore.isFavorite(.food, s.id))
             }
         }
 

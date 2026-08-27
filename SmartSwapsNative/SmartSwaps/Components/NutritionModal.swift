@@ -9,10 +9,22 @@ struct NutritionModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var profileStore: ProfileStore
 
+    @State private var infoAlertTitle: String?
+    @State private var infoAlertMessage: String = ""
+
+    private static let macroDescriptions: [String: String] = [
+        "Protein": "Protein is essential for building and repairing tissues, including muscle. It also plays a key role in the production of enzymes and hormones.",
+        "Carbohydrates": "Carbohydrates are your body's primary energy source. They fuel your brain, kidneys, heart muscles, and central nervous system.",
+        "Sugars": "Naturally occurring sugars provide quick energy. However, limiting added sugars is important for heart health and preventing energy crashes.",
+        "Total Fat": "Fats provide dense energy, support cell growth, and protect your organs. They also help your body absorb essential fat-soluble vitamins.",
+        "Saturated Fat": "While some saturated fat is fine, replacing it with unsaturated fats can help lower cholesterol levels and reduce cardiovascular risks.",
+        "Dietary Fiber": "Fiber aids in digestion and helps regulate blood sugar levels. It also contributes to satiety, keeping you feeling full for longer.",
+        "Salt": "Salt is necessary for fluid balance and nerve function. However, excess sodium can lead to high blood pressure and strain your heart.",
+    ]
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.4).ignoresSafeArea()
-                .onTapGesture { isPresented = false }
 
             VStack(spacing: 0) {
                 header
@@ -37,6 +49,11 @@ struct NutritionModal: View {
             .frame(maxHeight: UIScreen.main.bounds.height * 0.85)
             .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
             .padding(20)
+        }
+        .alert(infoAlertTitle ?? "", isPresented: Binding(get: { infoAlertTitle != nil }, set: { if !$0 { infoAlertTitle = nil } })) {
+            Button("OK") {}
+        } message: {
+            Text(infoAlertMessage)
         }
     }
 
@@ -87,7 +104,12 @@ struct NutritionModal: View {
                 HStack(spacing: 8) {
                     Circle().fill(color).frame(width: 8, height: 8)
                     Text(name).font(.system(size: 15, weight: .semibold)).foregroundColor(Colors.textPrimary)
-                    Image(systemName: "info.circle").font(.system(size: 16)).foregroundColor(Colors.systemGray)
+                    Button(action: {
+                        infoAlertTitle = name
+                        infoAlertMessage = Self.macroDescriptions[name] ?? ""
+                    }) {
+                        Image(systemName: "info.circle").font(.system(size: 16)).foregroundColor(Colors.systemGray)
+                    }.buttonStyle(.plain)
                 }
                 Spacer()
                 if let pct {
@@ -131,7 +153,12 @@ struct NutritionModal: View {
                     HStack {
                         HStack(spacing: 6) {
                             Text(micro.name).font(.system(size: 14, weight: .semibold)).foregroundColor(Colors.textPrimary)
-                            Image(systemName: "info.circle").font(.system(size: 16)).foregroundColor(Colors.systemGray)
+                            Button(action: {
+                                infoAlertTitle = micro.name
+                                infoAlertMessage = micro.description
+                            }) {
+                                Image(systemName: "info.circle").font(.system(size: 16)).foregroundColor(Colors.systemGray)
+                            }.buttonStyle(.plain)
                         }
                         Spacer()
                         HStack(alignment: .lastTextBaseline, spacing: 3) {

@@ -15,7 +15,7 @@ struct SelectShoppingListModal: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4).ignoresSafeArea().onTapGesture(perform: onClose)
+            Color.black.opacity(0.4).ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
                 HStack {

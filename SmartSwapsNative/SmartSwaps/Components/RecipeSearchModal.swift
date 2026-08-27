@@ -76,6 +76,11 @@ struct RecipeSearchModal: View {
             resultsList
         }
         .background(Colors.white)
+        .onChange(of: searchQuery) { _ in limit = 20 }
+        .onChange(of: category) { _ in limit = 20 }
+        .onChange(of: maxCalories) { _ in limit = 20 }
+        .onChange(of: minScore) { _ in limit = 20 }
+        .onChange(of: favoritesOnly) { _ in limit = 20 }
     }
 
     private var header: some View {
@@ -105,7 +110,6 @@ struct RecipeSearchModal: View {
         .frame(height: 48)
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Colors.border, lineWidth: 1))
         .padding(20)
-        .onChange(of: searchQuery) { _ in limit = 20 }
     }
 
     private var filters: some View {

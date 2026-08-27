@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import AVFoundation
 import SmartSwapsKit
 
 /// Port of `app/scan-receipt.tsx` (465 ln). `expo-image-picker`'s camera capture ->
@@ -29,6 +30,7 @@ struct ScanReceiptScreen: View {
 
     @State private var showCamera = false
     @State private var photosPickerItem: PhotosPickerItem?
+    @State private var showCameraPermissionAlert = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -61,6 +63,23 @@ struct ScanReceiptScreen: View {
         } message: {
             Text(errorAlert ?? "")
         }
+        .alert("Permission needed", isPresented: $showCameraPermissionAlert) {
+            Button("OK") {}
+        } message: {
+            Text("Camera permission is required to take photos.")
+        }
+    }
+
+    private func handleTakePhoto() async {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            showCamera = true
+        case .notDetermined:
+            let granted = await AVCaptureDevice.requestAccess(for: .video)
+            if granted { showCamera = true } else { showCameraPermissionAlert = true }
+        default:
+            showCameraPermissionAlert = true
+        }
     }
 
     // MARK: - Capture UI
@@ -75,7 +94,7 @@ struct ScanReceiptScreen: View {
                 progressCard
             } else {
                 VStack(spacing: 16) {
-                    Button(action: { showCamera = true }) {
+                    Button(action: { Task { await handleTakePhoto() } }) {
                         HStack {
                             Image(systemName: "camera").font(.system(size: 22))
                             Text("Take Photo").font(.system(size: 16, weight: .semibold))

@@ -17,7 +17,7 @@ than Phase 7 so nothing is reconstructed from memory later. **Phases 0-3 complet
 | 4 Components | **all 15 non-dead components ported** (`Header.tsx` stays unported per §9). SwiftUI `#Preview` on every file, but **none have been opened in Xcode/Previews** — no macOS available, see below. |
 | 5 Screens | **done** — all 9 screens ported (4 tabs, Settings, food/recipe/receipt detail, scan flow). No navigation wiring between them yet — that's Phase 6. |
 | 6 Integration | **done** — single `NavigationStack` + `Router` wired through `RootView`; all 9 screens navigate for real (no more no-op closures); haptics added at every RN call site; full scan → parse → resolve → swap → save flow reachable end to end. Deep links explicitly out of scope (no `scheme` in `app.json` — see below). |
-| 7 Verification | not started |
+| 7 Verification | **done** — every screen/component walked RN-vs-Swift for user-action parity (no simulator available, so code-level rather than literal side-by-side); 11 genuine deviations found and fixed, 1 left open (documented); icon-mapping table completed; all 10 reference screenshots reviewed against source. |
 
 Run the suite with `swift test` in `SmartSwapsNative/` (~4 min, no simulator needed).
 
@@ -431,6 +431,15 @@ Per rule 3 — ported as-is, recorded here.
    registers a `settings` tab route that lives outside the tabs group; `settings.tsx`
    shadows `expo-clipboard` with a mock that only `console.log`s, so Export/Import Shopping
    Lists silently do nothing.
+8. **`SearchScreen`'s favorite heart uses the wrong type key for every non-food row.**
+   `SearchScreen.tsx:474-478`'s result-row renderer hardcodes `'food'` as the favorite-type
+   argument to both `toggleFavorite` and the live `isFavorite` read, regardless of whether the
+   row is actually a food, recipe, shopping list, or receipt (all four share this render path).
+   Self-consistent (both read and write use the same wrong key, so the heart still visibly
+   toggles), but a recipe/list/receipt "favorite" from this screen is actually stored under the
+   food-favorites key. Found in Phase 7; Swift previously diverged by hardcoding the heart to
+   `false` for non-food rows instead, which was *more correct* than RN — fixed to match RN's
+   bug exactly (see Phase 7 notes below).
 
 ---
 
@@ -458,13 +467,138 @@ Per rule 3 — ported as-is, recorded here.
 
 ---
 
+## Phase 7 — Verification pass
+
+No simulator/Xcode has been available at any point in this port (flagged since Phase 1), so a
+literal "run both apps side by side" was never possible. What this phase actually did instead:
+read all 10 reference screenshots (`IMG_2457.PNG`-`IMG_2466.PNG`) against the corresponding
+Swift source for copy/color/layout fidelity, then did an exhaustive line-by-line RN-vs-Swift
+comparison of every screen and shared component's user-triggered actions (three parallel
+passes: tab screens, detail/settings screens, scan flow + remaining components), verifying
+each `onPress`/`onChangeText`/toggle/gesture has a faithful Swift equivalent — same trigger,
+same resulting state change, same copy text, same alert titles/messages/buttons. Eleven
+genuine deviations surfaced (all introduced during this port, not RN bugs — so fixed to match
+RN exactly, not reproduced):
+
+1. **`SearchScreen`'s favorite heart was dead for non-food rows.** RN's `SearchScreen.tsx:474-478`
+   hardcodes `'food'` as the favorite-type key for *every* result row regardless of its real
+   type (a bug in RN itself, self-consistent because both the read and the write use the same
+   wrong key) — so tapping a recipe/list/receipt row's heart still visibly toggles red in RN.
+   Swift's `Row.isFavorite` was hardcoded `false` at construction for recipe/list/receipt rows
+   (`SearchScreen.swift`, `searchResults`) instead of mirroring RN's wrong-but-consistent
+   `favoritesStore.isFavorite(.food, id)` read — fixed to call it for all row types, faithfully
+   reproducing RN's bug rather than silently being more "correct" than the source.
+2. **`ReceiptDetailScreen`'s macro/micro toggle buttons were missing their trailing chevron.**
+   `app/receipt/[id].tsx:268,297` shows a `chevron-up`/`chevron-down` on the right edge of both
+   toggle rows (`FoodDetailScreen`/`RecipeDetailScreen` already had this correctly). Added,
+   matching the established `Spacer()` + `Image(systemName:)` pattern from the other two screens.
+3. **`FoodDetailScreen`'s score ring didn't replay after accepting a swap.** RN's ring-scale
+   spring is keyed to `[id]` (`app/food/[id].tsx`), so it re-plays on every `router.replace`.
+   Swift's reset lived in `.onAppear` (fires once per sheet presentation) instead of
+   `.task(id: currentFoodId)` (fires on every in-place food swap) — moved.
+4. **"Added to list" revert was missing its second pop animation.** RN's
+   `useAddedToListAnimation.ts`'s `markAdded()` calls `pop()` (a two-step spring) both on add
+   *and* again when the 2s revert timer fires. Both `FoodDetailScreen.swift` and
+   `RecipeDetailScreen.swift` only animated the add; the revert silently snapped `isAdded`
+   back with no pop. Added the matching spring pair to both revert timers.
+5. **`RecipeDetailScreen` was missing the "no ingredients" alert.** RN's `generateShoppingList`
+   shows `alert("This recipe has no ingredients to add!")` and bails when there's nothing to
+   add (`app/recipe/[id].tsx:172-176`); Swift's guard returned silently. Added the alert.
+6. **`RecipeDetailScreen`'s shopping-list average score wasn't rounded.** RN always wraps it in
+   `Math.round(...)` (`app/recipe/[id].tsx:201-212`); Swift computed a raw `Double` mean in both
+   branches of `generateShoppingList` — an inconsistency with `FoodDetailScreen.handleAddToList`
+   and `ReceiptDetailScreen.recalculateAndUpdate`, both of which already used
+   `JSNumber.roundToInt` correctly. Fixed to match (and to match itself).
+7. **`ScanReceiptScreen` was missing the camera-permission alert.** RN's `handleTakePhoto`
+   explicitly requests camera permission and shows `alert('Permission needed', 'Camera
+   permission is required to take photos.')` on denial before opening the camera
+   (`app/scan-receipt.tsx:146-151`); Swift's "Take Photo" button opened the camera sheet
+   directly with no permission check, relying silently on the system prompt. Added an
+   `AVCaptureDevice.authorizationStatus`/`requestAccess` check with the matching alert.
+8. **`ReceiptItemList`'s health-score number wasn't a tap target.** RN wraps the score `Text` in
+   its own `TouchableOpacity` with the *same* navigate-to-food handler as the name row
+   (`components/ReceiptItemList.tsx:139-153`); Swift's `.onTapGesture` was only on the name/
+   nutrition `VStack`. Added the same tap gesture to the score.
+9. **`NutritionModal`'s info-circle icons were fully dead.** RN wires each macro/micro row's
+   info button to `Alert.alert(name, description)` with distinct educational copy per nutrient
+   (`components/NutritionModal.tsx`); Swift rendered the glyph with no `Button`/handler at all.
+   Wired all 7 macro rows (copy transcribed verbatim from the RN source) and all micro rows
+   (the `description` field was already sitting unused on `MicronutrientTarget`, ported back in
+   Phase 4 specifically for this and never wired up until now) to a shared alert.
+10. **`NutritionModal`/`SelectShoppingListModal` had backdrop-tap-to-dismiss RN doesn't have.**
+    Both RN originals render a plain, non-interactive overlay `View` behind the modal — only
+    the explicit close button dismisses it (`NutritionModal.tsx:58-59`,
+    `SelectShoppingListModal.tsx:22-23`). Swift had added `.onTapGesture` to both backdrops, a
+    small unrequested feature addition. Removed, per rule 3 ("no feature changes" cuts both ways).
+11. **`RecipeSearchModal`'s pagination `limit` only reset on `searchQuery` changing.** RN's
+    `useEffect` resets it on `[searchQuery, category, maxCalories, minScore, favoritesOnly]`
+    (`components/RecipeSearchModal.tsx:42-44`); Swift only had `.onChange(of: searchQuery)`.
+    Added the other four.
+
+**One deviation found and left open, not fixed:** `ReceiptItemList.swift`'s shopping-list mode
+collapses all items into one untitled section, where RN groups them per-recipe (by each item's
+own `recipeName`) plus an "Other Items" section (`components/ReceiptItemList.tsx:194-230`).
+This needs a per-item `recipeName` field threaded through `PersistedReceiptItem`/
+`ParsedReceiptItem` (currently only `ScanRecord` carries one, at the list level) and touches
+`RecipeDetailScreen.generateShoppingList`, `FoodDetailScreen.handleAddToList`, and the
+persistence round-trip — a genuine model change, not a one-line fix, and already self-flagged
+in `ReceiptItemList.swift`'s own comment since Phase 6. Left as the one standing feature gap
+from this pass rather than rushed.
+
+All 11 fixes re-checked with the same brace/paren balance sweep used every phase (no new
+mismatches beyond the two pre-existing false positives in `JSSort.swift`/`ReceiptParser.swift`).
+
+**Screenshot review** (`IMG_2457`-`IMG_2466`, all 10 read this phase): Home (kcal badge,
+Personalise pill, Health Points ring/card, shopping-list row, carousel spotlight card),
+`NutritionModal` (budget card, macro rows with colored dots/bars), Recipes (category chips,
+featured-recipe card, empty favorites state), Receipts tab collapsed and expanded (shopping-
+list row with basket icon and food-category icons, weekly grouping with `Avg:` badge),
+scan-receipt capture view ("How it works" rows), `ReceiptDetailScreen` (confident-match rows
+with swap suggestions), `RecipeDetailScreen` (Smart Swaps toggle, Build a Shopping List
+stepper, ingredient rows), and Search (popular foods / query results with Nutri-Score badges)
+all match the corresponding Swift source's copy text, color tokens, and layout structure as far
+as static code reading can confirm — genuine sub-pixel/spacing fidelity still needs a real
+device or simulator render, which remains unavailable in every container this port has run in.
+
+---
+
 ## Icon mappings
 
-`getIconForCategory` (`State/FoodsStore.swift`) has a first-pass Ionicons → SF Symbol table —
-see the Phase 4 deviations table above for the full mapping and the two categories
-(egg/dairy, cereal/grain) with no close SF equivalent, approximated rather than resolved.
-**Not verified against a live SF Symbols catalog** (no Xcode in this container) — check every
-name before shipping.
+`getIconForCategory` (`State/FoodsStore.swift`) maps `FoodItem.category` substrings to SF
+Symbols, mirroring `app/useFoods.ts`'s Ionicons table exactly in condition order and fallback:
+
+| Category substring | Ionicons (RN) | SF Symbol (Swift) | Notes |
+|---|---|---|---|
+| meat / sausage / poultry | `restaurant-outline` | `fork.knife` | good match |
+| fish / seafood | `fish-outline` | `fish` | exact-name match |
+| dairy / egg / milk / cheese | `egg-outline` | `carton` | no literal "egg" SF Symbol exists; approximated |
+| fruit / vegetable | `leaf-outline` | `leaf` | exact-name match |
+| drink / beverage / water | `water-outline` | `drop` | good match |
+| sweet / pastry / sugar | `ice-cream-outline` | `birthday.cake` | no SF ice-cream symbol; approximated |
+| cereal / grain / bread / pantry | `nutrition-outline` | `basket` | no close SF equivalent for RN's grain-stalk glyph; approximated |
+| *(fallback)* | `fast-food-outline` | `takeoutbag.and.cup.and.straw` | good match |
+
+The egg/dairy and cereal/grain rows are the two already-flagged approximations from Phase 4 —
+still standing, since no closer SF Symbol exists for either RN glyph. **Not verified against a
+live SF Symbols catalog** (no Xcode in this container) — check every name before shipping.
+
+Every other Ionicons/Feather/`expo-symbols` name used directly in the RN source (as opposed to
+via `getIconForCategory`) was cross-checked this phase against its Swift `systemName:` call
+site. All resolve to the semantically-closest SF Symbol, correctly distinguishing Ionicons'
+`-outline` (unfilled) suffix from its absence (filled) by using SF's bare-name-vs-`.fill`-suffix
+convention consistently — e.g. `checkmark-circle-outline`→never used bare, `checkmark-circle`
+(filled)→`checkmark.circle.fill`; `basket-outline`→`basket`; `trophy-outline`/`trophy`→
+`trophy`/`trophy.fill`; `heart-outline`/`heart`→`heart`/`heart.fill`. Notable pairs: `options-
+outline`→`slider.horizontal.3` (Apple's own HIG-recommended replacement), `ribbon-outline`→
+`rosette`, `people-outline`→`person.2`, `open-outline`→`arrow.up.forward.square`, `speedometer-
+outline`→`speedometer`, `flask-outline`→`testtube.2`, `pie-chart-outline`→`chart.pie`. The
+`ClassicTabLayout` tab bar (`RootView.swift`) matches `app/(tabs)/_layout.tsx`'s own
+`ClassicTabLayout` branch exactly — `house.fill`/`fork.knife`/`list.bullet.rectangle`/
+`magnifyingglass`, statically (RN's classic branch, unlike its `NativeTabs`/Liquid-Glass
+branch, does not swap to a `-outline`/`.fill` pair on selection either). `app/settings.tsx`
+already specifies literal SF Symbol names via `expo-symbols`' `SymbolView` (with an Ionicons
+fallback that's moot at this port's iOS 16.4 minimum), so every Settings row icon is an exact
+1:1 copy, not a mapping.
 
 `FoodIcon`'s 85 OpenMoji SVGs are still not rendered at all (Phase 4's `FoodIcon.swift` always
 takes the fallback path above) — pre-rasterising them at build time is unstarted, and needs a

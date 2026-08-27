@@ -146,13 +146,17 @@ struct ReceiptItemList: View {
                 Spacer()
 
                 HStack(spacing: 12) {
-                    if let f, confidence >= 0.45 {
-                        Text("\(JSNumber.roundToInt(f.health_score))").font(.system(size: 15, weight: .heavy)).foregroundColor(Colors.primaryGreen)
-                            .frame(width: 28, alignment: .trailing)
-                    } else {
-                        Text("-").font(.system(size: 15, weight: .heavy)).foregroundColor(Color(hex: 0x999999))
-                            .frame(width: 28, alignment: .trailing)
+                    Group {
+                        if let f, confidence >= 0.45 {
+                            Text("\(JSNumber.roundToInt(f.health_score))").font(.system(size: 15, weight: .heavy)).foregroundColor(Colors.primaryGreen)
+                                .frame(width: 28, alignment: .trailing)
+                        } else {
+                            Text("-").font(.system(size: 15, weight: .heavy)).foregroundColor(Color(hex: 0x999999))
+                                .frame(width: 28, alignment: .trailing)
+                        }
                     }
+                    .contentShape(Rectangle())
+                    .onTapGesture { if showFoodChrome, let f { router.openFood(f.id) } }
                     Button(action: { Haptics.light(); editingIndex = entry.originalIndex }) {
                         Image(systemName: "pencil").font(.system(size: 16)).foregroundColor(Colors.textMuted)
                     }.buttonStyle(.plain)

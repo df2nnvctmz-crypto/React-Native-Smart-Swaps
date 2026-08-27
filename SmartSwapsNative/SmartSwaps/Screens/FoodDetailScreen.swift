@@ -79,8 +79,11 @@ struct FoodDetailScreen: View {
                 ProgressView("Loading food details...").frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .task(id: currentFoodId) { await loadSwaps() }
-        .onAppear { ringScale = 0.8; withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) { ringScale = 1 } }
+        .task(id: currentFoodId) {
+            ringScale = 0.8
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) { ringScale = 1 }
+            await loadSwaps()
+        }
         .sheet(isPresented: $shoppingListModalVisible) {
             SelectShoppingListModal(onSelect: { listId, newName in Task { await handleAddToList(listId: listId, newListName: newName) } },
                                      onClose: { shoppingListModalVisible = false })
@@ -421,6 +424,10 @@ struct FoodDetailScreen: View {
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 isAdded = false
+                withAnimation(.spring(response: 0.25, dampingFraction: 0.4)) { addedScale = 1.06 }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { addedScale = 1 }
+                }
             }
         }
     }
