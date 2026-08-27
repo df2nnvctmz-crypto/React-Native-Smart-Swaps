@@ -11,7 +11,7 @@ than Phase 7 so nothing is reconstructed from memory later. **Phases 0-3 complet
 | Phase | State |
 |---|---|
 | 0 Inventory | done — `PORTING_INVENTORY.md` |
-| 1 Skeleton | **partial** — SPM package, resources, compat layer done. **Xcode app target not yet created**, so "launches to an empty tab bar" is not yet demonstrated. |
+| 1 Skeleton | **partial** — SPM package, resources, compat layer done from before; `SmartSwaps.xcodeproj` now generated, app target with `Colors`/`GlobalStyles`/`Typography`, `Info.plist`, and a 4-tab `RootView` added. **"Builds and launches to an empty tab bar" is still unverified** — no macOS/Xcode/simulator is available in this container, see below. |
 | 2 Data layer | done, verified row-for-row |
 | 3 Engine | **done, gate green** — 18 tests, 0 failures |
 | 4-7 | not started |
@@ -118,6 +118,7 @@ committed file.
 | **`foodEmbeddings`/`foodAttributes` `.data.json` → `.bin` + meta at build time** | Explicitly allowed by the brief. 3.8 MB JSON with a 3.6 M-char base64 payload became a 2.74 MB mmap-able blob. Numbers untouched — the 6,000-pair cosine diff at 1e-9 is the proof, so the hand-rolled Hermes base64 decoder has no Swift counterpart. |
 | **SF Pro, not Nunito** | Your decision, and it matches the running app: the tab bar names `Nunito_500Medium` but no font file is bundled, nothing calls `useFonts()`, and no other `fontFamily` appears anywhere. |
 | **`SmartSwapsKit` as an SPM package** | Lets the Phase 3 gate run as `swift test` in ~4 min with no simulator. The app target will depend on it. |
+| **App target has no separate `Resources/` data bundle** | `smartswaps.db` and the `.data.json`→`.bin` assets already ship as `SmartSwapsKit`'s package resources (Phase 2/3). The app target consumes them through the package's `Bundle.module` rather than duplicating a second copy, per PORTING_INVENTORY.md §0's own target layout listing `Resources/` once. Not a behavioral change, just avoids two copies of a 7.6 MB DB. |
 
 ---
 
@@ -161,9 +162,18 @@ Per rule 3 — ported as-is, recorded here.
 - **Case-insensitive matching (`i` flag).** ICU does full Unicode case folding, JS's
   non-unicode mode does simple folding; `ß`/`ss` could in principle differ. No divergence
   appeared across 14,632 strings and 168 parse lines, but it is unproven in general.
-- **Xcode app target does not exist yet.** Phase 1's "launches to an empty tab bar" gate is
-  outstanding; there is no `xcodegen` on this machine, so the `.pbxproj` will be generated
-  by a committed script rather than hand-edited across phases.
+- **Xcode app target exists but is unbuilt-and-unverified.** `SmartSwaps.xcodeproj` is now
+  generated (`Tools/generate-xcodeproj.rb`, via the `xcodeproj` Ruby gem — no `xcodegen`
+  available, same as before) and references the app-target sources, `Info.plist`, and a
+  local package dependency on `SmartSwapsKit`. It round-trips through `xcodeproj` cleanly,
+  but **no `xcodebuild`/simulator is available in any container this port has run in**, so
+  "builds and launches to an empty tab bar" has never actually been demonstrated. Needs a
+  real Mac to confirm; flagging rather than claiming a gate that isn't proven.
+- **`(tabs)/_layout.tsx`'s `NativeTabs` (Liquid Glass, iOS 26+) branch not ported.**
+  `RootView.swift` only implements the `ClassicTabLayout` fallback (blurred/transparent
+  `UITabBar`, tinted `primaryGreen`/`textMuted`, SF Symbols, 10pt labels). The
+  `isLiquidGlassAvailable()` branch is deferred rather than guessed at with no real tab
+  content yet to verify it against — revisit alongside Phase 5/6.
 
 ---
 

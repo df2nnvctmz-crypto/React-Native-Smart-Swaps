@@ -1,0 +1,414 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0593070A4B110B0A4981046E /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41F1766002F5F100A8F584F3 /* Typography.swift */; };
+		19E67C62977D517A39A7D9BF /* ReceiptsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA3B0C62E8E9D5A7A62B11A5 /* ReceiptsScreen.swift */; };
+		2DA3CBA9B2A3B76A69B11F2A /* SmartSwapsKit in Frameworks */ = {isa = PBXBuildFile; productRef = C7A3FDE76AA4099E5EE936A3 /* SmartSwapsKit */; };
+		51E9C92D15504382A3C510AB /* SearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F54C522B3807EA8D4A4AAAD7 /* SearchScreen.swift */; };
+		89EDF6BAA63C617495B8059A /* SmartSwapsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A570C2FC7A23565363149A /* SmartSwapsApp.swift */; };
+		8F7F30A8F4D3787144B52D4E /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91DBAE588B2E1F57687A836F /* HomeScreen.swift */; };
+		A89478907AAB3239DD049D3B /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF4F59DE70D3537C1E37BC76 /* RootView.swift */; };
+		AC9C8C6E8EA4AB187DFB4FCB /* RecipesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C434B577E7054BEC4FE1A352 /* RecipesScreen.swift */; };
+		ADB25A1118A1AC8DAEA9BB0A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE5D2F0AF3555765B0F087A3 /* Foundation.framework */; };
+		C1E15113E6F8BF65B0C32AB5 /* GlobalStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = E357DF55BEB4043043DF907D /* GlobalStyles.swift */; };
+		CC97E322BCDB16DE42E3635B /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8949276CE1006E3356B388F8 /* Colors.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		09A570C2FC7A23565363149A /* SmartSwapsApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SmartSwapsApp.swift; sourceTree = "<group>"; };
+		41F1766002F5F100A8F584F3 /* Typography.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		8949276CE1006E3356B388F8 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		91DBAE588B2E1F57687A836F /* HomeScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
+		C434B577E7054BEC4FE1A352 /* RecipesScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecipesScreen.swift; sourceTree = "<group>"; };
+		CB908D0AB94A1DCB8CAD0106 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D271906AA71A6494B20B54EF /* SmartSwaps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartSwaps.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA3B0C62E8E9D5A7A62B11A5 /* ReceiptsScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReceiptsScreen.swift; sourceTree = "<group>"; };
+		DE5D2F0AF3555765B0F087A3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		E357DF55BEB4043043DF907D /* GlobalStyles.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlobalStyles.swift; sourceTree = "<group>"; };
+		EF4F59DE70D3537C1E37BC76 /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		F54C522B3807EA8D4A4AAAD7 /* SearchScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SearchScreen.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1E571C25A8BE13ABC81202DC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ADB25A1118A1AC8DAEA9BB0A /* Foundation.framework in Frameworks */,
+				2DA3CBA9B2A3B76A69B11F2A /* SmartSwapsKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		02CB260BD9D1B369B87F7CC1 /* SmartSwaps */ = {
+			isa = PBXGroup;
+			children = (
+				69526EF706361C1FA4509779 /* App */,
+				FC43A63150B12C4CDD71A03C /* DesignSystem */,
+				2972F5448460F88DCE63BCDB /* Screens */,
+				9E05979311480BA24FC37302 /* Resources */,
+			);
+			name = SmartSwaps;
+			path = SmartSwaps;
+			sourceTree = "<group>";
+		};
+		2972F5448460F88DCE63BCDB /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				91DBAE588B2E1F57687A836F /* HomeScreen.swift */,
+				DA3B0C62E8E9D5A7A62B11A5 /* ReceiptsScreen.swift */,
+				C434B577E7054BEC4FE1A352 /* RecipesScreen.swift */,
+				F54C522B3807EA8D4A4AAAD7 /* SearchScreen.swift */,
+			);
+			name = Screens;
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		47AFC0D694874F5EDCA9DB19 = {
+			isa = PBXGroup;
+			children = (
+				F2D8040688E17CD31F48FD71 /* Products */,
+				C34586810C221669B93BDFC7 /* Frameworks */,
+				02CB260BD9D1B369B87F7CC1 /* SmartSwaps */,
+			);
+			sourceTree = "<group>";
+		};
+		69526EF706361C1FA4509779 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				EF4F59DE70D3537C1E37BC76 /* RootView.swift */,
+				09A570C2FC7A23565363149A /* SmartSwapsApp.swift */,
+			);
+			name = App;
+			path = App;
+			sourceTree = "<group>";
+		};
+		7DD4B35D4A22E4E15319597E /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				DE5D2F0AF3555765B0F087A3 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		9E05979311480BA24FC37302 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				CB908D0AB94A1DCB8CAD0106 /* Info.plist */,
+			);
+			name = Resources;
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		C34586810C221669B93BDFC7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7DD4B35D4A22E4E15319597E /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F2D8040688E17CD31F48FD71 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D271906AA71A6494B20B54EF /* SmartSwaps.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FC43A63150B12C4CDD71A03C /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				8949276CE1006E3356B388F8 /* Colors.swift */,
+				E357DF55BEB4043043DF907D /* GlobalStyles.swift */,
+				41F1766002F5F100A8F584F3 /* Typography.swift */,
+			);
+			name = DesignSystem;
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C8F6087CA7F0590B123DB24C /* SmartSwaps */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B113A0AF09710C972D81FBE /* Build configuration list for PBXNativeTarget "SmartSwaps" */;
+			buildPhases = (
+				DB1786D030D7E2E24F31AFA3 /* Sources */,
+				1E571C25A8BE13ABC81202DC /* Frameworks */,
+				9413307297BBFF92B015413D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SmartSwaps;
+			packageProductDependencies = (
+				C7A3FDE76AA4099E5EE936A3 /* SmartSwapsKit */,
+			);
+			productName = SmartSwaps;
+			productReference = D271906AA71A6494B20B54EF /* SmartSwaps.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6111B54E5976654F2CF651A2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = 088961F18E2D1136F0FA7937 /* Build configuration list for PBXProject "SmartSwaps" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 47AFC0D694874F5EDCA9DB19;
+			minimizedProjectReferenceProxies = 0;
+			packageReferences = (
+				AE0CD6B175B9619242BAFD17 /* XCLocalSwiftPackageReference ".." */,
+			);
+			preferredProjectObjectVersion = 100;
+			productRefGroup = F2D8040688E17CD31F48FD71 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C8F6087CA7F0590B123DB24C /* SmartSwaps */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9413307297BBFF92B015413D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DB1786D030D7E2E24F31AFA3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A89478907AAB3239DD049D3B /* RootView.swift in Sources */,
+				89EDF6BAA63C617495B8059A /* SmartSwapsApp.swift in Sources */,
+				CC97E322BCDB16DE42E3635B /* Colors.swift in Sources */,
+				C1E15113E6F8BF65B0C32AB5 /* GlobalStyles.swift in Sources */,
+				0593070A4B110B0A4981046E /* Typography.swift in Sources */,
+				8F7F30A8F4D3787144B52D4E /* HomeScreen.swift in Sources */,
+				19E67C62977D517A39A7D9BF /* ReceiptsScreen.swift in Sources */,
+				AC9C8C6E8EA4AB187DFB4FCB /* RecipesScreen.swift in Sources */,
+				51E9C92D15504382A3C510AB /* SearchScreen.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		05B6FFA6A81F5A3787AE4B92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SmartSwaps/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.smartswapsmobile;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0E5A9F7EEA7D78745F445A2A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		538A84179091D6DBADF7D13E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SmartSwaps/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.smartswapsmobile;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BA462B07D30E13A7C2EE6C49 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		088961F18E2D1136F0FA7937 /* Build configuration list for PBXProject "SmartSwaps" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0E5A9F7EEA7D78745F445A2A /* Debug */,
+				BA462B07D30E13A7C2EE6C49 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0B113A0AF09710C972D81FBE /* Build configuration list for PBXNativeTarget "SmartSwaps" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				538A84179091D6DBADF7D13E /* Release */,
+				05B6FFA6A81F5A3787AE4B92 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		AE0CD6B175B9619242BAFD17 /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C7A3FDE76AA4099E5EE936A3 /* SmartSwapsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE0CD6B175B9619242BAFD17 /* XCLocalSwiftPackageReference ".." */;
+			productName = SmartSwapsKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 6111B54E5976654F2CF651A2 /* Project object */;
+}
