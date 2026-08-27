@@ -24,7 +24,7 @@ DEPLOYMENT_TARGET = '16.4'
 project = Xcodeproj::Project.new(PROJECT_PATH)
 
 app_group = project.new_group('SmartSwaps', 'SmartSwaps')
-%w[App DesignSystem Screens].each do |subdir|
+%w[App DesignSystem Screens State Components].each do |subdir|
   sub_group = app_group.new_group(subdir, subdir)
   Dir.glob(APP_DIR + subdir + '*.swift').sort.each do |file|
     sub_group.new_file(Pathname.new(file).relative_path_from(APP_DIR + subdir).to_s)

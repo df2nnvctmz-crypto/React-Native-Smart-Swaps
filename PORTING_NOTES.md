@@ -11,10 +11,11 @@ than Phase 7 so nothing is reconstructed from memory later. **Phases 0-3 complet
 | Phase | State |
 |---|---|
 | 0 Inventory | done — `PORTING_INVENTORY.md` |
-| 1 Skeleton | **partial** — SPM package, resources, compat layer done from before; `SmartSwaps.xcodeproj` now generated, app target with `Colors`/`GlobalStyles`/`Typography`, `Info.plist`, and a 4-tab `RootView` added. **"Builds and launches to an empty tab bar" is still unverified** — no macOS/Xcode/simulator is available in this container, see below. |
-| 2 Data layer | done, verified row-for-row |
-| 3 Engine | **done, gate green** — 18 tests, 0 failures |
-| 4-7 | not started |
+| 1 Skeleton | **partial** — SPM package, resources, compat layer done from before; `SmartSwaps.xcodeproj` generated, app target with `Colors`/`GlobalStyles`/`Typography`, `Info.plist`, and a 4-tab `RootView` added. **"Builds and launches to an empty tab bar" is still unverified** — no macOS/Xcode/simulator is available in this container, see below. |
+| 2 Data layer | done, verified row-for-row, **plus** `StorageService`, `FoodsStore`, `RecipeStore`/`RecipeMath`, `ProfileStore`/`ProfileMath`, `FavoritesStore`, `InventoryStore` added in Phase 4 (below) — components needed them to type-check at all. `SettingsStore` is the one piece of PORTING_INVENTORY.md §4 still not ported; nothing in Phase 4 needed it. |
+| 3 Engine | **done, gate green** — 18 tests, 0 failures. `Micronutrients.swift` and `RecipeMath.swift` (parseGrams/scaleNutrients/addNutrients/divideNutrients/estimateTimeDifficulty/hydrateRecipes) added in Phase 4 — both were named in PORTING_INVENTORY.md's file map but not yet written; neither has a differential test against the TS original the way the rest of the engine does (see below). |
+| 4 Components | **all 15 non-dead components ported** (`Header.tsx` stays unported per §9). SwiftUI `#Preview` on every file, but **none have been opened in Xcode/Previews** — no macOS available, see below. |
+| 5-7 | not started |
 
 Run the suite with `swift test` in `SmartSwapsNative/` (~4 min, no simulator needed).
 
@@ -122,6 +123,57 @@ committed file.
 
 ---
 
+## Phase 4 — shared components
+
+All 15 non-dead `components/*.tsx` ported to `SmartSwapsNative/SmartSwaps/Components/*.swift`,
+one file each, same names. `Header.tsx` stays unported (§9 — never imported anywhere).
+
+**What this needed that didn't exist yet.** Several components reach into RN contexts/hooks
+(`useFavorites`, `useProfile`, `useInventory`, `useRecipes`, `useFoods`) that PORTING_INVENTORY.md
+§4 scoped to Phase 2 but were never written — Phase 2's "done" status only covered
+`DatabaseService`/`KeyValueStore`. Rather than stub these out, they were built for real now,
+since a component that can't reach its data isn't a faithful port of one that can:
+
+- `Models/Recipe.swift`, `Models/Profile.swift`, `Models/Inventory.swift` (new `SmartSwapsKit`
+  types: `Recipe`, `RecipeIngredient`, `Profile` + its enums, `ScanRecord`, `FavoritesState`).
+- `Engine/Micronutrients.swift`, `Engine/RecipeMath.swift` (new `SmartSwapsKit` pure functions —
+  named in PORTING_INVENTORY.md's file map, not yet written).
+- `Data/StorageService.swift` (new — port of `services/storage.ts`, the scan/interaction log).
+- `State/{Foods,Profile,Favorites,Inventory,Recipe}Store.swift` (new, app-target
+  `ObservableObject`s — `SettingsStore` is the one PORTING_INVENTORY.md §4 store nothing here
+  needed, so it's still unwritten). Components take these via `@EnvironmentObject`, matching
+  the RN pattern of reaching into context internally rather than through props — `RootView`
+  now instantiates and injects all five, nested Profile → Favorites → Inventory (Settings
+  omitted) per §4, and reproduces its "renders nothing until Profile+Favorites finish loading"
+  correction to the brief.
+
+**Not differentially tested.** Unlike the Phase 3 engine, `RecipeMath`/`Micronutrients`/
+`ProfileMath` have no `swift test` gate diffing them against the live TS originals — Phase 3's
+proof method (dump-then-diff via `npx tsx`) wasn't run for them here. `ProfileMath`'s BMR/macro
+arithmetic and `RecipeMath.parseGrams`'s regex were checked by hand against
+`ProfileContext.tsx`/`useRecipes.ts`, which is weaker than the rest of this port's standard.
+Recommend a proper differential fixture before Phase 3's gate is considered to cover them.
+
+**Not verified in Xcode at all.** No macOS/Xcode is available in any container this port has
+run in, so none of these 15 `#Preview`s have actually been rendered, and the code has only been
+checked by reading it and a brace/paren balance script — not compiled. Treat every file here as
+unverified until opened on a Mac.
+
+**Deviations and approximations, each disclosed in the file's own header comment:**
+
+| File | Deviation |
+|---|---|
+| `FoodIcon.swift` | Always takes the SF Symbol fallback path — the OpenMoji SVG rendering pipeline (pre-rasterise at build time, per PORTING_INVENTORY.md §7.3) needs a build step this container can't run. `iconLibrary` is threaded through so wiring the real path later doesn't change the call signature. |
+| `FoodsStore.swift` (`getIconForCategory`) | Ionicons → SF Symbol map is a best-effort guess (`fork.knife`, `fish`, `carton`, `leaf`, `drop`, `birthday.cake`, `basket`, `takeoutbag.and.cup.and.straw`), **not checked against a live SF Symbols catalog**. `egg-outline` (→ `carton`) and `nutrition-outline` (→ `basket`) have no close SF equivalent at all, exactly the two PORTING_INVENTORY.md §7.3 already flagged as needing bundled originals instead — this port approximates rather than bundling. Verify every name in Xcode's SF Symbols app before shipping. |
+| `CoverFlowCarousel.swift` | Reimplemented on `DragGesture` over a fixed `HStack` rather than a real `ScrollView`, because view-aligned scroll-snap is iOS 17+ and the deployment target is 16.4. Geometry (scale/opacity/±45° Y-rotation/inward translateX) and the tripled-data loop-jump are faithful; the momentum/deceleration feel of `decelerationRate="fast"` is a SwiftUI spring, not UIScrollView physics — different curve, same idea. |
+| `GlassHeader.swift` | `.bar` material stands in for `tint="systemChromeMaterial"` (closest SwiftUI equivalent — same material UIKit's own nav/tab bars use). `scrollY` is a plain `CGFloat` a hosting screen must feed in (no `Animated.Value` equivalent exists); Phase 5 screens need to track their own scroll offset via a `PreferenceKey` and pass it through. The `isLiquidGlassAvailable()`/`NativeTabs`-style liquid-glass button branch is still not implemented — `GlassCircleButton` always renders the white-circle fallback, same open item as `RootView`'s tab bar. |
+| `ReceiptItemList.swift` | The shopping-list `recipeName` grouping (`(item as any).recipeName` in the source) has no home on `ParsedReceiptItem`/`ScanRecord` — that's an ad-hoc field the RN scan object carries, not part of either type's real shape. Renders one ungrouped "Other Items"-style section for now; revisit when Phase 6 wires up real scan data and it's clear where that field should live. `router.push` calls become an `onSelectFood: (String) -> Void` closure, same style already used by `RecipeCard`/`SwapComparisonCard`. |
+| `Models/Inventory.swift` (`PersistedReceiptItem`) | `ParsedReceiptItem` (Phase 3) holds a live `FoodItem` **class** reference, which is correct for in-memory matching but can't round-trip through `Codable` the way JS serializes the matched food's plain object into `@smart_swaps_scans`. Added a separate `Codable` shape (`matchedFoodId: String?`) with a `resolved(in:)` bridge back to `ParsedReceiptItem`, rather than making the engine's own matched-object identity semantics (§5.2c) `Codable`. |
+| `SearchModal.swift` | RN's `SearchModal` self-presents a `<Modal>`; this port renders bare content and expects the caller to present it via SwiftUI's `.sheet(...)` modifier instead (see `ReceiptItemList.swift`'s usage) — modifier-driven presentation is the SwiftUI idiom, RN's self-presenting component isn't. `SearchScreen()` itself is still the Phase 1 placeholder. |
+| `Data/DatabaseService.swift` / `RecipeMath.hydrateRecipes` | `recipe_ingredients` has `grams`/`kcal` DB columns that `RecipeIngredientRaw` already reads (Phase 2), but `RecipeMath.hydrateRecipes` ignores both and recomputes them from `raw_text` via `parseGrams`/`scaleNutrients`, because that's what the TS source actually does (`useRecipes.ts` never reads those DB columns either). Whatever those columns hold is unused by the real app — flagging so a future reader doesn't assume it's a bug that they're dead. |
+
+---
+
 ## Bugs faithfully reproduced
 
 Per rule 3 — ported as-is, recorded here.
@@ -179,6 +231,12 @@ Per rule 3 — ported as-is, recorded here.
 
 ## Icon mappings
 
-*(Phase 4 — not started. `FoodIcon`'s 85 OpenMoji SVGs will be pre-rasterised at build
-time; the Ionicons/Feather → SF Symbol table lands here, with the two glyphs that have no
-close SF equivalent — `egg-outline`, `nutrition-outline` — bundled as originals.)*
+`getIconForCategory` (`State/FoodsStore.swift`) has a first-pass Ionicons → SF Symbol table —
+see the Phase 4 deviations table above for the full mapping and the two categories
+(egg/dairy, cereal/grain) with no close SF equivalent, approximated rather than resolved.
+**Not verified against a live SF Symbols catalog** (no Xcode in this container) — check every
+name before shipping.
+
+`FoodIcon`'s 85 OpenMoji SVGs are still not rendered at all (Phase 4's `FoodIcon.swift` always
+takes the fallback path above) — pre-rasterising them at build time is unstarted, and needs a
+build step this container can't run.

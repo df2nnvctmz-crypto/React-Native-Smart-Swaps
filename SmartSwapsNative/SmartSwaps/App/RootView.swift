@@ -13,11 +13,39 @@ import SwiftUI
 /// modal routes are Phase 6 (Integration) per the phase plan; this view is
 /// deliberately just the four-tab shell the Phase 1 gate asks for.
 struct RootView: View {
+    // Nesting order matches `_layout.tsx`: Profile -> Favorites -> Settings -> Inventory.
+    // `SettingsStore` doesn't exist yet (no Phase 4 component needs it) - noted as an open
+    // item in PORTING_NOTES.md rather than silently substituted for.
+    @StateObject private var profileStore = ProfileStore()
+    @StateObject private var favoritesStore = FavoritesStore()
+    @StateObject private var inventoryStore = InventoryStore()
+    @StateObject private var recipeStore = RecipeStore.shared
+    @StateObject private var foodsStore = FoodsStore.shared
+
     init() {
         configureTabBarAppearance()
     }
 
     var body: some View {
+        Group {
+            // PORTING_INVENTORY.md §4's correction to the brief: the RN providers render
+            // NOTHING (`if (!isLoaded) return null`) until their AsyncStorage reads resolve,
+            // rather than showing defaults while loading. Reproduced here rather than the
+            // brief's "show defaults" instruction, since rule 1 makes the RN code win.
+            if profileStore.isLoaded && favoritesStore.isLoaded {
+                tabs
+            } else {
+                Color(Colors.background).ignoresSafeArea()
+            }
+        }
+        .environmentObject(profileStore)
+        .environmentObject(favoritesStore)
+        .environmentObject(inventoryStore)
+        .environmentObject(recipeStore)
+        .environmentObject(foodsStore)
+    }
+
+    private var tabs: some View {
         TabView {
             HomeScreen()
                 .tabItem { tabLabel("Home", systemImage: "house.fill") }
